@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Prerequisite: sensor_filters -->
+    <!-- http://wiki.ros.org/sensor_filters -->
+    <node name="realsense_filter" pkg="sensor_filters" type="pointcloud2_filter_chain" output="screen">
+        <rosparam command="load" file="$(dirname)/tradr_realsense_l515.yaml" />
+        <remap from="~input" to="/camera/depth/color/points" />
+        <remap from="~output" to="pointcloud_filtered" />
+    </node>
+</launch>

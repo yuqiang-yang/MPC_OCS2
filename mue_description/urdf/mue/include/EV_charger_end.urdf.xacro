@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot xmlns:xacro="http://wiki.ros.org/wiki/xacro">
+
+  <xacro:macro name="EV_charger_end" params="tf_prefix parent">
+
+    <xacro:property name="d6" value="0.100" />
+    <xacro:property name="wrist_3_length" value="${d6}" />
+
+    <joint name="${tf_prefix}charger_base_link_fixed_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${tf_prefix}charger_base_link"/>
+      <origin xyz="0.0 ${wrist_3_length} 0.0" rpy="0.0 ${pi/2.0} ${pi/2.0}" /> 
+    </joint>
+
+
+    <link name="${tf_prefix}charger_base_link">
+      <inertial>
+        <origin
+          xyz="0.0118905023529386 -1.35250334543091E-09 0.00944586383305385"
+          rpy="0 0 0" />
+        <mass
+          value="0.24945215097104" />
+        <inertia
+          ixx="6.55304493237443E-05"
+          ixy="9.6252549594632E-13"
+          ixz="-1.00843814273341E-08"
+          iyy="0.000103386371286209"
+          iyz="7.79900761472918E-17"
+          izz="0.00015980058256544" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_base_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_base_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    
+    <link
+      name="${tf_prefix}charger_link">
+      <inertial>
+        <origin
+          xyz="0.00112460541273218 7.01538728210827E-06 -0.0521212905902904"
+          rpy="0 0 0" />
+        <mass
+          value="0.430276924744781" />
+        <inertia
+          ixx="0.000294447326884286"
+          ixy="-4.1656777226007E-07"
+          ixz="1.46123814263355E-05"
+          iyy="0.000408312140659991"
+          iyz="-7.8478202080185E-09"
+          izz="0.000217089382545926" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint
+      name="${tf_prefix}charger_joint"
+      type="fixed">
+      <origin
+        xyz="-0.000884891175758962 0 0.1415"
+        rpy="0 0 0" />
+      <parent
+        link="${tf_prefix}charger_base_link" />
+      <child
+        link="${tf_prefix}charger_link" />
+      <axis
+        xyz="0 0 0" />
+    </joint>
+    <link
+      name="${tf_prefix}camera_base_link">
+      <inertial>
+        <origin
+          xyz="-0.0134937253491276 -4.62546667634456E-14 -0.011911208230959"
+          rpy="0 0 0" />
+        <mass
+          value="0.0475360422842692" />
+        <inertia
+          ixx="2.43062597384922E-05"
+          ixy="-6.98628407803785E-20"
+          ixz="-1.90339492578136E-06"
+          iyy="1.53416081258329E-05"
+          iyz="-9.39097586934331E-21"
+          izz="1.06923059283E-05" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_camera_base_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.647058823529412 0.619607843137255 0.588235294117647 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_charger_end/charger_camera_base_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <joint
+      name="${tf_prefix}camera_base_joint"
+      type="fixed">
+      <origin
+        xyz="0.0879999999999999 0 0.032"
+        rpy="${pi} -1.5707963267949 0" />
+      <parent
+        link="${tf_prefix}charger_base_link" />
+      <child
+        link="${tf_prefix}camera_base_link" />
+      <axis
+        xyz="0 0 0" />
+    </joint>
+
+  </xacro:macro>
+</robot>

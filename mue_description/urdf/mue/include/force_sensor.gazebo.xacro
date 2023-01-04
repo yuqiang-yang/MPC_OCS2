@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/wiki/xacro"> 
+  <xacro:macro name="sensor_force_torque" params="joint_name topic_name">
+    <gazebo reference="${joint_name}">
+     <provideFeedback>true</provideFeedback>
+     <!-- <turnGravityOff>false</turnGravityOff> -->
+     <visualize>true</visualize>
+    </gazebo>
+    <gazebo>
+     <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+       <alwaysOn>true</alwaysOn>
+       <updateRate>1000.0</updateRate>
+       <topicName>${topic_name}</topicName>
+       <jointName>${joint_name}</jointName>
+       <!--<gaussianNoise>0.0</gaussianNoise>-->
+     </plugin>
+    </gazebo>
+  </xacro:macro>
+</robot>
+
+
+
+

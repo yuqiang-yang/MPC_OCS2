@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="EV_car_sim" >
+
+    <!-- Include materials -->
+    <material name="Black">
+      <color rgba="0.0 0.0 0.0 1.0"/>
+    </material>
+
+    <!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    <link
+      name="socket_base_link">
+      <inertial>
+        <origin
+          xyz="0.17350387847779 0.163692597540571 0.614502409926758"
+          rpy="0 0 0" />
+        <mass
+          value="4.33972430484974" />
+        <inertia
+          ixx="0.125837823228649"
+          ixy="-1.48468788241609E-05"
+          ixz="-6.07005840786139E-05"
+          iyy="0.130752623249532"
+          iyz="-0.00861291010203489"
+          izz="0.0218275161143977" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_car_sim/socket_base_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_car_sim/socket_base_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    
+    <link
+      name="socket_link">
+      <inertial>
+        <origin
+          xyz="-0.00108149328178603 2.08744133090022E-12 -0.0341394266603848"
+          rpy="0 0 0" />
+        <mass
+          value="0.135867089026748" />
+        <inertia
+          ixx="8.51213982846984E-05"
+          ixy="-6.98001729404442E-15"
+          ixz="-5.21933790018774E-07"
+          iyy="8.13932734494906E-05"
+          iyz="2.66712970845751E-15"
+          izz="7.97111432829492E-05" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_car_sim/socket_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="1 1 1 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/EV_car_sim/socket_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <joint
+      name="socket_joint"
+      type="fixed">
+      <origin
+        xyz="0.105000000000015 0.109357252306537 0.944666637216478"
+        rpy="0 -1.34390352403563 1.57079632679472" />
+      <parent
+        link="socket_base_link" />
+      <child
+        link="socket_link" />
+      <axis
+        xyz="0 0 0" />
+    </joint>
+</robot>

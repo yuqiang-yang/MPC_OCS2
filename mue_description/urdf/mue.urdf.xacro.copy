@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<robot xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+        xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+        xmlns:xacro="http://wiki.ros.org/wiki/xacro"
+        xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+        name="mue">
+
+    <xacro:arg name="robot_name" default=''/>
+    <xacro:arg name="tf_prefix" default=''/>
+    <xacro:arg name="robot_namespace" default=''/>
+
+    <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
+
+<!--Include all needed urdf files-->
+    
+    <xacro:include filename="$(find mue_description)/urdf/ur5e_robot.urdf.xacro">
+        <xacro:arg name="tf_prefix" value="$(arg tf_prefix)"/>
+    </xacro:include>
+
+<!-- Start to xacro urdf -->
+
+    <!-- urdf: Mobile base -->
+    <xacro:include filename="$(find mue_description)/urdf/lxfr_v1.urdf.xacro"/>
+    <xacro:lxfr_3300 prefix="$(arg tf_prefix)"/>
+
+    <!-- joint: Mobile base to UR5e -->
+    <!-- TODO: replace with fixed joint between ur5e and mobile base here --><!-- Done. -->
+    <!-- <link name="world" />
+    <joint name="world_joint" type="fixed">
+      <parent link="world" />
+      <child link = "$(arg tf_prefix)base_link_ur5e" />
+      <origin xyz="0.0 0.0 0.5" rpy="0.0 0.0 0.0" />
+    </joint> -->
+    <joint name="lxfr_to_ur5e" type="fixed">
+      <parent link="$(arg tf_prefix)base_link"/>
+      <child link="$(arg tf_prefix)base_link_ur5e"/>
+      <origin xyz="0.224311 0 0.6" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- add charger end -->
+    <xacro:include filename="$(find mue_description)/urdf/charger_end.urdf.xacro"/>
+    <xacro:charger_end tf_prefix="$(arg tf_prefix)" mode="slow_wire_rs"/>
+    <!-- slow_wire_rs slow_wire_b slow_no_wire -->
+
+    <!-- add force_torque sensor-->
+    <xacro:include filename="$(find mue_description)/urdf/include/force_sensor.gazebo.xacro" />
+    <xacro:sensor_force_torque joint_name="$(arg tf_prefix)wrist_3_joint" topic_name="ee_force_torque_sensor"/> <!--old: $(arg tf_prefix)ee_link_ur5-->
+
+
+<!-- Link to Gazebo library -->
+
+    <xacro:property name="joint_names" value="$(arg tf_prefix)shoulder_pan_joint 
+                                              $(arg tf_prefix)shoulder_lift_joint 
+                                              $(arg tf_prefix)elbow_joint 
+                                              $(arg tf_prefix)wrist_1_joint 
+                                              $(arg tf_prefix)wrist_2_joint 
+                                              $(arg tf_prefix)wrist_3_joint 
+                                              $(arg tf_prefix)tool_joint" />
+
+    <!-- Gazebo Ros Control plugin -->  
+    <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <!-- <robotNamespace>$(arg robot_namespace)</robotNamespace> --> <!--will be global namespace when not specified -->
+        <controlPeriod>0.001</controlPeriod>
+        <legacyModeNS>true</legacyModeNS>
+        <robotParam>robot_description</robotParam>
+        <!--<filterJointsParam>${joint_names}</filterJointsParam>-->
+      </plugin>
+    </gazebo>
+
+    <gazebo>
+  <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+    <alwaysOn>true</alwaysOn>
+    <updateRate>50.0</updateRate>
+    <bodyName>base_footprint</bodyName>
+    <topicName>ground_truth/state</topicName>
+    <gaussianNoise>0.01</gaussianNoise>
+    <frameName>world</frameName>
+    <xyzOffsets>0 0 0</xyzOffsets>
+    <rpyOffsets>0 0 0</rpyOffsets>
+  </plugin>
+</gazebo>
+    
+</robot>

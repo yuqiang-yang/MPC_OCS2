@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+
+<!--
+License: Apache 2.0. See LICENSE file in root directory.
+Copyright(c) 2017 Intel Corporation. All Rights Reserved
+
+This is the URDF model for the Intel RealSense 430 camera, in it's
+aluminum peripherial evaluation case.
+-->
+
+<robot name="sensor_basler" xmlns:xacro="http://wiki.ros.org/wiki/xacro">
+
+  <!--File includes-->
+  <xacro:include filename="$(find mue_description)/urdf/include/basler_aca1440_220uc.gazebo.xacro"/>
+
+  <xacro:macro name="sensor_basler" params="name:=camera topics_ns:=camera parent *origin">
+
+    <joint name="camera_link_fixed_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="camera_link"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+      
+  <!-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+    <link
+      name="camera_link">
+      <inertial>
+        <origin
+          xyz="0.00082501 -5.3469E-05 0.014581"
+          rpy="0 0 0" />
+        <mass
+          value="0.02531" />
+        <inertia
+          ixx="3.674E-06"
+          ixy="-2.4572E-08"
+          ixz="3.4659E-08"
+          iyy="4.2617E-06"
+          iyz="1.0453E-08"
+          izz="4.2477E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/basler_aca1440_220uc/camera_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.63922 0.63922 0.68627 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/basler_aca1440_220uc/camera_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <link
+      name="camera_color_optical_link">
+      <inertial>
+        <origin
+          xyz="0.00057634 -1.3878E-17 -0.022009"
+          rpy="0 0 0" />
+        <mass
+          value="0.068488" />
+        <inertia
+          ixx="2.66E-05"
+          ixy="2.9016E-22"
+          ixz="2.8051E-07"
+          iyy="2.6608E-05"
+          iyz="-1.3004E-21"
+          izz="1.5895E-05" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/basler_aca1440_220uc/camera_color_optical_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.75294 0.75294 0.75294 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://mue_description/meshes/basler_aca1440_220uc/camera_color_optical_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <joint
+      name="camera_color_optical_joint"
+      type="fixed">
+      <origin
+        xyz="0.07752 0 0.0145"
+        rpy="-3.1416 1.5446 3.1416" />
+      <parent
+        link="camera_link" />
+      <child
+        link="camera_color_optical_link" />
+    </joint>
+
+
+    <!-- Gazebo Plugin -->
+    <xacro:gazebo_basler camera_name="${name}"    
+                       reference_link="camera_link"  
+                       topics_ns="${topics_ns}" 
+                       color_optical_frame="${name}_color_optical_frame" />
+
+  </xacro:macro>
+</robot>

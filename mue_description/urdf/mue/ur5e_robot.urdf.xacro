@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/wiki/xacro"
+       name="ur5e" >
+
+  <!-- common stuff -->
+  <xacro:arg name="transmission_hw_interface1" default="hardware_interface/PositionJointInterface"/>
+  <xacro:arg name="transmission_hw_interface2" default="hardware_interface/VelocityJointInterface"/>
+  <xacro:arg name="tf_prefix" default=''/>
+  
+  <!-- ur5e -->
+  <xacro:include filename="$(find mue_description)/urdf/ur5e.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur5e_robot prefix="$(arg tf_prefix)"  joint_limited="false"
+                    transmission_hw_interface1="$(arg transmission_hw_interface1)" 
+                    transmission_hw_interface2="$(arg transmission_hw_interface2)"/>
+  <!--As MoveIt! seems to have difficulties with finding plans 
+    for the UR with full joint limits [-2pi, 2pi], 
+    there is a joint_limited version using joint limits restricted to [-pi,pi]. 
+    In order to use this joint limited version set joint_limited="true"-->
+
+</robot>

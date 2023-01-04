@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<robot xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+        xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+        xmlns:xacro="http://wiki.ros.org/wiki/xacro"
+        xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+        name="mue">
+
+    <xacro:macro name="charger_end" params="tf_prefix mode">
+
+        <xacro:property name="charger_mode" value="${mode}"/>
+        
+
+        <xacro:if value="${charger_mode == 'slow_wire_rs'}">
+
+            <!-- add charger end -->
+            <xacro:include filename="$(find mue_description)/urdf/include/EV_charger_end.urdf.xacro" />
+            <xacro:EV_charger_end tf_prefix="$(arg tf_prefix)" parent="$(arg tf_prefix)wrist_3_link"/> 
+
+            <!-- add Realsense camera-->
+            <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />
+            <xacro:sensor_d435 name="camera" 
+                            topics_ns="camera" 
+                            parent="$(arg tf_prefix)camera_base_link" 
+                            publish_pointcloud="false">
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+            </xacro:sensor_d435>  
+
+        </xacro:if>       
+
+
+        <!-- TODO: fix basler and two cam bugs -->
+        
+        <xacro:if value="${charger_mode == 'slow_wire_b'}">
+
+            <!-- add charger end -->
+            <xacro:include filename="$(find mue_description)/urdf/include/EV_charger_end_basler.urdf.xacro" />
+            <xacro:EV_charger_end_basler tf_prefix="$(arg tf_prefix)" parent="$(arg tf_prefix)wrist_3_link"/> 
+
+            <!-- add Basler camera-->
+            <xacro:include filename="$(find mue_description)/urdf/include/basler_aca1440_220uc.urdf.xacro" />
+            <xacro:sensor_basler name="camera" 
+                            topics_ns="camera" 
+                            parent="$(arg tf_prefix)camera_base_link" >
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+            </xacro:sensor_basler>  
+
+        </xacro:if>    
+
+        <xacro:if value="${charger_mode == 'slow_no_wire'}">
+
+            <!-- add charger end -->
+            <xacro:include filename="$(find mue_description)/urdf/include/EV_charger_end_cams.urdf.xacro" />
+            <xacro:EV_charger_end_cams tf_prefix="$(arg tf_prefix)" parent="$(arg tf_prefix)wrist_3_link"/> 
+
+            <!-- add Realsense camera-->
+            <!-- <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />
+            <xacro:sensor_d435 name="camera" 
+                            topics_ns="camera" 
+                            parent="$(arg tf_prefix)camera_base_link" 
+                            publish_pointcloud="true">
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+            </xacro:sensor_d435>   -->
+
+            <!-- add Basler camera-->
+            <!-- <xacro:include filename="$(find mue_description)/urdf/basler_aca1440_220uc.urdf.xacro" />
+            <xacro:sensor_d435 name="camera" 
+                            topics_ns="camera" 
+                            parent="$(arg tf_prefix)camera_base_link" 
+                            publish_pointcloud="true">
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+            </xacro:sensor_d435>   -->
+        </xacro:if>    
+
+
+    </xacro:macro>
+
+</robot>
