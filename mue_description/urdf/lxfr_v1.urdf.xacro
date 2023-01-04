@@ -166,17 +166,14 @@
             rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
         </material>
       </visual>
+      <!-- modified by yq for robot_body_filter -->
       <collision>
-        <origin xyz="${lxfr_act_wheel_dx} 0 0" rpy="0 0 0" />
+      <origin xyz="0.025 -0.46174 0.261" rpy="0 0 ${pi}" />
+        <!-- <origin xyz="${lxfr_act_wheel_dx} 0 0" rpy="0 0 0" />  -->
         <geometry>
-          <mesh filename="package://lxfr_description/meshes/lxfr_base.stl"/>
+         <mesh filename="package://lxfr_description/meshes/base_link.STL"/>
+          <!-- <mesh filename="package://lxfr_description/meshes/lxfr_base.stl"/> -->
         </geometry>
-                  <friction>
-            <ode>
-                <mu>2</mu>
-                <mu2>2</mu2>
-            </ode>
-          </friction>
       </collision>
     </link>
     <gazebo reference="${prefix}base_link">

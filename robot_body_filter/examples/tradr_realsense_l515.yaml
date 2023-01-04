@@ -18,8 +18,8 @@ cloud_filter_chain:
       sensor/min_distance: 0.1
       sensor/max_distance: 5.0
       only_links: ["base_link","base_link_ur5e", "shoulder_link","upper_arm_link","forearm_link","wrist_1_link","wrist_2_joint","wrist_3_link"]
-      body_model/inflation/scale: 1.07
-      body_model/inflation/padding: 0.15
+      body_model/inflation/scale: 1.0
+      body_model/inflation/padding: 0.0
       body_model/robot_description_param: '/robot_description'
       transforms/buffer_length: 15.0
       transforms/timeout/reachable: 0.2

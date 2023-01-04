@@ -57,7 +57,7 @@ slq
       noStateConstraints             1
       inequalityConstraintMu         1e-2
       inequalityConstraintDelta      1e-3
-      useMakePSD                     1
+      useMakePSD                     0
       addedRiccatiDiagonal           1e-5
       minAbsConstraint1ISE           5e-3
       minRelConstraint1ISE           5e-6
@@ -75,7 +75,7 @@ slq
       AbsTolODE                      1e-5	;1e-6
       RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-3
-      maxNumStepsPerSecond           500000
+      maxNumStepsPerSecond           50000
       checkNumericalStability        0
   }
 }
