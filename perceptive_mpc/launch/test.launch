@@ -7,17 +7,16 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="tsdf_voxel_size" value="0.05"/>
+    <arg name="tsdf_voxel_size" value="0.1"/>
 
     <arg name="tsdf_voxels_per_side" value="16"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
-    <!-- <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" /> -->
+    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
 
     <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
         <param name="publish_frequency" value="100"/>
     </node>
-    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> -->
     <!-- <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen">
         <param name="ur_ip"           value="192.168.100.2"/>
         <param name="ur_control_activate"   value="false"/>
@@ -27,7 +26,7 @@
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
       <rosparam file="$(find perceptive_mpc)/config/kinematic_simulation_parameters.yaml"/>
       <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-      <param name="info_rate" value="3.0" />
+      <param name="info_rate" value="10.0" />
       <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <param name="tsdf_voxel_size" value="$(arg tsdf_voxel_size)" />
         <param name="tsdf_voxels_per_side" value="$(arg tsdf_voxels_per_side)"/>
@@ -40,7 +39,7 @@
         <param name="use_tf_transforms" value="false" />
         <param name="isPureSimulation" value ="true"/>
     </node> 
-    <!-- <node name="voxblox_node" pkg="voxblox_ros" type="esdf_server" output="screen" args="" clear_params="true">
+    <node name="voxblox_node" pkg="voxblox_ros" type="esdf_server" output="screen" args="" clear_params="true">
         <remap from="pointcloud" to="/camera/depth/color/points"/>  
         <remap from="voxblox_node/esdf_map_out" to="esdf_map" />
         <param name="publish_esdf_map" value="true" />
@@ -62,8 +61,8 @@
         <param name="publish_map_every_n_sec" value="0.5"/>
         <param name="update_mesh_every_n_sec" value="0.5" />
         <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-    </node> -->
+    </node>
     <node name="interactive_pose_node" pkg="perceptive_mpc" type="interactive_marker.py" output="screen"/>
-    <!-- <include file="$(find robot_body_filter)/examples/body_filter_node.launch" /> -->
+    <include file="$(find robot_body_filter)/examples/body_filter_node.launch" />
 
 </launch>

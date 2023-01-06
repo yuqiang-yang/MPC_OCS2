@@ -45,7 +45,10 @@
 using namespace perceptive_mpc;
 
 KinematicSimulation::KinematicSimulation(const ros::NodeHandle& nh)
-    : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false) {}
+    : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false) {
+      
+      
+    }
 
 bool KinematicSimulation::run() {
 
@@ -228,7 +231,12 @@ void KinematicSimulation::parseParameters() {
 }
 
 bool KinematicSimulation::trackerLoop(ros::Rate rate) {
+  auto LastPeroidTime = std::chrono::steady_clock::now(); 
+  auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
   while (ros::ok()) {
+    CurrentPeroidTime = std::chrono::steady_clock::now();
+    // ROS_INFO_STREAM_THROTTLE(1,"trackerLoop Peroid: " << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    LastPeroidTime = CurrentPeroidTime;
     try {
       if (mpcUpdateFailed_) {
         ROS_ERROR_STREAM("Mpc update failed, stop.");
@@ -319,13 +327,20 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
 }
 
 bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
+
+  auto LastPeroidTime = std::chrono::steady_clock::now(); 
+  auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
+  auto MidPeroidTime = std::chrono::steady_clock::now(); 
+
   while (ros::ok()) {
+    CurrentPeroidTime = std::chrono::steady_clock::now();
+    ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    LastPeroidTime = CurrentPeroidTime;    
     if (mpcUpdateFailed_) {
       rate.sleep();
       continue;
     }
-      if(verbose_)
-        std::cerr << "mpc update loop" << std::endl;
+  
       MpcInterface::input_vector_t controlInput;
       MpcInterface::state_vector_t optimalState;
       
@@ -351,9 +366,17 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
         setCurrentObservation(observation_);
       }
       if (esdfCachingServer_) {
+        boost::unique_lock<boost::shared_mutex> intepolatorLock(intepolatorMutex_);
+
         esdfCachingServer_->updateInterpolator();
       }
-      mpcInterface_->advanceMpc();
+    MidPeroidTime = std::chrono::steady_clock::now();
+    ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:(mid) " << std::chrono::duration_cast<std::chrono::milliseconds>(MidPeroidTime - LastPeroidTime).count() << "ms");
+
+      {
+        boost::unique_lock<boost::shared_mutex> intepolatorLock(intepolatorMutex_);
+        mpcInterface_->advanceMpc();
+      }
     } catch (const std::runtime_error& ex) {
       ROS_ERROR_STREAM("runtime_error occured!");
       ROS_ERROR_STREAM("Caught exception while calling [KinematicSimulation::mpcUpdate]. Message: " << ex.what());
@@ -373,7 +396,13 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
 
 bool KinematicSimulation::tfUpdate(ros::Rate rate) {
   
+  auto LastPeroidTime = std::chrono::steady_clock::now(); 
+  auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
   while (ros::ok()) {
+    CurrentPeroidTime = std::chrono::steady_clock::now();
+    // ROS_INFO_STREAM_THROTTLE(1,"tfLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    LastPeroidTime = CurrentPeroidTime;
+
 
     if (mpcUpdateFailed_) {
       rate.sleep();
@@ -634,7 +663,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   base_transform.transform.rotation.w = cameraRotation.coeffs()(3);
   base_transform.header.stamp = ros::Time::now();
 
-  ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
+  // ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
 
 
   cameraTransformPublisher_.publish(base_transform);

@@ -87,6 +87,7 @@ class KinematicSimulation {
   // AdmittanceReferenceModule admittanceReferenceModule;
 
   // params
+
   double mpcUpdateFrequency_;
   double tfUpdateFrequency_;
   double controlLoopFrequency_;
@@ -110,6 +111,9 @@ class KinematicSimulation {
   boost::shared_mutex costDesiredTrajectoryMutex_;
   ocs2::CostDesiredTrajectories costDesiredTrajectories_;
   FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
+
+  boost::shared_mutex intepolatorMutex_;
+
   // ros
   ros::NodeHandle nh_;
   ros::Publisher armStatePublisher_;

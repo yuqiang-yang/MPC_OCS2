@@ -62,10 +62,10 @@ void MPC_MRT_Interface<STATE_DIM, INPUT_DIM>::advanceMpc() {
     mpc_.getSolverPtr()->swapCostDesiredTrajectories(costDesiredTrajectoriesBuffer_);
     costDesiredTrajectoriesBufferUpdated_ = false;
 
-    if (mpc_.settings().debugPrint_) {
-      std::cerr << "### The target position is updated to " << std::endl;
-      mpc_.getSolverPtr()->getCostDesiredTrajectories().display();
-    }
+    // if (mpc_.settings().debugPrint_) {
+    //   std::cerr << "### The target position is updated to " << std::endl;
+    //   mpc_.getSolverPtr()->getCostDesiredTrajectories().display();
+    // }
   }
 
   bool controllerIsUpdated = mpc_.run(currentObservation.time(), currentObservation.state());

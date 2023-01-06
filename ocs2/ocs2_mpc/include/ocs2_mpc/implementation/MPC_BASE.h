@@ -255,14 +255,14 @@ bool MPC_BASE<STATE_DIM, INPUT_DIM>::run(const scalar_t& currentTime, const stat
   initRun_ = false;
 
   // display
-  if (mpcSettings_.debugPrint_) {
-    // updating runtime of the MPC for adaptive frequency
-    mpcTimer_.endTimer();
-    std::cerr << "### MPC runtime " << std::endl;
-    std::cerr << "###   Maximum : " << mpcTimer_.getMaxIntervalInMilliseconds() << "[ms]." << std::endl;
-    std::cerr << "###   Average : " << mpcTimer_.getAverageInMilliseconds() << "[ms]." << std::endl;
-    std::cerr << "###   Latest  : " << mpcTimer_.getLastIntervalInMilliseconds() << "[ms]." << std::endl;
-  }
+  // if (mpcSettings_.debugPrint_) {
+  //   // updating runtime of the MPC for adaptive frequency
+  //   mpcTimer_.endTimer();
+  //   std::cerr << "### MPC runtime " << std::endl;
+  //   std::cerr << "###   Maximum : " << mpcTimer_.getMaxIntervalInMilliseconds() << "[ms]." << std::endl;
+  //   std::cerr << "###   Average : " << mpcTimer_.getAverageInMilliseconds() << "[ms]." << std::endl;
+  //   std::cerr << "###   Latest  : " << mpcTimer_.getLastIntervalInMilliseconds() << "[ms]." << std::endl;
+  // }
 
   return true;
 }

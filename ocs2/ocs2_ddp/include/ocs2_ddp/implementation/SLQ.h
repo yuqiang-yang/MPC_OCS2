@@ -704,6 +704,9 @@ void SLQ<STATE_DIM, INPUT_DIM>::integrateRiccatiEquationAdaptiveTime(
   // integrating the Riccati equations
   SsNormalizedTime.reserve(maxNumSteps);
   SsNormalizedEventsPastTheEndIndices.reserve(numEvents);
+
+  std::vector<double> deltaT;
+  deltaT.reserve(maxNumSteps);
   allSsTrajectory.reserve(maxNumSteps);
   for (int i = 0; i <= numEvents; i++) {
     scalar_t beginTime = SsNormalizedSwitchingTimes[i];
@@ -712,13 +715,29 @@ void SLQ<STATE_DIM, INPUT_DIM>::integrateRiccatiEquationAdaptiveTime(
     Observer<riccati_equations_t::S_DIM_> observer(&allSsTrajectory, &SsNormalizedTime);
     // solve Riccati equations
     try{
+
       riccatiIntegrator.integrate_adaptive(riccatiEquation, observer, allSsFinal, beginTime, endTime, BASE::ddpSettings_.minTimeStep_,
                                          BASE::ddpSettings_.absTolODE_, BASE::ddpSettings_.relTolODE_, maxNumSteps);
+    
     }
     catch (const std::exception& ex) {
         std::cerr << "exception occured1!" << "Caught exception while calling [backward]. Message1: " << ex.what() << std::endl;
         throw std::runtime_error("backward SLQ failed");
+        // for(int i = 0;i < SsNormalizedTime.size();i++){
+        //   deltaT.push_back(SsNormalizedTime[i+1] - SsNormalizedTime[i]);
+        //   double sum = std::accumulate(std::begin(deltaT), std::end(deltaT), 0.0);  
+        //   double mean =  sum / deltaT.size(); 
+        //   std::cerr << "acverage step(error!!!)" << mean << std::endl;
+
+        // }
       }
+      // for(int i = 0;i < SsNormalizedTime.size();i++){
+      //     deltaT.push_back(SsNormalizedTime[i+1] - SsNormalizedTime[i]);
+      // }
+      //     double sum = std::accumulate(std::begin(deltaT), std::end(deltaT), 0.0);  
+      //     double mean =  sum / deltaT.size(); 
+      //     std::cerr << "acverage step(backward) " << mean << std::endl;
+    
     // if not the last interval which definitely does not have any event at
     // its final time (there is no even at the beginning of partition)
     if (i < numEvents) {

@@ -97,7 +97,8 @@ ob::OptimizationObjectivePtr FrontEndOMPLRRTStar::getPathLengthObjective(const o
 
 bool ValidityChecker::isValid(const ob::State* state) const
 {
-    return clearance(state) > obstacle_margin_;
+    return true;
+    // return clearance(state) > obstacle_margin_;
 }
 
 double ValidityChecker::clearance(const ob::State* state) const{

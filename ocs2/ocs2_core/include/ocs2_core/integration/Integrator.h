@@ -105,7 +105,6 @@ class Integrator final : public IntegratorBase<STATE_DIM> {
    * Default destructor
    */
   ~Integrator() override = default;
-
  private:
   /**
    * Equidistant integration based on initial and final time as well as step length.

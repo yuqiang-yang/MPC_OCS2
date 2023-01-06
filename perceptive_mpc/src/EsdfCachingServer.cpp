@@ -32,31 +32,49 @@
 namespace voxblox {
 
 void EsdfCachingServer::esdfMapCallback(const voxblox_msgs::Layer& layer_msg) {
-  EsdfServer::esdfMapCallback(layer_msg);
+  isNewLayerReceive_ = true;
+  layer_msg_ = layer_msg;
+
+}
+
+void EsdfCachingServer::processReceiveLayer(){
+
   auto start = std::chrono::high_resolution_clock::now();
+  EsdfServer::esdfMapCallback(layer_msg_);
   esdf_caching_layer_ptr incomingEsdfCached =
       esdf_caching_layer_ptr(new voxblox::Layer<voxblox::EsdfCachingVoxel>(getEsdfMapPtr()->getEsdfLayer()));
+
   auto stop = std::chrono::high_resolution_clock::now();
   using us = std::chrono::microseconds;
   us elapsedUs = std::chrono::duration_cast<us>(stop - start);
-  std::cout << "create caching layer from incoming esdf: " << elapsedUs.count() << "us" << std::endl;
+  // std::cout << "create caching layer from incoming esdf: " << elapsedUs.count() << "us" << std::endl;
   
-  start = std::chrono::high_resolution_clock::now();
+  // start = std::chrono::high_resolution_clock::now();
   incomingEsdfCached->cacheGradients();
+
+
   stop = std::chrono::high_resolution_clock::now();
   elapsedUs = std::chrono::duration_cast<us>(stop - start);
-  std::cout << "cache gradients: " << elapsedUs.count() << "us" << std::endl;
+  std::cout << "cache gradients time: " << elapsedUs.count() << "us" << std::endl;
 
-  //incomingEsdfCached->cacheHessians();
+  // incomingEsdfCached->cacheHessians();
   {
     std::lock_guard<std::mutex> lockGuard(cacheMutex_);
     cachedCachingLayer_ = incomingEsdfCached;
   }
+
+
 }
+
 std::shared_ptr<voxblox::Interpolator<voxblox::EsdfCachingVoxel>> EsdfCachingServer::getInterpolator() {
   return interpolator_;
 }
 void EsdfCachingServer::updateInterpolator() {
+  if(isNewLayerReceive_){
+    isNewLayerReceive_=false;
+    processReceiveLayer();
+  }
+
   std::lock_guard<std::mutex> lockGuard(cacheMutex_);
   if (cachedCachingLayer_) {
     currentCachingLayer_ = cachedCachingLayer_;
@@ -67,6 +85,8 @@ void EsdfCachingServer::updateInterpolator() {
 EsdfCachingServer::EsdfCachingServer(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private) : EsdfServer(nh, nh_private) {
   currentCachingLayer_ = esdf_caching_layer_ptr(new voxblox::Layer<voxblox::EsdfCachingVoxel>(getEsdfMapPtr()->getEsdfLayer()));
   interpolator_.reset(new voxblox::Interpolator<EsdfCachingVoxel>(currentCachingLayer_.get()));
+  isNewLayerReceive_ = false;
+
 }
 
 } /* namespace voxblox */

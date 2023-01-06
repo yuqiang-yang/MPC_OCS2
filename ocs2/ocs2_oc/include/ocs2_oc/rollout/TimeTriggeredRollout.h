@@ -121,6 +121,9 @@ class TimeTriggeredRollout : public RolloutBase<STATE_DIM, INPUT_DIM> {
     postEventIndicesStock.clear();
     postEventIndicesStock.reserve(numEvents);
 
+
+    std::vector<double> deltaT;
+    deltaT.reserve(numEvents);
     // set controller
     systemDynamicsPtr_->setController(controller);
 
@@ -136,14 +139,20 @@ class TimeTriggeredRollout : public RolloutBase<STATE_DIM, INPUT_DIM> {
       Observer<STATE_DIM> observer(&stateTrajectory, &timeTrajectory);  // concatenate trajectory
       // integrate controlled system
 
-      // try{
         dynamicsIntegratorPtr_->integrate_adaptive(*systemDynamicsPtr_, observer, beginState, timeIntervalArray[i].first,
                                                  timeIntervalArray[i].second, this->settings().minTimeStep_, this->settings().absTolODE_,
                                                  this->settings().relTolODE_, maxNumSteps);
-      // }catch (const std::exception& ex) {
-      //   std::cerr << "exception occured2!" <<  "Caught exception while calling [rollout]. Message1: " << ex.what() << std::endl;
-      //   throw std::runtime_error("roll out failed");
-      // }
+                                
+      /* add by yq*/
+        // for(int i = 0;i < timeTrajectory.size()-2;i++){
+        //   deltaT.push_back(timeTrajectory[i+1] - timeTrajectory[i]);
+        //   }
+        //   double sum = std::accumulate(std::begin(deltaT), std::end(deltaT), 0.0);  
+        //   double mean =  sum / deltaT.size(); 
+        //   std::cerr << "acverage step(rollout)" << mean << std::endl;  
+        
+      /* add by yq*/
+
       // compute control input trajectory and concatenate to inputTrajectory
       if (this->settings().reconstructInputTrajectory_) {
         for (; k_u < timeTrajectory.size(); k_u++) {

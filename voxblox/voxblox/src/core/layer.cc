@@ -7,6 +7,8 @@ using namespace voxblox;
 
 template <>
 void Layer<EsdfCachingVoxel>::cacheGradients(){
+
+  int cnt = 0;
   BlockIndexList blocksIdxs;
   getAllAllocatedBlocks(&blocksIdxs);
 
@@ -15,13 +17,32 @@ void Layer<EsdfCachingVoxel>::cacheGradients(){
   for (const BlockIndex& blockIdx : blocksIdxs) {
     const Block<EsdfCachingVoxel>& block = getBlockByIndex(blockIdx);
     for (int i = 0; i < block.num_voxels(); i++) {
+      cnt++;
+
       const Point& point = block.computeCoordinatesFromLinearIndex(i);
-      Eigen::Vector3f gradient;
+      Eigen::Vector3f gradient = Eigen::Vector3f::Zero();
+
+      // for(int i = 0;i < 100; i++)
+      // {
+      //   for(int j = 0;j < 200; j++)
+      //   {
+      //     int z = 0.1+i;
+      //     if (i == 50 && j == 50)
+      //     std::cerr << "";
+      //     z *= 0.1;
+      //     int y = z;
+      //   }
+      // }
+
+
+
       if (interpolator.getGradient(point, &gradient)) {
+
         getVoxelPtrByCoordinates(point)->gradient = gradient;
       }
     }
   }
+
 }
 
 template <>

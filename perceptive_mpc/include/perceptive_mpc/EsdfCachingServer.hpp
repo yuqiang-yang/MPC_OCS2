@@ -41,6 +41,9 @@ class EsdfCachingServer : virtual public EsdfServer {
   std::shared_ptr<voxblox::Interpolator<voxblox::EsdfCachingVoxel>> getInterpolator();
   void updateInterpolator();
 
+ protected:
+  void processReceiveLayer();
+
  private:
   using esdf_caching_layer_ptr = std::shared_ptr<voxblox::Layer<voxblox::EsdfCachingVoxel>>;
 
@@ -48,5 +51,7 @@ class EsdfCachingServer : virtual public EsdfServer {
   esdf_caching_layer_ptr currentCachingLayer_ = nullptr;
   esdf_caching_layer_ptr cachedCachingLayer_ = nullptr;
   std::shared_ptr<voxblox::Interpolator<voxblox::EsdfCachingVoxel>> interpolator_ = nullptr;
+  voxblox_msgs::Layer layer_msg_;
+  bool isNewLayerReceive_;
 };
 } /* namespace voxblox */

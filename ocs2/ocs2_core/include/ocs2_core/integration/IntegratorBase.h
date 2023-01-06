@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/integration/Observer.h>
 #include <ocs2_core/integration/OdeBase.h>
 #include <ocs2_core/integration/SystemEventHandler.h>
+#include <chrono>
 
 namespace ocs2 {
 
@@ -107,16 +108,42 @@ class IntegratorBase {
   void integrate_adaptive(system_t& system, observer_t& observer, const state_vector_t& initialState, scalar_t startTime,
                           scalar_t finalTime, scalar_t dtInitial = 0.01, scalar_t AbsTol = 1e-6, scalar_t RelTol = 1e-3,
                           int maxNumSteps = std::numeric_limits<int>::max()) {
+    auto start = std::chrono::high_resolution_clock::now();
     eventHandlerPtr_->setMaxNumSteps(maxNumSteps);
     std::cerr.setf(std::ios::fixed);
     std::cerr.precision(5);
-      // std::cerr << "debugging initial time" << startTime  << "final time"<< finalTime<< std::endl;
+    state_vector_t x = state_vector_t::Zero();
+    state_vector_t dxdt = state_vector_t::Zero();
+    scalar_t t(startTime);
+    system.systemFunction()(x,dxdt,t);
+    // std::cout << "before integrade:" << dxdt.transpose() << std::endl;
+
+    state_vector_t initalStateBackup = initialState;
+    scalar_t startTimeBackup = startTime;
+    scalar_t finalTimeBackup = finalTime;
+    scalar_t dtInitialBackup = dtInitial;
     observer_func_t callback = [&](const state_vector_t& x, scalar_t t) {
       observer.observe(system, x, t);
-
       eventHandlerPtr_->handleEvent(system, t, x);
     };
     run_integrate_adaptive(system.systemFunction(), callback, initialState, startTime, finalTime, dtInitial, AbsTol, RelTol);
+    auto stop = std::chrono::high_resolution_clock::now();
+    using us = std::chrono::microseconds;
+    us elapsedUs = std::chrono::duration_cast<us>(stop - start);
+    // std::cout << "integrate_adaptive: " << elapsedUs.count() << "us" << std::endl;
+    state_vector_t x1 = state_vector_t::Zero();
+    state_vector_t dxdt1 = state_vector_t::Zero();
+    scalar_t t1(startTime);
+    system.systemFunction()(x1,dxdt1,t1);
+
+    if (dxdt1.isApprox(dxdt) && initalStateBackup == initialState && startTimeBackup==startTime && finalTimeBackup == finalTime && dtInitialBackup == dtInitial)
+    {
+      // std::cerr << "remain the same:"<< system.getNumFunctionCalls()<<std::endl;
+    }
+    else{
+      // std::cerr << "change!!!!!!!!!!!!!!!!!!!!!"<< std::endl;
+    }
+
   }
 
   /**
