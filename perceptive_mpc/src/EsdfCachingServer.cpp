@@ -34,6 +34,7 @@ namespace voxblox {
 void EsdfCachingServer::esdfMapCallback(const voxblox_msgs::Layer& layer_msg) {
   isNewLayerReceive_ = true;
   layer_msg_ = layer_msg;
+  processReceiveLayer();
 
 }
 
@@ -72,7 +73,6 @@ std::shared_ptr<voxblox::Interpolator<voxblox::EsdfCachingVoxel>> EsdfCachingSer
 void EsdfCachingServer::updateInterpolator() {
   if(isNewLayerReceive_){
     isNewLayerReceive_=false;
-    processReceiveLayer();
   }
 
   std::lock_guard<std::mutex> lockGuard(cacheMutex_);

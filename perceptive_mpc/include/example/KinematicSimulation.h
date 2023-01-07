@@ -112,7 +112,6 @@ class KinematicSimulation {
   ocs2::CostDesiredTrajectories costDesiredTrajectories_;
   FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
 
-  boost::shared_mutex intepolatorMutex_;
 
   // ros
   ros::NodeHandle nh_;
@@ -137,6 +136,8 @@ class KinematicSimulation {
 
   // thread 3 updates the tf for visualization
   bool tfUpdate(ros::Rate rate);
+
+
 
   // compute the current end effector Pose on the base of the latest observation
   kindr::HomTransformQuatD getEndEffectorPose();

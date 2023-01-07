@@ -136,9 +136,11 @@ bool KinematicSimulation::run() {
   // Tracker worker
   std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
 
+
   // Mpc update worker
   mpcUpdateFrequency_ = (mpcUpdateFrequency_ == -1) ? 100 : mpcUpdateFrequency_;
   std::thread mpcUpdateWorker(&KinematicSimulation::mpcUpdate, this, ros::Rate(mpcUpdateFrequency_));
+
 
   // TF update worker
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
@@ -230,12 +232,16 @@ void KinematicSimulation::parseParameters() {
   }
 }
 
+
 bool KinematicSimulation::trackerLoop(ros::Rate rate) {
   auto LastPeroidTime = std::chrono::steady_clock::now(); 
   auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
   while (ros::ok()) {
+
     CurrentPeroidTime = std::chrono::steady_clock::now();
-    // ROS_INFO_STREAM_THROTTLE(1,"trackerLoop Peroid: " << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    if(verbose_)
+
+    ROS_INFO_STREAM_THROTTLE(1,"trackerLoop Peroid: " << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
     LastPeroidTime = CurrentPeroidTime;
     try {
       if (mpcUpdateFailed_) {
@@ -334,7 +340,8 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
 
   while (ros::ok()) {
     CurrentPeroidTime = std::chrono::steady_clock::now();
-    ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    if(verbose_)
+      ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
     LastPeroidTime = CurrentPeroidTime;    
     if (mpcUpdateFailed_) {
       rate.sleep();
@@ -366,15 +373,10 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
         setCurrentObservation(observation_);
       }
       if (esdfCachingServer_) {
-        boost::unique_lock<boost::shared_mutex> intepolatorLock(intepolatorMutex_);
-
         esdfCachingServer_->updateInterpolator();
       }
     MidPeroidTime = std::chrono::steady_clock::now();
-    ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:(mid) " << std::chrono::duration_cast<std::chrono::milliseconds>(MidPeroidTime - LastPeroidTime).count() << "ms");
-
       {
-        boost::unique_lock<boost::shared_mutex> intepolatorLock(intepolatorMutex_);
         mpcInterface_->advanceMpc();
       }
     } catch (const std::runtime_error& ex) {
@@ -400,7 +402,9 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
   auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
   while (ros::ok()) {
     CurrentPeroidTime = std::chrono::steady_clock::now();
-    // ROS_INFO_STREAM_THROTTLE(1,"tfLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+    if(verbose_)
+
+    ROS_INFO_STREAM_THROTTLE(1,"tfLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
     LastPeroidTime = CurrentPeroidTime;
 
 

@@ -92,7 +92,7 @@ mpc
   initMaxLearningRate            1.0
 
 
-  debugPrint                     1
+  debugPrint                     0
   coldStart                      0
   recedingHorizon                1      ; use receding horizon MPC
 

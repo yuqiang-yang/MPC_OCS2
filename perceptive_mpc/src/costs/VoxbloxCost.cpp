@@ -62,9 +62,11 @@ void VoxbloxCost::setCurrentStateAndControl(const VoxbloxCost::scalar_t& t, cons
 
 void VoxbloxCost::getIntermediateCost(VoxbloxCost::scalar_t& L) {
   L = distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionValue(x); }).sum();
+  // L = VoxbloxCost::scalar_t(0);
 }
 void VoxbloxCost::getIntermediateCostDerivativeState(VoxbloxCost::state_vector_t& dLdx) {
   dLdx = gradients_.transpose() * distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionDerivative(x); });
+  // dLdx = VoxbloxCost::state_vector_t::Zero();
 }
 
 void VoxbloxCost::getIntermediateCostDerivativeStateVerbose(VoxbloxCost::state_vector_t& dLdx){
@@ -81,6 +83,7 @@ void VoxbloxCost::getIntermediateCostDerivativeStateVerbose(VoxbloxCost::state_v
 void VoxbloxCost::getIntermediateCostSecondDerivativeState(VoxbloxCost::state_matrix_t& dLdxx) {
   dLdxx = gradients_.transpose() *
           distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionSecondDerivative(x); }).asDiagonal() * gradients_;
+  // dLdxx = VoxbloxCost::state_matrix_t::Zero();
 }
 void VoxbloxCost::getIntermediateCostDerivativeInput(VoxbloxCost::input_vector_t& dLdu) {
   dLdu = input_vector_t::Zero();
