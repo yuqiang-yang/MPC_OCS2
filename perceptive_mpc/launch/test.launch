@@ -3,6 +3,7 @@
    <!-- run rviz-->
     <arg name="rviz"                default="true" />
     <!--     Name of the task file which defines the mpc problem settings-->
+
     <arg name="mpc_task_file"       default="task.info"/>
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
@@ -17,10 +18,10 @@
     <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
         <param name="publish_frequency" value="100"/>
     </node>
-    <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen">
+    <!-- <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" >
         <param name="ur_ip"           value="192.168.100.2"/>
         <param name="ur_control_activate"   value="false"/>
-    </node>
+    </node> -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
      <node pkg="perceptive_mpc" name="kinematic_simulation" type="perceptive_mpc_kinematic_simulation" output="screen"> 
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>

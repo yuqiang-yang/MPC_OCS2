@@ -259,3 +259,12 @@ limits
     (7,0)  4.7     ; arm_6 [rad/s]
   }
 }
+frontEndOMPLRRTStar
+{
+  margin_x          1
+  margin_y          1
+  margin_z          1
+  obstacle_margin   0.2 
+  planning_time     3
+  edgeLength        0.2
+}

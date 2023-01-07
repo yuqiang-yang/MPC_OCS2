@@ -96,6 +96,7 @@ class KinematicSimulation {
   Eigen::Vector3d defaultForce_ = Eigen::Vector3d::Zero();
   Eigen::Vector3d defaultTorque_ = Eigen::Vector3d::Zero();
 
+
   // flags
   std::atomic_bool planAvailable_;
   std::atomic_bool mpcUpdateFailed_;
@@ -127,6 +128,7 @@ class KinematicSimulation {
   ros::Subscriber desiredEndEffectorWrenchPoseTrajectorySubscriber_;
   tf::TransformBroadcaster tfBroadcaster_;
 
+  int lastFrontEndWayPointNum_;
  protected:
   // thread 1 simulates the control loop: query new mpc plan, writes observation
   bool trackerLoop(ros::Rate rate);

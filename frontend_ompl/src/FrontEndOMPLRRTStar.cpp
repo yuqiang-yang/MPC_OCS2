@@ -13,7 +13,8 @@ FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
     pdef_.reset(new ob::ProblemDefinition(si_));
     pdef_->setOptimizationObjective(getPathLengthObjective(si_));
     optimizingPlanner_.reset(new og::RRTstar(si_));
-    optimizingPlanner_->printSettings(std::cout);
+    optimizingPlanner_->setRange(config.edgeLength);
+    // optimizingPlanner_->printSettings(std::cout);
 
 }
 //the head 4 value is quaternion. the tail 3 value is position
@@ -36,8 +37,8 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     double max_z = start.coeff(6) > goal.coeff(6)?start.coeff(6):goal.coeff(6);
     bound.setLow(2,min_z-config_.margin_z);
     bound.setHigh(2,max_z+config_.margin_z);
-    std::cerr << "min_x" << min_x << "min_y" << min_y << "min_z" << min_x << "max_x" << max_x << "max_y" << max_y
- << "max_z" << max_z << std::endl;
+    std::cerr << "min_x:" << min_x << " min_y:" << min_y << " min_z:" << min_z << std::endl<<"max_x:" << max_x << " max_y:" << max_y
+ << " max_z:" << max_z << std::endl;
     space_->as<ob::RealVectorStateSpace>()->setBounds(bound); 
 
     plan_start->as<ob::RealVectorStateSpace::StateType>()->values[0] = start.coeff(4);
@@ -51,9 +52,14 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     pdef_->setStartAndGoalStates(plan_start, plan_end);
 
     std::cerr << "plan_start " << start.transpose() <<std::endl<< "plan end" << goal.transpose() << std::endl;
+    std::cerr << "planning_time_" << planning_time_ << std::endl;
     optimizingPlanner_->setProblemDefinition(pdef_);
     optimizingPlanner_->setup();
-    ob::PlannerStatus solved = optimizingPlanner_->solve(planning_time_);
+    ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
+    if(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
+    {
+        return false;
+    }
 
     //position path is solve by RRT*
     std::vector<ob::State *> states = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStates();

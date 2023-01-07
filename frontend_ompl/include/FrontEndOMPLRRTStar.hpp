@@ -11,6 +11,7 @@
  #include <ompl/base/objectives/StateCostIntegralObjective.h>
  #include <ompl/base/spaces/RealVectorStateSpace.h>
  #include <ompl/base/spaces/RealVectorBounds.h>
+ #include <ompl/base/PlannerTerminationCondition.h>
 
 
  // For ompl::msg::setLogLevel
@@ -47,6 +48,7 @@ namespace perceptive_mpc{
     double margin_x;
     double margin_y;
     double margin_z;
+    double edgeLength;
     double obstacle_margin;
     std::shared_ptr<Interpolator<EsdfCachingVoxel>> interpolator_;
 };
@@ -63,7 +65,9 @@ namespace perceptive_mpc{
             ob::StateSpacePtr space_;
             ob::SpaceInformationPtr si_;
             ob::ProblemDefinitionPtr pdef_;
-            ob::PlannerPtr optimizingPlanner_;
+            using RRTstarPtr = std::shared_ptr<ompl::geometric::RRTstar>;
+            // ob::PlannerPtr optimizingPlanner_;
+            RRTstarPtr optimizingPlanner_;
             double margin_x_;
             double margin_y_;
             double margin_z_;

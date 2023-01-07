@@ -45,7 +45,7 @@
 using namespace perceptive_mpc;
 
 KinematicSimulation::KinematicSimulation(const ros::NodeHandle& nh)
-    : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false) {
+    : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false),lastFrontEndWayPointNum_(0) {
       
       
     }
@@ -71,11 +71,7 @@ bool KinematicSimulation::run() {
   // TODO: uncomment for admittance control on hardware:
   // admittanceReferenceModule.initialize();
    
-  frontEndOMPLRRTStarConfig_.planning_time = 0.1;
-  frontEndOMPLRRTStarConfig_.margin_x = 0.2;
-  frontEndOMPLRRTStarConfig_.margin_y = 0.2;
-  frontEndOMPLRRTStarConfig_.margin_z = 0.2;
-  frontEndOMPLRRTStarConfig_.obstacle_margin = 0.15;
+
   frontEndOMPLRRTStarConfig_.interpolator_ = esdfCachingServer_->getInterpolator();
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
   // Init ros stuff
@@ -230,6 +226,21 @@ void KinematicSimulation::parseParameters() {
   if (defaultTorqueStd.size() == 3) {
     defaultTorque_ = Eigen::Vector3d::Map(defaultTorqueStd.data(), 3);
   }
+
+  std::string packagePath = ros::package::getPath("perceptive_mpc");
+
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" + mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
+
+  ROS_INFO_STREAM("frontEndOMPLRRTStar: " << std::endl << "planning_time:"  << frontEndOMPLRRTStarConfig_.planning_time<<  std::endl 
+  <<"search_region_margin:" <<  frontEndOMPLRRTStarConfig_.margin_x <<" "<< frontEndOMPLRRTStarConfig_.margin_y<<" "<< frontEndOMPLRRTStarConfig_.margin_z<< std::endl
+  <<"obstacle_margin:"<< frontEndOMPLRRTStarConfig_.obstacle_margin);
+  
+
 }
 
 
@@ -280,7 +291,8 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       MpcInterface::input_vector_t controlInput;
       MpcInterface::state_vector_t optimalState;
       
-      dynamic_vector_t desiredPose =  costDesiredTrajectories_.desiredStateTrajectory()[1];
+      int N = costDesiredTrajectories_.desiredStateTrajectory().size();
+      dynamic_vector_t desiredPose =  costDesiredTrajectories_.desiredStateTrajectory()[N-1];
       auto currentEndEffectorPose = getEndEffectorPose();
       auto currentEndEffectorPoseInArmFr = getEndEffectorPoseInArmFr();
       Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
@@ -337,9 +349,10 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
   auto LastPeroidTime = std::chrono::steady_clock::now(); 
   auto CurrentPeroidTime = std::chrono::steady_clock::now(); 
   auto MidPeroidTime = std::chrono::steady_clock::now(); 
-
+  static int cnt = 0;
   while (ros::ok()) {
     CurrentPeroidTime = std::chrono::steady_clock::now();
+    cnt ++;
     if(verbose_)
       ROS_INFO_STREAM_THROTTLE(0.5,"mpcLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
     LastPeroidTime = CurrentPeroidTime;    
@@ -348,15 +361,15 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
       continue;
     }
   
-      MpcInterface::input_vector_t controlInput;
-      MpcInterface::state_vector_t optimalState;
+      // MpcInterface::input_vector_t controlInput;
+      // MpcInterface::state_vector_t optimalState;
       
-      dynamic_vector_t desiredPose =  costDesiredTrajectories_.desiredStateTrajectory()[1];
-      auto currentEndEffectorPose = getEndEffectorPose();
-      auto currentEndEffectorPoseInArmFr = getEndEffectorPoseInArmFr();
-      Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
-      Eigen::Vector3d currentPositionInArmFr = currentEndEffectorPoseInArmFr.getPosition().toImplementation();
-      Eigen::AngleAxisd angleAxie(currentEndEffectorPoseInArmFr.getRotation().toImplementation());
+      // dynamic_vector_t desiredPose =  costDesiredTrajectories_.desiredStateTrajectory()[1];
+      // auto currentEndEffectorPose = getEndEffectorPose();
+      // auto currentEndEffectorPoseInArmFr = getEndEffectorPoseInArmFr();
+      // Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
+      // Eigen::Vector3d currentPositionInArmFr = currentEndEffectorPoseInArmFr.getPosition().toImplementation();
+      // Eigen::AngleAxisd angleAxie(currentEndEffectorPoseInArmFr.getRotation().toImplementation());
 
     try {
       {
@@ -367,6 +380,11 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
         //        measuredWrench); mpcInterface_->setTargetTrajectories(adaptedCostDesiredTrajectory);
         boost::shared_lock<boost::shared_mutex> costDesiredTrajectoryLock(costDesiredTrajectoryMutex_);
         mpcInterface_->setTargetTrajectories(costDesiredTrajectories_);
+        // if(cnt % 50 == 0)
+        //   {
+        //     costDesiredTrajectories_.display();
+        //     ROS_INFO_STREAM("current time");
+        //   }
       }
       {
         boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
@@ -488,25 +506,6 @@ void KinematicSimulation::initializeCostDesiredTrajectory() {
 }
 
 void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStampedConstPtr& msgPtr) {
-  geometry_msgs::Pose currentEndEffectorPose;
-  kindr_ros::convertToRosGeometryMsg(getEndEffectorPose(), currentEndEffectorPose);
-
-  perceptive_mpc::WrenchPoseTrajectory wrenchPoseTrajectory;
-  wrenchPoseTrajectory.header.stamp = ros::Time::now();
-  wrenchPoseTrajectory.posesWrenches.resize(2);
-  wrenchPoseTrajectory.posesWrenches[0].header.stamp = wrenchPoseTrajectory.header.stamp;
-  wrenchPoseTrajectory.posesWrenches[0].pose = currentEndEffectorPose;
-  tf2::toMsg(defaultForce_, wrenchPoseTrajectory.posesWrenches[0].wrench.force);
-  tf2::toMsg(defaultTorque_, wrenchPoseTrajectory.posesWrenches[0].wrench.torque);
-
-  wrenchPoseTrajectory.posesWrenches[1].header.stamp = wrenchPoseTrajectory.header.stamp;
-  wrenchPoseTrajectory.posesWrenches[1].pose = msgPtr->pose;
-  tf2::toMsg(defaultForce_, wrenchPoseTrajectory.posesWrenches[1].wrench.force);
-  tf2::toMsg(defaultTorque_, wrenchPoseTrajectory.posesWrenches[1].wrench.torque);
-
-  desiredWrenchPoseTrajectoryCb(wrenchPoseTrajectory);
-
-
 
   //add by yq(frontEnd)
   Eigen::Matrix<double,7,1> start;
@@ -525,6 +524,12 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
   bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
+  if(!is_success)
+  {
+    ROS_ERROR("Found no frontEnd solution");
+    return;
+  }
+
   std::cerr << "debugging traj" << desired_trajectory << std::endl;
 
 
@@ -547,12 +552,48 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
     marker.scale.y = 0.05;
     marker.scale.z = 0.05;
     marker.color.a = 1.0;
-    marker.color.g = 1.0;
+    marker.color.r = 1.0;
 
     frontEndTraj.markers.push_back(marker);
   }
+  if(desired_trajectory.rows() < lastFrontEndWayPointNum_)
+  {
+    for(int i = desired_trajectory.rows(); i < lastFrontEndWayPointNum_; i++){
+      visualization_msgs::Marker marker;
+      marker.header.frame_id = "odom";
+      marker.header.seq = i;
+      marker.id = i;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      marker.action = visualization_msgs::Marker::DELETE;
+      frontEndTraj.markers.push_back(marker);
+    }
+
+  }
   std::cerr << "publish marker array" << std::endl;
   frontEndVisualizePublisher_.publish(frontEndTraj);
+
+  perceptive_mpc::WrenchPoseTrajectory wrenchPoseTrajectory;
+  wrenchPoseTrajectory.header.stamp = ros::Time::now();
+  wrenchPoseTrajectory.posesWrenches.resize(desired_trajectory.rows());
+
+  for(int i = 0; i < desired_trajectory.rows(); i++){
+  geometry_msgs::Pose tmpPose;
+  tmpPose.orientation.x = desired_trajectory(i,0);
+  tmpPose.orientation.y = desired_trajectory(i,1);
+  tmpPose.orientation.z = desired_trajectory(i,2);
+  tmpPose.orientation.w = desired_trajectory(i,3);
+  tmpPose.position.x = desired_trajectory(i,4);
+  tmpPose.position.y = desired_trajectory(i,5);
+  tmpPose.position.z = desired_trajectory(i,6);
+
+  wrenchPoseTrajectory.posesWrenches[i].header.stamp = wrenchPoseTrajectory.header.stamp;
+  wrenchPoseTrajectory.posesWrenches[i].pose = tmpPose;
+  tf2::toMsg(defaultForce_, wrenchPoseTrajectory.posesWrenches[i].wrench.force);
+  tf2::toMsg(defaultTorque_, wrenchPoseTrajectory.posesWrenches[i].wrench.torque);  
+  
+  }
+  desiredWrenchPoseTrajectoryCb(wrenchPoseTrajectory);
+  lastFrontEndWayPointNum_ = desired_trajectory.rows();
 }
 
 void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::WrenchPoseTrajectory& wrenchPoseTrajectory) {
@@ -595,6 +636,8 @@ void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::Wr
 
     lastPose = desiredPose;
   }
+  costDesiredTrajectories_.display();
+  ROS_INFO_STREAM("current time");
 }
 
 void KinematicSimulation::publishBaseTransform(const Observation& observation) {
