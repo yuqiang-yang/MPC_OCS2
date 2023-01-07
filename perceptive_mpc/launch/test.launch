@@ -7,7 +7,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="tsdf_voxel_size" value="0.1"/>
+    <arg name="tsdf_voxel_size" value="0.05"/>
 
     <arg name="tsdf_voxels_per_side" value="16"/>
     <!-- Load robot description -->                                               
