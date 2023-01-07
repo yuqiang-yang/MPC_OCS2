@@ -17,10 +17,10 @@
     <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
         <param name="publish_frequency" value="100"/>
     </node>
-    <!-- <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen">
+    <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen">
         <param name="ur_ip"           value="192.168.100.2"/>
         <param name="ur_control_activate"   value="false"/>
-    </node> -->
+    </node>
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
      <node pkg="perceptive_mpc" name="kinematic_simulation" type="perceptive_mpc_kinematic_simulation" output="screen"> 
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
@@ -58,8 +58,8 @@
         <param name="pointcloud_queue_size" value="3" />
         <param name="tsdf_voxel_size" value="$(arg tsdf_voxel_size)" />
         <param name="tsdf_voxels_per_side" value="$(arg tsdf_voxels_per_side)"/>
-        <param name="publish_map_every_n_sec" value="0.5"/>
-        <param name="update_mesh_every_n_sec" value="0.5" />
+        <param name="publish_map_every_n_sec" value="5"/>
+        <param name="update_mesh_every_n_sec" value="5" />
         <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
     </node>
     <node name="interactive_pose_node" pkg="perceptive_mpc" type="interactive_marker.py" output="screen"/>

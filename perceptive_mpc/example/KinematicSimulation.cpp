@@ -71,11 +71,11 @@ bool KinematicSimulation::run() {
   // TODO: uncomment for admittance control on hardware:
   // admittanceReferenceModule.initialize();
    
-  frontEndOMPLRRTStarConfig_.planning_time = 0.05;
+  frontEndOMPLRRTStarConfig_.planning_time = 0.1;
   frontEndOMPLRRTStarConfig_.margin_x = 0.2;
   frontEndOMPLRRTStarConfig_.margin_y = 0.2;
   frontEndOMPLRRTStarConfig_.margin_z = 0.2;
-  frontEndOMPLRRTStarConfig_.obstacle_margin = 0;
+  frontEndOMPLRRTStarConfig_.obstacle_margin = 0.15;
   frontEndOMPLRRTStarConfig_.interpolator_ = esdfCachingServer_->getInterpolator();
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
   // Init ros stuff

@@ -1,8 +1,8 @@
 ; Time Horizon
 mpcTimeHorizon
 {
-  timehorizon      2.0
-  numPartitions    4
+  timehorizon      3.0
+  numPartitions    6
 }
 
 ; Mode sequence
@@ -165,7 +165,7 @@ ee_tracking_task
   ; final state weight matrix
   Q_final
   {
-    scaling 1e+1
+    scaling 0e+1
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -220,7 +220,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          0
+  activate          1
   weight            5
 }
 
