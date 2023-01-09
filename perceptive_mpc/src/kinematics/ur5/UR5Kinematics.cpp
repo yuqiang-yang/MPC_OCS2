@@ -68,9 +68,9 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
   if (dim == 0) {
     return Eigen::Matrix<SCALAR_T, 3, -1>(3, 0);
   }
-  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim);
+  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim); //use two sphere to surround the mobile base. Howerver, the code is just a trash!!!
   int resultIndex = 0;
-  int linkIndex;
+  int linkIndex = 0;
 
   Eigen::Matrix<SCALAR_T, 4, 4> transformWorld_X_Endeffector = transformWorld_X_Base;
 
@@ -81,11 +81,19 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
   typename iit::ur5e::tpl::HomogeneousTransforms<trait_t>::Type_fr_forearm_link_X_fr_wrist_1_link fr_forearm_link_X_fr_wrist_1_link;
   typename iit::ur5e::tpl::HomogeneousTransforms<trait_t>::Type_fr_wrist_1_link_X_fr_wrist_2_link fr_wrist_1_link_X_fr_wrist_2_link;
   typename iit::ur5e::tpl::HomogeneousTransforms<trait_t>::Type_fr_wrist_2_link_X_fr_wrist_3_link wrist_2_link_X_fr_wrist_3_link;
+  typename iit::ur5e::tpl::HomogeneousTransforms<trait_t>::Type_fr_base_link_ur5e_X_fr_ee_link base_link_X_fr_ee_link;
 
+  //modified by yq to add the sphere that surround the mobile base
   Eigen::Matrix<SCALAR_T, 4, 4> nextStep = transformBase_X_ArmBase.cast<SCALAR_T>();
   for (int i = 0; i < points[linkIndex].size(); i++) {
-    Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
+    // Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
+    Eigen::Matrix<SCALAR_T, 4, 1> directionVector;
+    directionVector << (SCALAR_T)0.0, (SCALAR_T)0.0, (SCALAR_T)0.6, (SCALAR_T)1.0;
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
+    if(i == 0)
+      directionVector(0) -= 0.2;
+    else if(i == 1)
+      directionVector(0) += 0.2;
     result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
   }
   linkIndex++;
@@ -96,15 +104,19 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
     Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
     result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
+
+
   }
   linkIndex++;
   transformWorld_X_Endeffector = transformWorld_X_Endeffector * nextStep;
 
+  //modified by yq 
   nextStep = shoulder_link_X_fr_upper_arm_link.update(state);
   for (int i = 0; i < points[linkIndex].size(); i++) {
     Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
     result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
+  
   }
   linkIndex++;
   transformWorld_X_Endeffector = transformWorld_X_Endeffector * nextStep;
@@ -112,6 +124,8 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
   nextStep = fr_upper_arm_link_X_fr_forearm_link.update(state);
   for (int i = 0; i < points[linkIndex].size(); i++) {
     Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
+    directionVector(2) += 0.13;  //offset
+
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
     result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
   }
@@ -145,7 +159,9 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
   linkIndex++;
   transformWorld_X_Endeffector = transformWorld_X_Endeffector * nextStep;
 
-  nextStep = transformToolMount_X_Endeffector.cast<SCALAR_T>();
+  nextStep = transformToolMount_X_Endeffector.cast<SCALAR_T>();  
+
+
   for (int i = 0; i < points[linkIndex].size(); i++) {
     Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];

@@ -87,7 +87,7 @@ Eigen::Matrix<SCALAR_T, 3, -1> KinematicsInterface<SCALAR_T>::computeState2Multi
   if (dim == 0) {
     return Eigen::Matrix<SCALAR_T, 3, -1>(3, 0);
   }
-  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim);
+  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim+1);
   int resultIndex = 0;
   int linkIndex;
 

@@ -24,8 +24,8 @@ cloud_filter_chain:
       transforms/buffer_length: 15.0
       transforms/timeout/reachable: 0.2
       transforms/timeout/unreachable: 0.2
-      bounding_sphere/compute: True
-      bounding_box/compute: True
+      bounding_sphere/compute: False
+      bounding_box/compute: False
       oriented_bounding_box/compute: True
       local_bounding_box/compute: True
       debug/pcl/inside: True
@@ -33,4 +33,5 @@ cloud_filter_chain:
       debug/pcl/shadow: False
       debug/marker/contains: True
       debug/marker/shadow: False
+      debug/marker/contains: True
 

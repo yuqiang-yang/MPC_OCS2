@@ -1,8 +1,8 @@
 ; Time Horizon
 mpcTimeHorizon
 {
-  timehorizon      3.0
-  numPartitions    6
+  timehorizon      4.0
+  numPartitions    8
 }
 
 ; Mode sequence
@@ -92,7 +92,7 @@ mpc
   initMaxLearningRate            1.0
 
 
-  debugPrint                     0
+  debugPrint                     1
   coldStart                      0
   recedingHorizon                1      ; use receding horizon MPC
 
@@ -121,7 +121,7 @@ initialState
   (1,0)  0.0      ; qy
   (2,0)  0.0      ; qz
   (3,0)  1.0      ; qw
-  (4,0)  0.0      ; x
+  (4,0)  -0.5      ; x
   (5,0)  0.0      ; y
   (6,0)  0.0      ; z
   (7,0)  1.571     ; arm_1
@@ -152,8 +152,8 @@ ee_tracking_task
   {
     scaling 1e+0
 
-    (0,0) 10.0  ; base_drive
-    (1,1) 10.0  ; base_turn
+    (0,0) 2.0  ; base_drive
+    (1,1) 2.0  ; base_turn
     (2,2) 1.0  ; arm_1
     (3,3) 1.0  ; arm_2
     (4,4) 1.0  ; arm_3
@@ -208,14 +208,14 @@ stability_soft_constraint
 
 voxblox_cost
 {
-    mu              5e-3
-    delta           1e-4
+    mu              1e-2
+    delta           1e-2
     max_distance    2.0
 }
 orientationCost
 {
   activate          1
-  weight            10
+  weight            1
 }
 
 manipulabilityCost
@@ -264,7 +264,7 @@ frontEndOMPLRRTStar
   margin_x          1
   margin_y          1
   margin_z          1
-  obstacle_margin   0.2 
+  obstacle_margin   0.2
   planning_time     3
-  edgeLength        0.2
+  edgeLength        0.4
 }
