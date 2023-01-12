@@ -92,7 +92,7 @@ mpc
   initMaxLearningRate            1.0
 
 
-  debugPrint                     1
+  debugPrint                     0
   coldStart                      0
   recedingHorizon                1      ; use receding horizon MPC
 
@@ -208,6 +208,7 @@ stability_soft_constraint
 
 voxblox_cost
 {
+    activate        0
     mu              1e-2
     delta           1e-2
     max_distance    2.0
@@ -220,7 +221,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          1
+  activate          0
   weight            5
 }
 
@@ -231,21 +232,21 @@ limits
   position_mpc_margin_deg 5
   lower
   {
-    (0,0)  -5.23599     ; arm_1
-    (1,0)  -3.14159     ; arm_2
-    (2,0)  -2.47837     ; arm_3
-    (3,0)  -5.23599     ; arm_4
-    (4,0)  -2.04204     ; arm_5
-    (5,0)  -3.14159     ; arm_6
+    (0,0)  -6.28     ; arm_1
+    (1,0)  -6.28     ; arm_2
+    (2,0)  -6.28     ; arm_3
+    (3,0)  -6.28     ; arm_4
+    (4,0)  -6.28     ; arm_5
+    (5,0)  -6.28     ; arm_6
   }
   upper
   {
-    (0,0)  5.23599     ; arm_1
-    (1,0)  3.14159         ; arm_2
-    (2,0)  2.47837     ; arm_3
-    (3,0)  5.23599     ; arm_4
-    (4,0)  2.04204     ; arm_5
-    (5,0)  3.14159     ; arm_6
+    (0,0)  6.28     ; arm_1
+    (1,0)  6.28         ; arm_2
+    (2,0)  6.28     ; arm_3
+    (3,0)  6.28     ; arm_4
+    (4,0)  6.28     ; arm_5
+    (5,0)  6.28     ; arm_6
   }
   velocity
   {

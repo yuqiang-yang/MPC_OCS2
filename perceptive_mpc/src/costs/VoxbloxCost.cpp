@@ -46,7 +46,7 @@ void VoxbloxCost::setCurrentStateAndControl(const VoxbloxCost::scalar_t& t, cons
       Eigen::Vector3f gradientVoxblox;
       Eigen::Ref<Eigen::Matrix<scalar_t, 3, 1>> position = positionsPointsOnRobot.segment<3>(i * 3);
       if (interpolator_->getInterpolatedDistanceGradient(position.cast<float>(), &distance, &gradientVoxblox)) {
-        distances_[i] = distance - radii(i) - 0.05;
+        distances_[i] = distance - radii(i) - 0.05; //0.05 is a safe distance.. for debugging. Added by yq.
         gradientsVoxblox_.block<1, 3>(i, 3 * i) = gradientVoxblox.transpose().cast<double>();
       } else {
         distances_[i] = maxDistance_ - radii(i);

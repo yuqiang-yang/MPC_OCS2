@@ -113,6 +113,7 @@ class KinematicSimulation {
   ocs2::CostDesiredTrajectories costDesiredTrajectories_;
   FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
 
+  ros::Time latestObservationTime_;
 
   // ros
   ros::NodeHandle nh_;

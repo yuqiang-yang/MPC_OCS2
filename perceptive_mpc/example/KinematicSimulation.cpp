@@ -31,6 +31,7 @@
 #include <example/KinematicSimulation.h>
 
 #include <perceptive_mpc/kinematics/ur5/UR5Kinematics.hpp>
+#include <tf/transform_broadcaster.h>
 
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_ros/transform_listener.h>
@@ -92,22 +93,22 @@ bool KinematicSimulation::run() {
   }
   if(!isPureSimulation_)
   {
-    ocs2Interface_->setInitialState(observation_.state());  
     observation_.state() = observationBuffer_.state();
     observation_.time() = ros::Time::now().toSec();
+    ocs2Interface_->setInitialState(observation_.state());  
     optimalState_ = observation_.state();
     initialTime_ = observation_.time();
     ROS_INFO("wholebody state publisher is connected.");
-    initializeCostDesiredTrajectory();
     setCurrentObservation(observation_);
   }
   else
   {
     observation_.state() = ocs2Interface_->getInitialState();
     observation_.time() = ros::Time::now().toSec();
+    ocs2Interface_->setInitialState(observation_.state());  
+
     optimalState_ = observation_.state();
     initialTime_ = observation_.time();
-    std::cerr << "initial state" << observation_.state().transpose() << std::endl;
     setCurrentObservation(observation_);
   }
 
@@ -235,6 +236,8 @@ void KinematicSimulation::parseParameters() {
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
+
+
 
   ROS_INFO_STREAM("frontEndOMPLRRTStar: " << std::endl << "planning_time:"  << frontEndOMPLRRTStarConfig_.planning_time<<  std::endl 
   <<"search_region_margin:" <<  frontEndOMPLRRTStarConfig_.margin_x <<" "<< frontEndOMPLRRTStarConfig_.margin_y<<" "<< frontEndOMPLRRTStarConfig_.margin_z<< std::endl
@@ -421,9 +424,11 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
   while (ros::ok()) {
     CurrentPeroidTime = std::chrono::steady_clock::now();
     if(verbose_)
-
-    ROS_INFO_STREAM_THROTTLE(1,"tfLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
-    LastPeroidTime = CurrentPeroidTime;
+    {
+      ROS_INFO_STREAM_THROTTLE(1,"tfLoop Peroid:" << std::chrono::duration_cast<std::chrono::milliseconds>(CurrentPeroidTime - LastPeroidTime).count() << "ms");
+      // ROS_INFO_STREAM_THROTTLE(0.1, "1bservation" << observation_.state().transpose());
+      // ROS_INFO_STREAM_THROTTLE(0.1,"2bservation" << observationBuffer_.state().transpose() << std::endl);
+    }LastPeroidTime = CurrentPeroidTime;
 
 
     if (mpcUpdateFailed_) {
@@ -441,7 +446,10 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
       publishBaseTransform(currentObservation);
       publishArmState(currentObservation);
       publishEndEffectorPose();
-      publishCameraTransform(currentObservation);
+      if(isPureSimulation_)
+        publishCameraTransform(currentObservation);
+      else
+        publishCameraTransform(observationBuffer_);
       if (pointsOnRobot_) {
         pointsOnRobotPublisher_.publish(pointsOnRobot_->getVisualization(currentObservation.state()));
       }
@@ -668,6 +676,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   geometry_msgs::TransformStamped base_transform;
   base_transform.header.frame_id = "odom";
   base_transform.child_frame_id = "camera_depth_optical_frame";
+  base_transform.header.stamp = ros::Time::now();
 
   auto currentEndEffectorPose = getEndEffectorPose();
   Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
@@ -689,15 +698,11 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   world_T_gripper.pretranslate(currentPosition);  //use pretranslate but not translate
 
   Eigen::Isometry3d world_T_rgb =  world_T_gripper * gripper_T_rgb;
-  
+
+
   Eigen::Vector3d cameraPosition = world_T_rgb.translation();
   Eigen::Quaterniond cameraRotation(world_T_rgb.rotation());
   
-  // std::cerr << "gripper_T_rgb" << gripper_T_rgb.matrix() << std::endl;
-  // std::cerr << "world_T_gripper" << world_T_gripper.matrix() << std::endl;
-  // std::cerr << "camera position:" << cameraPosition.transpose() << std::endl;
-  // std::cerr << "cameraRotation:" << cameraRotation.coeffs().transpose() << std::endl;
-
 
   // for test only by yq
   base_transform.transform.translation.x = cameraPosition(0);
@@ -710,11 +715,38 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   base_transform.transform.rotation.w = cameraRotation.coeffs()(3);
   base_transform.header.stamp = ros::Time::now();
 
-  // ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
+  ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
 
+  
+  // tfBroadcaster_.sendTransform(base_transform);
+  //use the StampedTransform type to facilate the presentation of tf tree, or the publish rate is 10000(undefined).
+  if(isPureSimulation_)
+    tfBroadcaster_.sendTransform( 
+        tf::StampedTransform(		  
+          tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
+          ros::Time::now(),"odom", "camera_depth_optical_frame")); 
+  else    
+    tfBroadcaster_.sendTransform( 
+        tf::StampedTransform(		  
+          tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
+          latestObservationTime_,"odom", "camera_depth_optical_frame")); 
+          
+  // for test only by yq
+  // world_T_rgb = world_T_rgb.inverse();
+  // cameraPosition = world_T_rgb.translation();
+  // cameraRotation = Eigen::Quaterniond(world_T_rgb.rotation());
 
+  // base_transform.transform.translation.x = cameraPosition(0);
+  // base_transform.transform.translation.y = cameraPosition(1);
+  // base_transform.transform.translation.z = cameraPosition(2);
+
+  // base_transform.transform.rotation.x = cameraRotation.coeffs()(0);
+  // base_transform.transform.rotation.y = cameraRotation.coeffs()(1);
+  // base_transform.transform.rotation.z = cameraRotation.coeffs()(2);
+  // base_transform.transform.rotation.w = cameraRotation.coeffs()(3);
+  // base_transform.header.stamp = ros::Time::now();
   cameraTransformPublisher_.publish(base_transform);
-  tfBroadcaster_.sendTransform(base_transform);
+
 
 }
 void KinematicSimulation::publishArmState(const Observation& observation) {
@@ -882,7 +914,7 @@ void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& ms
 {
 
   std::vector<double> msg_in = msg.data;
-  Eigen::VectorXd pf = Eigen::Map<Eigen::Matrix<double,9,1>>(msg_in.data(), msg_in.size());
+  Eigen::VectorXd pf = Eigen::Map<Eigen::Matrix<double,10,1>>(msg_in.data(), msg_in.size());
 
   kindr::EulerAnglesRpyD rpy(0,0,pf.coeff(2));
   
@@ -891,9 +923,11 @@ void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& ms
   observationBuffer_.state()(3) = quad.vector()(0);
   observationBuffer_.state().head<Definitions::BASE_STATE_DIM_>().tail<3>().head<2>() = pf.head<2>();
   observationBuffer_.state().head<Definitions::BASE_STATE_DIM_>().tail<3>()(2)= 0;
-  observationBuffer_.state().tail<6>() = pf.tail<6>();
+  observationBuffer_.state().tail<6>() = pf.tail<7>().head<6>();
+  latestObservationTime_ = ros::Time(pf(9));
+  // std::cerr << "observationBuff state" << observationBuffer_.state().transpose()  << std::endl;
 
-  // std::cerr << "observationBuff" << observationBuffer_.state().transpose() << std::endl;
-  observationBuffer_.time() = ros::Time::now().toSec();
+  // std::cerr << "observationBuff time" << observationBuffer_.time() << " " << latestObservationTime_ << std::endl;
+  observationBuffer_.time() = latestObservationTime_.toSec();
   isFirstObservationReceived_ = true;
 }

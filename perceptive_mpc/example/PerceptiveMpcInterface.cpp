@@ -166,8 +166,12 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
     stabilityConstraint->initialize("stability_constraint", libraryFolder_, modelSettings_.recompileLibraries_);
     weightedCostFunctions.push_back(std::make_pair(1, stabilityConstraint));
   }
-  std::cerr << "voxbloxConfig.activate:       \n" << voxbloxConfig_ << std::endl;
-  if (voxbloxConfig_) {
+
+  bool useVoxbloxCost = false;
+  ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.activate", useVoxbloxCost);
+  std::cerr << "voxblox_cost.activate:       \n" << useVoxbloxCost << std::endl;
+
+  if (voxbloxConfig_ && useVoxbloxCost) { //add by yq
     ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.mu", voxbloxConfig_->mu);
     std::cerr << "voxblox_cost.mu:       \n" << voxbloxConfig_->mu << std::endl;
     ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.delta", voxbloxConfig_->delta);

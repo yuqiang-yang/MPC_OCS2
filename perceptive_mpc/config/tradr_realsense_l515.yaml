@@ -9,7 +9,7 @@ cloud_filter_chain:
     params:
       frames/sensor: 'camera_depth_optical_frame' 
       frames/fixed: 'odom'
-
+      frames/output: 'camera_depth_optical_frame' #default is frames/fixed
       filter/keep_clouds_organized: False  # The poincloud of L515 is unordered 
       filter/do_clipping: True
       filter/do_contains_test: True
