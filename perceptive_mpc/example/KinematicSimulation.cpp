@@ -651,7 +651,7 @@ void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::Wr
 void KinematicSimulation::publishBaseTransform(const Observation& observation) {
   geometry_msgs::TransformStamped base_transform;
   base_transform.header.frame_id = "odom";
-  base_transform.child_frame_id = "base_link";
+  base_transform.child_frame_id = "base_footprint";
 
   const Eigen::Quaterniond currentRotation = Eigen::Quaterniond(observation.state().head<Definitions::BASE_STATE_DIM_>().head<4>());
   const Eigen::Matrix<double, 3, 1> currentPosition = observation.state().head<Definitions::BASE_STATE_DIM_>().tail<3>();
@@ -720,16 +720,10 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   
   // tfBroadcaster_.sendTransform(base_transform);
   //use the StampedTransform type to facilate the presentation of tf tree, or the publish rate is 10000(undefined).
-  if(isPureSimulation_)
     tfBroadcaster_.sendTransform( 
         tf::StampedTransform(		  
           tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
-          ros::Time::now(),"odom", "camera_depth_optical_frame")); 
-  else    
-    tfBroadcaster_.sendTransform( 
-        tf::StampedTransform(		  
-          tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
-          latestObservationTime_,"odom", "camera_depth_optical_frame")); 
+          ros::Time(observation.time()),"odom", "camera_depth_optical_frame")); 
           
   // for test only by yq
   // world_T_rgb = world_T_rgb.inverse();

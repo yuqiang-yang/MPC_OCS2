@@ -12,7 +12,7 @@
 
     <arg name="tsdf_voxels_per_side" value="16"/>
 
-    <arg name="isPureSimulation" value="true"/>
+    <arg name="isPureSimulation" value="false"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
