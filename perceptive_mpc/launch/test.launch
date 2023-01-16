@@ -126,7 +126,7 @@
 
             <!-- probabilistic grid map -->
             <param name="p_hit" value="0.70"/>
-            <param name="p_miss" value="0.35"/>
+            <param name="p_miss" value="0.45"/>
             <param name="p_min" value="0.12"/>
             <param name="p_max" value="0.97"/>
             <param name="p_occ" value="0.80"/>
