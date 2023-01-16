@@ -55,9 +55,9 @@
 
 #include <kindr/Core>
 
-#include <perceptive_mpc/EsdfCachingServer.hpp>
+// #include <perceptive_mpc/EsdfCachingServer.hpp>
 #include "ocs2_core/Dimensions.h"
-#include "FrontEndOMPLRRTStar.hpp"
+// #include "FrontEndOMPLRRTStar.hpp"
 
 // TODO: uncomment for admittance control on hardware:
 // #include <perceptive_mpc/AdmittanceReferenceModule.hpp>
@@ -81,8 +81,8 @@ class KinematicSimulation {
   std::unique_ptr<perceptive_mpc::PerceptiveMpcInterface> ocs2Interface_;
   std::shared_ptr<MpcInterface> mpcInterface_;
   std::shared_ptr<PointsOnRobot> pointsOnRobot_;
-  std::shared_ptr<voxblox::EsdfCachingServer> esdfCachingServer_;
-  std::shared_ptr<perceptive_mpc::FrontEndOMPLRRTStar> frontEndOMPLRRTStar_;
+  // std::shared_ptr<voxblox::EsdfCachingServer> esdfCachingServer_;
+  // std::shared_ptr<perceptive_mpc::FrontEndOMPLRRTStar> frontEndOMPLRRTStar_;
   // TODO: uncomment for admittance control on hardware:
   // AdmittanceReferenceModule admittanceReferenceModule;
 
@@ -111,7 +111,7 @@ class KinematicSimulation {
 
   boost::shared_mutex costDesiredTrajectoryMutex_;
   ocs2::CostDesiredTrajectories costDesiredTrajectories_;
-  FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
+  // FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
 
   ros::Time latestObservationTime_;
 
@@ -159,7 +159,7 @@ class KinematicSimulation {
     // parse all ros parameters
   void parseParameters();
 
-  std::shared_ptr<VoxbloxCostConfig> configureCollisionAvoidance(std::shared_ptr<KinematicsInterfaceAD> kinematicInterface);
+  // std::shared_ptr<VoxbloxCostConfig> configureCollisionAvoidance(std::shared_ptr<KinematicsInterfaceAD> kinematicInterface);
 
   // update the desired end effector pose on ros msg
   void desiredEndEffectorPoseCb(const geometry_msgs::PoseStampedConstPtr& msgPtr);

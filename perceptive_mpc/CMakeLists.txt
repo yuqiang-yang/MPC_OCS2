@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 project(perceptive_mpc)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
+# set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS} -O3 -Wall") # -Wextra -Werror
+# set(CMAKE_BUILD_TYPE "RELEASE")
 
 set(PACKAGE_DEPENDENCIES
     roslib
@@ -15,7 +17,8 @@ set(PACKAGE_DEPENDENCIES
     kindr_ros
     voxblox
     voxblox_ros
-    frontend_ompl
+    # frontend_ompl
+    fiesta
 )
 
 find_package(catkin REQUIRED COMPONENTS

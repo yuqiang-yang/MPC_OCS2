@@ -16,7 +16,11 @@
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
-
+  <rosparam>
+      /camera/motion_module/global_time_enabled: true
+      /camera/l500_depth_sensor/global_time_enabled: true
+      /camera/rgb_camera/global_time_enabled: true
+  </rosparam>
     <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
         <param name="publish_frequency" value="100"/>
     </node>
@@ -40,35 +44,65 @@
         <param name="publish_slices" value="false" />
         <param name="publish_pointclouds" value="false" />
         <param name="use_tf_transforms" value="false" />
-        <param name="verbose" value="true" />
+        <param name="verbose" value="false" />
 
         <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
+
+
+        <!-- fiesta parameter -->
+
+        <param name="resolution" value="0.01"/>
+        <param name="update_esdf_every_n_sec" value="0.1"/>
+
+        <!--Hash Table only-->
+        <param name="reserved_size" value="1000000"/>
+
+        <!--Array only-->
+        <param name="lx" value="-2.5"/>
+        <param name="ly" value="-2.5"/>
+        <param name="lz" value="-0.5"/>
+        <param name="rx" value="+2.5"/>
+        <param name="ry" value="+2.5"/>
+        <param name="rz" value="+2"/>
+        <!-- raycasting parameters -->
+        <param name="min_ray_length" value="0.5"/>
+        <param name="max_ray_length" value="3.0"/>
+        <!--If hash table is used, make sure the value is 0. In array implementation, 0 means no other thread.-->
+        <param name="ray_cast_num_thread" value="0"/>
+
+        <!-- probabilistic grid map -->
+        <param name="p_hit" value="0.70"/>
+        <param name="p_miss" value="0.2"/>
+        <param name="p_min" value="0.12"/>
+        <param name="p_max" value="0.97"/>
+        <param name="p_occ" value="0.80"/>
+
+        <!-- global / local -->
+        <param name="global_map" value="true"/>
+        <param name="global_update" value="true"/>
+        <param name="global_vis" value="true"/>
+        <param name="radius_x" value="3.0"/>
+        <param name="radius_y" value="3.0"/>
+        <param name="radius_z" value="1.5"/>
+
+        <!--depth_filter only depth image-->
+        <param name="use_depth_filter" value="true"/>
+
+        <!-- visulization -->
+        <!--0 for no visulize-->
+        <param name="visualize_every_n_updates" value="5"/>
+        <param name="slice_vis_max_dist" value="2.0"/>
+        <!-- relative to the lz if array is used, relative to the origin if hash table is used -->
+        <param name="slice_vis_level" value="1.0"/>
+        <param name="vis_lower_bound" value="0"/>
+        <param name="vis_upper_bound" value="+10"/>
+
+        <!-- subsribe source -->
+        <remap from="~depth" to="/pointcloud_filter/pointcloud_filtered"/>
+        <remap from="~transform" to="/perceptive_mpc/odomToCamera"/>
     </node> 
-    <!-- <node name="voxblox_node" pkg="voxblox_ros" type="esdf_server" output="screen" args="" clear_params="true">
-        <remap from="pointcloud" to="/camera/depth/color/points"/>  
-        <remap from="voxblox_node/esdf_map_out" to="esdf_map" />
-        <param name="publish_esdf_map" value="true" />
-        <param name="publish_slices" value="true" />
-        <param name="publish_pointclouds" value="true" />
-        <param name="use_tf_transforms" value="true" />
-        <remap from="transform" to="/perceptive_mpc/odomToCamera" />
-        <param name="verbose" value="false" />
-        <param name="slice_level" value="0.8" />
-        <param name="clear_sphere_for_planning" value="true" />
-        <param name="clear_sphere_radius" value="0.5" /> 
-        <param name="occupied_sphere_radius" value="3" /> 
-        <param name="clear_sphere_for_planning" value="true" /> 
-        <param name="method" value="fast" />
-        <param name="world_frame" value="odom" />
-        <param name="pointcloud_queue_size" value="3" />
-        <param name="tsdf_voxel_size" value="$(arg tsdf_voxel_size)" />
-        <param name="tsdf_voxels_per_side" value="$(arg tsdf_voxels_per_side)"/>
-        <param name="publish_map_every_n_sec" value="1"/>
-        <param name="update_mesh_every_n_sec" value="1" />
-        <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-    </node> -->
+
     <node name="interactive_pose_node" pkg="perceptive_mpc" type="interactive_marker.py" output="screen"/>
-    <!-- <include file="$(find robot_body_filter)/examples/body_filter_node.launch" /> -->
     
     <!-- only used when the mobile base is broken -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="mobile_base_tf_publisher" args="0 0 0 0 0 0 1 odom base_link 100" if ="$(eval arg('isPureSimulation') == false)"/> -->
@@ -82,7 +116,7 @@
                 filter_field_name: 'z'
                 filter_limit_min: 0.0
                 filter_limit_max: 2.0
-                leaf_size: 0.02
+                leaf_size: 0.01
             </rosparam>
         </node>
 
@@ -103,9 +137,9 @@
 
   </group>
 
-        <node pkg="fiesta" type="test_fiesta" name="fiesta" output="log"  >
+        <node pkg="fiesta" type="test_fiesta" name="fiesta" output="log"  if = "false">
 
-            <param name="resolution" value="0.02"/>
+            <param name="resolution" value="0.01"/>
             <param name="update_esdf_every_n_sec" value="0.1"/>
 
             <!--Hash Table only-->
@@ -126,10 +160,10 @@
 
             <!-- probabilistic grid map -->
             <param name="p_hit" value="0.70"/>
-            <param name="p_miss" value="0.45"/>
+            <param name="p_miss" value="0.12"/>
             <param name="p_min" value="0.12"/>
             <param name="p_max" value="0.97"/>
-            <param name="p_occ" value="0.80"/>
+            <param name="p_occ" value="0.8"/>
 
             <!-- global / local -->
             <param name="global_map" value="true"/>

@@ -36,12 +36,12 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_ros/transform_listener.h>
 
-#include <perceptive_mpc/costs/VoxbloxCost.h>
+// #include <perceptive_mpc/costs/VoxbloxCost.h>
 
 #include <perceptive_mpc/costs/InterpolatePoseTrajectory.h>
 
 #include <kindr_ros/kindr_ros.hpp>
-
+#include <Fiesta.h>
 
 using namespace perceptive_mpc;
 
@@ -64,7 +64,7 @@ bool KinematicSimulation::run() {
   PerceptiveMpcInterfaceConfig config;
   config.taskFileName = mpcTaskFile_;
   config.kinematicsInterface = std::make_shared<UR5Kinematics<ad_scalar_t>>(kinematicInterfaceConfig_);
-  config.voxbloxConfig = configureCollisionAvoidance(config.kinematicsInterface);
+  // config.voxbloxConfig = configureCollisionAvoidance(config.kinematicsInterface);
   ocs2Interface_.reset(new PerceptiveMpcInterface(config));
   mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
   mpcInterface_->reset();
@@ -73,8 +73,8 @@ bool KinematicSimulation::run() {
   // admittanceReferenceModule.initialize();
    
 
-  frontEndOMPLRRTStarConfig_.interpolator_ = esdfCachingServer_->getInterpolator();
-  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
+  // frontEndOMPLRRTStarConfig_.interpolator_ = esdfCachingServer_->getInterpolator();
+  // frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
   // Init ros stuff
   armStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/joint_states", 10);
   ROS_INFO("Waiting for joint states subscriber ...");
@@ -130,6 +130,14 @@ bool KinematicSimulation::run() {
   zmpPublisher_ = nh_.advertise<geometry_msgs::PointStamped>("/perceptive_mpc/zmp", 1, false);
   
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
+
+
+  //Fiesta
+  ros::NodeHandle node("~");
+  fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
+
+  
+
   // Tracker worker
   std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
 
@@ -137,7 +145,6 @@ bool KinematicSimulation::run() {
   // Mpc update worker
   mpcUpdateFrequency_ = (mpcUpdateFrequency_ == -1) ? 100 : mpcUpdateFrequency_;
   std::thread mpcUpdateWorker(&KinematicSimulation::mpcUpdate, this, ros::Rate(mpcUpdateFrequency_));
-
 
   // TF update worker
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
@@ -230,18 +237,18 @@ void KinematicSimulation::parseParameters() {
 
   std::string packagePath = ros::package::getPath("perceptive_mpc");
 
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" + mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" + mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
+  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
 
 
 
-  ROS_INFO_STREAM("frontEndOMPLRRTStar: " << std::endl << "planning_time:"  << frontEndOMPLRRTStarConfig_.planning_time<<  std::endl 
-  <<"search_region_margin:" <<  frontEndOMPLRRTStarConfig_.margin_x <<" "<< frontEndOMPLRRTStarConfig_.margin_y<<" "<< frontEndOMPLRRTStarConfig_.margin_z<< std::endl
-  <<"obstacle_margin:"<< frontEndOMPLRRTStarConfig_.obstacle_margin);
+  // ROS_INFO_STREAM("frontEndOMPLRRTStar: " << std::endl << "planning_time:"  << frontEndOMPLRRTStarConfig_.planning_time<<  std::endl 
+  // <<"search_region_margin:" <<  frontEndOMPLRRTStarConfig_.margin_x <<" "<< frontEndOMPLRRTStarConfig_.margin_y<<" "<< frontEndOMPLRRTStarConfig_.margin_z<< std::endl
+  // <<"obstacle_margin:"<< frontEndOMPLRRTStarConfig_.obstacle_margin);
   
 
 }
@@ -393,9 +400,9 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
         boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
         setCurrentObservation(observation_);
       }
-      if (esdfCachingServer_) {
-        esdfCachingServer_->updateInterpolator();
-      }
+      // if (esdfCachingServer_) {
+      //   esdfCachingServer_->updateInterpolator();
+      // }
     MidPeroidTime = std::chrono::steady_clock::now();
       {
         mpcInterface_->advanceMpc();
@@ -530,8 +537,9 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   
   std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
   std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
-  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
-  bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
+  // frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
+  // bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
+  bool is_success = false;
   if(!is_success)
   {
     ROS_ERROR("Found no frontEnd solution");
@@ -715,7 +723,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
   base_transform.transform.rotation.w = cameraRotation.coeffs()(3);
   base_transform.header.stamp = ros::Time::now();
 
-  ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
+  // ROS_INFO_STREAM_THROTTLE(infoRate_,"Pubisher cameraYransform position:" << cameraPosition.transpose());
 
   
   // tfBroadcaster_.sendTransform(base_transform);
@@ -847,62 +855,62 @@ kindr::HomTransformQuatD KinematicSimulation::getEndEffectorPoseInArmFr() {
                                     kindr::RotationQuaternionD(eigenBaseRotation));
   }
 }
-std::shared_ptr<VoxbloxCostConfig> KinematicSimulation::configureCollisionAvoidance(
-    std::shared_ptr<KinematicsInterfaceAD> kinematicInterface) {
-  ros::NodeHandle pNh("~");
-  std::shared_ptr<VoxbloxCostConfig> voxbloxCostConfig = nullptr;
+// std::shared_ptr<VoxbloxCostConfig> KinematicSimulation::configureCollisionAvoidance(
+//     std::shared_ptr<KinematicsInterfaceAD> kinematicInterface) {
+//   ros::NodeHandle pNh("~");
+//   std::shared_ptr<VoxbloxCostConfig> voxbloxCostConfig = nullptr;
 
-  if (pNh.hasParam("collision_points")) {
-    perceptive_mpc::PointsOnRobot::points_radii_t pointsAndRadii(8);
-    using pair_t = std::pair<double, double>;
+//   if (pNh.hasParam("collision_points")) {
+//     perceptive_mpc::PointsOnRobot::points_radii_t pointsAndRadii(8);
+//     using pair_t = std::pair<double, double>;
 
-    XmlRpc::XmlRpcValue collisionPoints;
-    pNh.getParam("collision_points", collisionPoints);
-    if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-      ROS_WARN("collision_points parameter is not of type array.");
-      return voxbloxCostConfig;
-    }
-    for (int i = 0; i < collisionPoints.size(); i++) {
-      if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-        ROS_WARN_STREAM("collision_points[" << i << "] parameter is not of type array.");
-        return voxbloxCostConfig;
-      }
-      for (int j = 0; j < collisionPoints[i].size(); j++) {
-        if (collisionPoints[j].getType() != XmlRpc::XmlRpcValue::TypeArray) {
-          ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] parameter is not of type array.");
-          return voxbloxCostConfig;
-        }
-        if (collisionPoints[i][j].size() != 2) {
-          ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] does not have 2 elements.");
-          return voxbloxCostConfig;
-        }
-        double segmentId = collisionPoints[i][j][0];
-        double radius = collisionPoints[i][j][1];
-        pointsAndRadii[i].push_back(pair_t(segmentId, radius));
-        ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
-      }
-    }
-    perceptive_mpc::PointsOnRobotConfig config;
-    config.pointsAndRadii = pointsAndRadii;
-    using ad_type = CppAD::AD<CppAD::cg::CG<double>>;
-    config.kinematics = kinematicInterface;
-    pointsOnRobot_.reset(new perceptive_mpc::PointsOnRobot(config));
+//     XmlRpc::XmlRpcValue collisionPoints;
+//     pNh.getParam("collision_points", collisionPoints);
+//     if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+//       ROS_WARN("collision_points parameter is not of type array.");
+//       return voxbloxCostConfig;
+//     }
+//     for (int i = 0; i < collisionPoints.size(); i++) {
+//       if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+//         ROS_WARN_STREAM("collision_points[" << i << "] parameter is not of type array.");
+//         return voxbloxCostConfig;
+//       }
+//       for (int j = 0; j < collisionPoints[i].size(); j++) {
+//         if (collisionPoints[j].getType() != XmlRpc::XmlRpcValue::TypeArray) {
+//           ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] parameter is not of type array.");
+//           return voxbloxCostConfig;
+//         }
+//         if (collisionPoints[i][j].size() != 2) {
+//           ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] does not have 2 elements.");
+//           return voxbloxCostConfig;
+//         }
+//         double segmentId = collisionPoints[i][j][0];
+//         double radius = collisionPoints[i][j][1];
+//         pointsAndRadii[i].push_back(pair_t(segmentId, radius));
+//         ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
+//       }
+//     }
+//     perceptive_mpc::PointsOnRobotConfig config;
+//     config.pointsAndRadii = pointsAndRadii;
+//     using ad_type = CppAD::AD<CppAD::cg::CG<double>>;
+//     config.kinematics = kinematicInterface;
+//     pointsOnRobot_.reset(new perceptive_mpc::PointsOnRobot(config));
 
-    if (pointsOnRobot_->numOfPoints() > 0) {
-      voxbloxCostConfig.reset(new VoxbloxCostConfig());
-      voxbloxCostConfig->pointsOnRobot = pointsOnRobot_;
+//     if (pointsOnRobot_->numOfPoints() > 0) {
+//       voxbloxCostConfig.reset(new VoxbloxCostConfig());
+//       voxbloxCostConfig->pointsOnRobot = pointsOnRobot_;
 
-      esdfCachingServer_.reset(new voxblox::EsdfCachingServer(ros::NodeHandle(), ros::NodeHandle("~")));
-      voxbloxCostConfig->interpolator = esdfCachingServer_->getInterpolator();
+//       esdfCachingServer_.reset(new voxblox::EsdfCachingServer(ros::NodeHandle(), ros::NodeHandle("~")));
+//       voxbloxCostConfig->interpolator = esdfCachingServer_->getInterpolator();
 
-      pointsOnRobot_->initialize("points_on_robot");
-    } else {
-      // if there are no points defined for collision checking, set this pointer to null to disable the visualization
-      pointsOnRobot_ = nullptr;
-    }
-  }
-  return voxbloxCostConfig;
-}
+//       pointsOnRobot_->initialize("points_on_robot");
+//     } else {
+//       // if there are no points defined for collision checking, set this pointer to null to disable the visualization
+//       pointsOnRobot_ = nullptr;
+//     }
+//   }
+//   return voxbloxCostConfig;
+// }
 
 void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& msg)
 {
