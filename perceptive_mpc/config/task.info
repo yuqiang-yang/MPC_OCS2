@@ -181,34 +181,9 @@ regularization
     stateCostRegularization 0
 }
 
-obstacle_cost
+fiesta_cost
 {
-    useObstacleCost     0
-
-    ; penalty function parameters
-    delta               1e-2
-    mu                  0.5e-3
-    sigma               10
-
-    ; base dimensions
-    widthX              1.1
-    widthY              1.0
-
-    ;reach of the arm
-    reach               1.1
-}
-
-stability_soft_constraint
-{
-    activate        0
-    mu              5e-3
-    delta           1e-4
-    support_circle_radius 0.3
-}
-
-voxblox_cost
-{
-    activate        0
+    activate        1
     mu              1e-2
     delta           1e-2
     max_distance    2.0

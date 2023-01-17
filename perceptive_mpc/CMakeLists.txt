@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 project(perceptive_mpc)
 
 add_compile_options(-std=c++17)
-# set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS} -O3 -Wall") # -Wextra -Werror
-# set(CMAKE_BUILD_TYPE "RELEASE")
+set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS} -O3") # -Wextra -Werror
+set(CMAKE_BUILD_TYPE "RELEASE")
 
 set(PACKAGE_DEPENDENCIES
     roslib
@@ -15,8 +15,8 @@ set(PACKAGE_DEPENDENCIES
     ocs2_ddp
     kindr
     kindr_ros
-    voxblox
-    voxblox_ros
+    # voxblox
+    # voxblox_ros
     # frontend_ompl
     fiesta
 )
@@ -78,13 +78,13 @@ target_link_libraries(${PROJECT_NAME}_explicit_instantiations
 add_library(${PROJECT_NAME}
   src/SystemDynamics.cpp
   src/costs/QuadraticEndeffectorTrackingCost.cpp
-  src/costs/BaseAvoidanceCost.cpp
-  src/costs/VoxbloxCost.cpp
+  # src/costs/BaseAvoidanceCost.cpp
+  # src/costs/VoxbloxCost.cpp
   src/costs/PointsOnRobot.cpp
-  src/costs/StabilitySoftConstraint.cpp
+  # src/costs/StabilitySoftConstraint.cpp
   src/costs/FrontOrientationCost.cpp
   src/costs/ManipulabilityCost.cpp
-
+  src/costs/FiestaCost.cpp
   src/OperatingPoint.cpp
   src/Conversions.cpp
   src/kinematics/KinematicsInterface.cpp
@@ -92,7 +92,7 @@ add_library(${PROJECT_NAME}
   # src/kinematics/ur10/UR10Kinematics.cpp
   src/kinematics/ur5/UR5Kinematics.cpp
   # src/kinematics/ur3/UR3Kinematics.cpp
-  src/EsdfCachingServer.cpp
+  # src/EsdfCachingServer.cpp
   src/AdmittanceReferenceModule.cpp
   
 )

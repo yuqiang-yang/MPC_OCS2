@@ -52,18 +52,18 @@
 #include "perceptive_mpc/ModelSettings.h"
 #include "perceptive_mpc/SystemDynamics.h"
 #include "perceptive_mpc/kinematics/KinematicsInterface.hpp"
-
+#include "perceptive_mpc/costs/FiestaCost.h"
 // ros
 #include <ros/package.h>
 #include <ros/ros.h>
 
 namespace perceptive_mpc {
 
-class VoxbloxCostConfig;
+// class FiestaCostConfig;
 
 struct PerceptiveMpcInterfaceConfig {
   std::string taskFileName;
-  std::shared_ptr<VoxbloxCostConfig> voxbloxConfig = nullptr;
+  std::shared_ptr<FiestaCostConfig> fiestaConfig = nullptr;
   std::shared_ptr<KinematicsInterfaceAD> kinematicsInterface;
 };
 
@@ -159,7 +159,7 @@ class PerceptiveMpcInterface : public ocs2::RobotInterface<perceptive_mpc::STATE
   size_t numPartitions_ = 0;
   dim_t::scalar_array_t partitioningTimes_;
 
-  std::shared_ptr<VoxbloxCostConfig> voxbloxConfig_;
+  std::shared_ptr<FiestaCostConfig> fiestaConfig_;
   std::shared_ptr<KinematicsInterfaceAD> kinematicsInterface_;
 
 

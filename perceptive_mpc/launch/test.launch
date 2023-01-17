@@ -12,7 +12,7 @@
 
     <arg name="tsdf_voxels_per_side" value="16"/>
 
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
@@ -51,7 +51,7 @@
 
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.01"/>
+        <param name="resolution" value="0.05"/>
         <param name="update_esdf_every_n_sec" value="0.1"/>
 
         <!--Hash Table only-->

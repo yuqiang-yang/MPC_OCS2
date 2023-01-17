@@ -65,8 +65,8 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
         delta_(config.delta),
         pointsOnRobot_(config.pointsOnRobot),
         distances_(pointsOnRobot_->numOfPoints()),
-        gradientsVoxblox_(pointsOnRobot_->numOfPoints(), pointsOnRobot_->numOfPoints() * 3),
-        gradients_(pointsOnRobot_->numOfPoints(), 13) {}
+        gradientsFiesta_(pointsOnRobot_->numOfPoints(), pointsOnRobot_->numOfPoints() * 3),
+        gradients_(pointsOnRobot_->numOfPoints(), 13) { if(!config.esdfMap) std::cerr << "the config esdf is null ptr" << std::endl;}
 
   FiestaCost(const FiestaCost& rhs)
       : CostFunctionBase(),
@@ -76,7 +76,7 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
         delta_(rhs.delta_),
         pointsOnRobot_(new PointsOnRobot(*rhs.pointsOnRobot_)),
         distances_(rhs.distances_),
-        gradientsVoxblox_(rhs.gradientsVoxblox_),
+        gradientsFiesta_(rhs.gradientsFiesta_),
         gradients_(rhs.gradients_) {}
 
   /**

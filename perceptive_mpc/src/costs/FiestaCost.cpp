@@ -42,9 +42,8 @@ void FiestaCost::setCurrentStateAndControl(const FiestaCost::scalar_t& t, const 
     int numPoints = pointsOnRobot_->numOfPoints();
     for (int i = 0; i < numPoints; i++) {
       Eigen::Vector3d gradientFiesta;
-      Eigen::Ref<Eigen::Matrix<scalar_t, 3, 1>> position = positionsPointsOnRobot.segment<3>(i * 3);
-      double distance = esdfMap_->GetDistWithGradTrilinear(position.cast<double>(),gradientFiesta);
-
+      Eigen::Matrix<scalar_t, 3, 1> position = positionsPointsOnRobot.segment<3>(i * 3);
+      double distance = esdfMap_->GetDistWithGradTrilinear(position,gradientFiesta);
       if(distance != -1){
         distances_[i] = distance - radii(i) - 0.05; //0.05 is a safe distance.. for debugging. Added by yq.
         gradientsFiesta_.block<1, 3>(i, 3 * i) = gradientFiesta.transpose().cast<double>();
@@ -63,11 +62,12 @@ void FiestaCost::setCurrentStateAndControl(const FiestaCost::scalar_t& t, const 
 
 void FiestaCost::getIntermediateCost(FiestaCost::scalar_t& L) {
   L = distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionValue(x); }).sum();
-  // L = VoxbloxCost::scalar_t(0);
+  // L = FiestaCost::scalar_t(0);
 }
 void FiestaCost::getIntermediateCostDerivativeState(FiestaCost::state_vector_t& dLdx) {
   dLdx = gradients_.transpose() * distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionDerivative(x); });
-  // dLdx = VoxbloxCost::state_vector_t::Zero();
+  // getIntermediateCostDerivativeStateVerbose(dLdx);
+  // dLdx = FiestaCost::state_vector_t::Zero();
 }
 
 void FiestaCost::getIntermediateCostDerivativeStateVerbose(FiestaCost::state_vector_t& dLdx){
@@ -84,7 +84,7 @@ void FiestaCost::getIntermediateCostDerivativeStateVerbose(FiestaCost::state_vec
 void FiestaCost::getIntermediateCostSecondDerivativeState(FiestaCost::state_matrix_t& dLdxx) {
   dLdxx = gradients_.transpose() *
           distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionSecondDerivative(x); }).asDiagonal() * gradients_;
-  // dLdxx = VoxbloxCost::state_matrix_t::Zero();
+  // dLdxx = FiestaCost::state_matrix_t::Zero();
 }
 void FiestaCost::getIntermediateCostDerivativeInput(FiestaCost::input_vector_t& dLdu) {
   dLdu = input_vector_t::Zero();

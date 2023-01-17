@@ -59,13 +59,22 @@ bool KinematicSimulation::run() {
 
   kinematicInterfaceConfig_.baseMass = 70;
   kinematicInterfaceConfig_.baseCOM = Eigen::Vector3d::Zero();
-  
+
+  //Fiesta
+  ros::NodeHandle node("~");
+  fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
+
 
   PerceptiveMpcInterfaceConfig config;
   config.taskFileName = mpcTaskFile_;
   config.kinematicsInterface = std::make_shared<UR5Kinematics<ad_scalar_t>>(kinematicInterfaceConfig_);
-  // config.voxbloxConfig = configureCollisionAvoidance(config.kinematicsInterface);
+  config.fiestaConfig = configureCollisionAvoidance(config.kinematicsInterface);
+  if(config.fiestaConfig) //not nullptr
+  {
+    config.fiestaConfig->esdfMap.reset(esdf.esdf_map_); //set the esdf map
+  }
   ocs2Interface_.reset(new PerceptiveMpcInterface(config));
+
   mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
   mpcInterface_->reset();
 
@@ -125,18 +134,9 @@ bool KinematicSimulation::run() {
 
   pointsOnRobotPublisher_ = nh_.advertise<visualization_msgs::MarkerArray>("/perceptive_mpc/collision_points", 1, false);
   frontEndVisualizePublisher_ = nh_.advertise<visualization_msgs::MarkerArray>("/perceptive_mpc/front_end_trajectory", 1, false);
-
-  comPublisher_ = nh_.advertise<geometry_msgs::PointStamped>("/perceptive_mpc/com", 1, false);
-  zmpPublisher_ = nh_.advertise<geometry_msgs::PointStamped>("/perceptive_mpc/zmp", 1, false);
   
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
 
-
-  //Fiesta
-  ros::NodeHandle node("~");
-  fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
-
-  
 
   // Tracker worker
   std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
@@ -371,16 +371,6 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
       continue;
     }
   
-      // MpcInterface::input_vector_t controlInput;
-      // MpcInterface::state_vector_t optimalState;
-      
-      // dynamic_vector_t desiredPose =  costDesiredTrajectories_.desiredStateTrajectory()[1];
-      // auto currentEndEffectorPose = getEndEffectorPose();
-      // auto currentEndEffectorPoseInArmFr = getEndEffectorPoseInArmFr();
-      // Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
-      // Eigen::Vector3d currentPositionInArmFr = currentEndEffectorPoseInArmFr.getPosition().toImplementation();
-      // Eigen::AngleAxisd angleAxie(currentEndEffectorPoseInArmFr.getRotation().toImplementation());
-
     try {
       {
         // TODO: uncomment for admittance control on hardware:
@@ -784,26 +774,6 @@ void KinematicSimulation::publishEndEffectorPose() {
   endEffectorPosePublisher_.publish(endEffectorPoseMsg);
 }
 
-void KinematicSimulation::publishZmp(const Observation& observation, const ocs2::CostDesiredTrajectories& costDesiredTrajectories) {
-  UR5Kinematics<double> kinematicsInterface(kinematicInterfaceConfig_);
-  Eigen::Vector3d com = kinematicsInterface.getCOMBaseFrame(observation.state());
-  geometry_msgs::PointStamped comMsg;
-  comMsg.header.frame_id = "base_link";
-  comMsg.header.stamp = ros::Time::now();
-  comMsg.point = tf2::toMsg(com);
-  comPublisher_.publish(comMsg);
-
-  auto interpolatedPose = interpolatePoseTrajectory(costDesiredTrajectories.desiredTimeTrajectory(),
-                                                    costDesiredTrajectories.desiredStateTrajectory(), observation.time());
-  auto interpolatedWrench = interpolateWrenchTrajectory(costDesiredTrajectories.desiredTimeTrajectory(),
-                                                        costDesiredTrajectories.desiredStateTrajectory(), observation.time());
-  Eigen::Vector3d zmp = kinematicsInterface.getZMPBaseFrame(observation.state(), interpolatedPose, interpolatedWrench);
-  geometry_msgs::PointStamped zmpMsg;
-  zmpMsg.header = comMsg.header;
-  zmpMsg.point = tf2::toMsg(zmp);
-  zmpPublisher_.publish(zmpMsg);
-}
-
 kindr::HomTransformQuatD KinematicSimulation::getEndEffectorPose() {
   {
     boost::shared_lock<boost::shared_mutex> lock(observationMutex_);
@@ -855,62 +825,57 @@ kindr::HomTransformQuatD KinematicSimulation::getEndEffectorPoseInArmFr() {
                                     kindr::RotationQuaternionD(eigenBaseRotation));
   }
 }
-// std::shared_ptr<VoxbloxCostConfig> KinematicSimulation::configureCollisionAvoidance(
-//     std::shared_ptr<KinematicsInterfaceAD> kinematicInterface) {
-//   ros::NodeHandle pNh("~");
-//   std::shared_ptr<VoxbloxCostConfig> voxbloxCostConfig = nullptr;
+std::shared_ptr<FiestaCostConfig> KinematicSimulation::configureCollisionAvoidance(
+    std::shared_ptr<KinematicsInterfaceAD> kinematicInterface) {
+  ros::NodeHandle pNh("~");
+  std::shared_ptr<FiestaCostConfig> fiestaCostConfig = nullptr;
+  if (pNh.hasParam("collision_points")) {
+    perceptive_mpc::PointsOnRobot::points_radii_t pointsAndRadii(8);
+    using pair_t = std::pair<double, double>;
 
-//   if (pNh.hasParam("collision_points")) {
-//     perceptive_mpc::PointsOnRobot::points_radii_t pointsAndRadii(8);
-//     using pair_t = std::pair<double, double>;
+    XmlRpc::XmlRpcValue collisionPoints;
+    pNh.getParam("collision_points", collisionPoints);
+    if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+      ROS_WARN("collision_points parameter is not of type array.");
+      return fiestaCostConfig;
+    }
+    for (int i = 0; i < collisionPoints.size(); i++) {
+      if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+        ROS_WARN_STREAM("collision_points[" << i << "] parameter is not of type array.");
+        return fiestaCostConfig;
+      }
+      for (int j = 0; j < collisionPoints[i].size(); j++) {
+        if (collisionPoints[j].getType() != XmlRpc::XmlRpcValue::TypeArray) {
+          ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] parameter is not of type array.");
+          return fiestaCostConfig;
+        }
+        if (collisionPoints[i][j].size() != 2) {
+          ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] does not have 2 elements.");
+          return fiestaCostConfig;
+        }
+        double segmentId = collisionPoints[i][j][0];
+        double radius = collisionPoints[i][j][1];
+        pointsAndRadii[i].push_back(pair_t(segmentId, radius));
+        ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
+      }
+    }
+    perceptive_mpc::PointsOnRobotConfig config;
+    config.pointsAndRadii = pointsAndRadii;
+    using ad_type = CppAD::AD<CppAD::cg::CG<double>>;
+    config.kinematics = kinematicInterface;
+    pointsOnRobot_.reset(new perceptive_mpc::PointsOnRobot(config));
 
-//     XmlRpc::XmlRpcValue collisionPoints;
-//     pNh.getParam("collision_points", collisionPoints);
-//     if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-//       ROS_WARN("collision_points parameter is not of type array.");
-//       return voxbloxCostConfig;
-//     }
-//     for (int i = 0; i < collisionPoints.size(); i++) {
-//       if (collisionPoints.getType() != XmlRpc::XmlRpcValue::TypeArray) {
-//         ROS_WARN_STREAM("collision_points[" << i << "] parameter is not of type array.");
-//         return voxbloxCostConfig;
-//       }
-//       for (int j = 0; j < collisionPoints[i].size(); j++) {
-//         if (collisionPoints[j].getType() != XmlRpc::XmlRpcValue::TypeArray) {
-//           ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] parameter is not of type array.");
-//           return voxbloxCostConfig;
-//         }
-//         if (collisionPoints[i][j].size() != 2) {
-//           ROS_WARN_STREAM("collision_points[" << i << "][" << j << "] does not have 2 elements.");
-//           return voxbloxCostConfig;
-//         }
-//         double segmentId = collisionPoints[i][j][0];
-//         double radius = collisionPoints[i][j][1];
-//         pointsAndRadii[i].push_back(pair_t(segmentId, radius));
-//         ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
-//       }
-//     }
-//     perceptive_mpc::PointsOnRobotConfig config;
-//     config.pointsAndRadii = pointsAndRadii;
-//     using ad_type = CppAD::AD<CppAD::cg::CG<double>>;
-//     config.kinematics = kinematicInterface;
-//     pointsOnRobot_.reset(new perceptive_mpc::PointsOnRobot(config));
-
-//     if (pointsOnRobot_->numOfPoints() > 0) {
-//       voxbloxCostConfig.reset(new VoxbloxCostConfig());
-//       voxbloxCostConfig->pointsOnRobot = pointsOnRobot_;
-
-//       esdfCachingServer_.reset(new voxblox::EsdfCachingServer(ros::NodeHandle(), ros::NodeHandle("~")));
-//       voxbloxCostConfig->interpolator = esdfCachingServer_->getInterpolator();
-
-//       pointsOnRobot_->initialize("points_on_robot");
-//     } else {
-//       // if there are no points defined for collision checking, set this pointer to null to disable the visualization
-//       pointsOnRobot_ = nullptr;
-//     }
-//   }
-//   return voxbloxCostConfig;
-// }
+    if (pointsOnRobot_->numOfPoints() > 0) {
+      fiestaCostConfig.reset(new FiestaCostConfig());
+      fiestaCostConfig->pointsOnRobot = pointsOnRobot_;
+      pointsOnRobot_->initialize("points_on_robot");
+    } else {
+      // if there are no points defined for collision checking, set this pointer to null to disable the visualization
+      pointsOnRobot_ = nullptr;
+    }
+  }
+  return fiestaCostConfig;
+}
 
 void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& msg)
 {

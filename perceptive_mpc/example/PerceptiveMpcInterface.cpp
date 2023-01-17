@@ -28,10 +28,8 @@
  */
 
 #include "example/PerceptiveMpcInterface.h"
-#include <perceptive_mpc/costs/BaseAvoidanceCost.h>
 #include <perceptive_mpc/costs/QuadraticEndeffectorTrackingCost.h>
-#include <perceptive_mpc/costs/StabilitySoftConstraint.h>
-#include <perceptive_mpc/costs/VoxbloxCost.h>
+#include <perceptive_mpc/costs/FiestaCost.h>
 #include <perceptive_mpc/costs/FrontOrientationCost.h>
 #include <perceptive_mpc/costs/ManipulabilityCost.h>
 
@@ -45,7 +43,7 @@ namespace perceptive_mpc {
 /******************************************************************************************************/
 /******************************************************************************************************/
 PerceptiveMpcInterface::PerceptiveMpcInterface(const PerceptiveMpcInterfaceConfig& config)
-    : voxbloxConfig_(config.voxbloxConfig), kinematicsInterface_(config.kinematicsInterface) {
+    : fiestaConfig_(config.fiestaConfig), kinematicsInterface_(config.kinematicsInterface) {
   std::string packagePath = ros::package::getPath("perceptive_mpc");
 
   std::string taskFileName = config.taskFileName;
@@ -116,70 +114,19 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
     weightedCostFunctions.push_back(std::make_pair(1, eeCost));
   }
 
-  bool useObstacleCost = false;
-  // commented by yq for debugging
-  ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.useObstacleCost", useObstacleCost);
-  std::cerr << "useObstacleCost:       \n" << useObstacleCost << std::endl;
+  bool useFiestaCost = false;
+  ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.activate", useFiestaCost);
+  std::cerr << "fiesta_cost.activate:       \n" << useFiestaCost << std::endl;
 
-  if (useObstacleCost) {
-    perceptive_mpc::BaseAvoidanceCostConfig config;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.delta", config.delta);
-    std::cerr << "obstacleCost.delta_:       \n" << config.delta << std::endl;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.mu", config.mu);
-    std::cerr << "obstacleCost.mu:       \n" << config.mu << std::endl;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.sigma", config.sigma);
-    std::cerr << "obstacleCost.sigma:       \n" << config.sigma << std::endl;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.widthX", config.widthX);
-    std::cerr << "obstacleCost.widthX:       \n" << config.widthX << std::endl;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.widthY", config.widthY);
-    std::cerr << "obstacleCost.widthY:       \n" << config.widthY << std::endl;
-
-    ocs2::loadData::loadCppDataType(taskFile, "obstacle_cost.reach", config.reach);
-    std::cerr << "obstacleCost.reach:       \n" << config.reach << std::endl;
-
-    config.kinematics = kinematicsInterface_;
-    std::shared_ptr<BaseAvoidanceCost> baseAvoidanceCost(new BaseAvoidanceCost(config));
-    baseAvoidanceCost->initialize("base_avoidance_cost", libraryFolder_, modelSettings_.recompileLibraries_);
-
-    weightedCostFunctions.push_back(std::make_pair(1, baseAvoidanceCost));
-  }
-
-  bool useZMPConstraint = false;
-  ocs2::loadData::loadCppDataType(taskFile, "stability_soft_constraint.activate", useZMPConstraint);
-  std::cerr << "stability_soft_constraint.activate:       \n" << useZMPConstraint << std::endl;
-
-  if (useZMPConstraint) {
-    StabilitySoftConstraint::Settings settings;
-    settings.kinematics = kinematicsInterface_;
-    ocs2::loadData::loadCppDataType(taskFile, "stability_soft_constraint.support_circle_radius", settings.supportCircleRadius);
-    std::cerr << "stability_soft_constraint.support_circle_radius:       \n" << settings.supportCircleRadius << std::endl;
-    ocs2::loadData::loadCppDataType(taskFile, "stability_soft_constraint.mu", settings.relaxedBarrierConfig.mu);
-    std::cerr << "stability_soft_constraint.mu:       \n" << settings.relaxedBarrierConfig.mu << std::endl;
-    ocs2::loadData::loadCppDataType(taskFile, "stability_soft_constraint.delta", settings.relaxedBarrierConfig.delta);
-    std::cerr << "stability_soft_constraint.delta:       \n" << settings.relaxedBarrierConfig.delta << std::endl;
-    auto stabilityConstraint = std::make_shared<StabilitySoftConstraint>(settings);
-    stabilityConstraint->initialize("stability_constraint", libraryFolder_, modelSettings_.recompileLibraries_);
-    weightedCostFunctions.push_back(std::make_pair(1, stabilityConstraint));
-  }
-
-  bool useVoxbloxCost = false;
-  ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.activate", useVoxbloxCost);
-  std::cerr << "voxblox_cost.activate:       \n" << useVoxbloxCost << std::endl;
-
-  if (voxbloxConfig_ && useVoxbloxCost) { //add by yq
-    ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.mu", voxbloxConfig_->mu);
-    std::cerr << "voxblox_cost.mu:       \n" << voxbloxConfig_->mu << std::endl;
-    ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.delta", voxbloxConfig_->delta);
-    std::cerr << "voxblox_cost.delta:       \n" << voxbloxConfig_->delta << std::endl;
-    ocs2::loadData::loadCppDataType(taskFile, "voxblox_cost.max_distance", voxbloxConfig_->maxDistance);
-    std::cerr << "voxblox_cost.max_distance:       \n" << voxbloxConfig_->maxDistance << std::endl;
-    std::shared_ptr<VoxbloxCost> voxbloxCost(new VoxbloxCost(*voxbloxConfig_));
-    weightedCostFunctions.push_back(std::make_pair(1, voxbloxCost));
+  if (fiestaConfig_ && useFiestaCost) { //add by yq
+    ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.mu", fiestaConfig_->mu);
+    std::cerr << "fiesta_cost.mu:       \n" << fiestaConfig_->mu << std::endl;
+    ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.delta", fiestaConfig_->delta);
+    std::cerr << "fiesta_cost.delta:       \n" << fiestaConfig_->delta << std::endl;
+    ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.max_distance", fiestaConfig_->maxDistance);
+    std::cerr << "fiesta_cost.max_distance:       \n" << fiestaConfig_->maxDistance << std::endl;
+    std::shared_ptr<FiestaCost> fiestaCost(new FiestaCost(*fiestaConfig_));
+    weightedCostFunctions.push_back(std::make_pair(1, fiestaCost));
   }
 
   bool useFrontOrientationCost = false;

@@ -18,8 +18,8 @@
   <depend>ocs2_ddp</depend>
   <depend>kindr</depend>
   <depend>kindr_ros</depend>
-  <depend>voxblox</depend>
-  <depend>voxblox_ros</depend>
+  <!-- <depend>voxblox</depend> -->
+  <!-- <depend>voxblox_ros</depend> -->
   <depend>mue_description</depend>
   <depend>lxfr_description</depend>
   <depend>wholebody_control</depend>

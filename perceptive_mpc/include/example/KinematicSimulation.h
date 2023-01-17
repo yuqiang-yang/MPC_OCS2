@@ -81,7 +81,6 @@ class KinematicSimulation {
   std::unique_ptr<perceptive_mpc::PerceptiveMpcInterface> ocs2Interface_;
   std::shared_ptr<MpcInterface> mpcInterface_;
   std::shared_ptr<PointsOnRobot> pointsOnRobot_;
-  // std::shared_ptr<voxblox::EsdfCachingServer> esdfCachingServer_;
   // std::shared_ptr<perceptive_mpc::FrontEndOMPLRRTStar> frontEndOMPLRRTStar_;
   // TODO: uncomment for admittance control on hardware:
   // AdmittanceReferenceModule admittanceReferenceModule;
@@ -155,11 +154,10 @@ class KinematicSimulation {
   // publish the current end effector pose to ros
   void publishEndEffectorPose();
 
-  void publishZmp(const Observation & observation, const ocs2::CostDesiredTrajectories& costDesiredTrajectories);
     // parse all ros parameters
   void parseParameters();
 
-  // std::shared_ptr<VoxbloxCostConfig> configureCollisionAvoidance(std::shared_ptr<KinematicsInterfaceAD> kinematicInterface);
+  std::shared_ptr<FiestaCostConfig> configureCollisionAvoidance(std::shared_ptr<KinematicsInterfaceAD> kinematicInterface);
 
   // update the desired end effector pose on ros msg
   void desiredEndEffectorPoseCb(const geometry_msgs::PoseStampedConstPtr& msgPtr);
