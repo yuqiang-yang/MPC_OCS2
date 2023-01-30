@@ -48,7 +48,6 @@ using namespace perceptive_mpc;
 KinematicSimulation::KinematicSimulation(const ros::NodeHandle& nh)
     : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false),lastFrontEndWayPointNum_(0) {
       
-      
     }
 
 bool KinematicSimulation::run() {
@@ -82,8 +81,8 @@ bool KinematicSimulation::run() {
   // admittanceReferenceModule.initialize();
    
 
-  // frontEndOMPLRRTStarConfig_.interpolator_ = esdfCachingServer_->getInterpolator();
-  // frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
+  frontEndOMPLRRTStarConfig_.esdf_map.reset(esdf.esdf_map_);
+  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
   // Init ros stuff
   armStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/joint_states", 10);
   ROS_INFO("Waiting for joint states subscriber ...");
@@ -237,12 +236,12 @@ void KinematicSimulation::parseParameters() {
 
   std::string packagePath = ros::package::getPath("perceptive_mpc");
 
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" + mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
-  // ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" + mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
 
 
 
@@ -527,9 +526,8 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   
   std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
   std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
-  // frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
-  // bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
-  bool is_success = false;
+  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
+  bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
   if(!is_success)
   {
     ROS_ERROR("Found no frontEnd solution");

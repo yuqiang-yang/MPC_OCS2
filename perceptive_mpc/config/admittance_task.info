@@ -194,14 +194,6 @@ obstacle_cost
     reach               1.1
 }
 
-stability_soft_constraint
-{
-    activate        0
-    mu              5e-3
-    delta           1e-4
-    support_circle_radius 0.3
-}
-
 voxblox_cost
 {
     mu              5e-3

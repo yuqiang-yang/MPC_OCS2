@@ -3,12 +3,12 @@ using namespace perceptive_mpc;
 
 
 FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
-:config_(config),interpolator_(config.interpolator_),margin_x_(config.margin_x),margin_y_(config.margin_y),margin_z_(config.margin_z),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin)
+:config_(config),esdf_map_(config.esdf_map),margin_x_(config.margin_x),margin_y_(config.margin_y),margin_z_(config.margin_z),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin)
 {
     space_.reset(new ob::RealVectorStateSpace(3));
     space_->as<ob::RealVectorStateSpace>()->setBounds(0.0,1.0); 
     si_.reset(new ob::SpaceInformation(space_));
-    si_->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si_,interpolator_,obstacle_margin_)));
+    si_->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si_,esdf_map_,obstacle_margin_)));
     si_->setup();
     pdef_.reset(new ob::ProblemDefinition(si_));
     pdef_->setOptimizationObjective(getPathLengthObjective(si_));
@@ -111,20 +111,22 @@ double ValidityChecker::clearance(const ob::State* state) const{
     const ob::RealVectorStateSpace::StateType* state3D =
     state->as<ob::RealVectorStateSpace::StateType>();
   
-    float distance;
-    Eigen::Vector3f gradientVoxblox;
-    Eigen::Vector3f position;
+    Eigen::Vector3d position;
     position[0] = state3D->values[0];
     position[1] = state3D->values[1];
     position[2] = state3D->values[2];
-    if (interpolator_->getInterpolatedDistanceGradient(position, &distance, &gradientVoxblox)) {
+
+    Eigen::Vector3d gradientFiesta ;
+    gradientFiesta << 0.0, 0.0, 0.0;
+    double distance = esdf_map_->GetDistWithGradTrilinear(position,gradientFiesta);
+    if (distance != -1) {
         // std::cerr << "the query point distance is " << distance << std::endl;
         // std::cerr << "the query point gradient is " << gradientVoxblox.transpose() << std::endl;
         return distance;
     }
     else
     {
-        std::cerr << "Interpolator misses the point" << std::endl;
+        std::cerr << "esdf_map misses the point"  <<position.transpose() << std::endl;
         return 99;
     }
 

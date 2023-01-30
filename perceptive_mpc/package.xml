@@ -23,7 +23,7 @@
   <depend>mue_description</depend>
   <depend>lxfr_description</depend>
   <depend>wholebody_control</depend>
-  <!-- <depend>frontend_ompl</depend> -->
+  <depend>frontend_ompl</depend>
   <depend>realsense_camera</depend>  
   <depend>realsense_desciption</depend>
   <depend>fiesta</depend>

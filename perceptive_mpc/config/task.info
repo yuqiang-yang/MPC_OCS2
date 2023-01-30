@@ -1,8 +1,8 @@
 ; Time Horizon
 mpcTimeHorizon
 {
-  timehorizon      4.0
-  numPartitions    8
+  timehorizon      2.0
+  numPartitions    10
 }
 
 ; Mode sequence
@@ -52,7 +52,7 @@ slq
       AbsTolODE                      1e-5	;1e-6
       RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-3
-      maxNumStepsPerSecond           20000
+      maxNumStepsPerSecond           50000
       simulationIsConstrained        0
       noStateConstraints             1
       inequalityConstraintMu         1e-2
@@ -185,19 +185,19 @@ fiesta_cost
 {
     activate        1
     mu              1e-2
-    delta           1e-2
+    delta           1e-1
     max_distance    2.0
 }
 orientationCost
 {
-  activate          1
+  activate          0
   weight            1
 }
 
 manipulabilityCost
 {
-  activate          0
-  weight            5
+  activate          1
+  weight            1
 }
 
 ; joint limits
@@ -237,10 +237,10 @@ limits
 }
 frontEndOMPLRRTStar
 {
-  margin_x          1
-  margin_y          1
-  margin_z          1
-  obstacle_margin   0.2
-  planning_time     3
+  margin_x          0.2
+  margin_y          0.2
+  margin_z          0.2
+  obstacle_margin   0.05
+  planning_time     4
   edgeLength        0.4
 }

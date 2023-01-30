@@ -41,15 +41,17 @@ void FiestaCost::setCurrentStateAndControl(const FiestaCost::scalar_t& t, const 
     assert(positionsPointsOnRobot.size() % 3 == 0);
     int numPoints = pointsOnRobot_->numOfPoints();
     for (int i = 0; i < numPoints; i++) {
-      Eigen::Vector3d gradientFiesta;
+      Eigen::Vector3d gradientFiesta ;
+      gradientFiesta << 0.0, 0.0, 0.0;
       Eigen::Matrix<scalar_t, 3, 1> position = positionsPointsOnRobot.segment<3>(i * 3);
       double distance = esdfMap_->GetDistWithGradTrilinear(position,gradientFiesta);
       if(distance != -1){
-        distances_[i] = distance - radii(i) - 0.05; //0.05 is a safe distance.. for debugging. Added by yq.
+        distances_[i] = distance - radii(i); //0.05 is a safe distance.. for debugging. Added by yq.
         gradientsFiesta_.block<1, 3>(i, 3 * i) = gradientFiesta.transpose().cast<double>();
       }else {
-        std::cerr << "the query point is out of the map range! Please change the size." << std::endl;
+        std::cerr << "the query point is out of the map range! Please change the size."  << position.transpose() << std::endl;
         distances_[i] = maxDistance_ - radii(i);
+        // gradientsFiesta_.block<1, 3>(i, 3 * i) = gradientFiesta.transpose().cast<double>();
       };
     }
     assert(gradients_.rows() == gradientsFiesta_.rows());
@@ -66,8 +68,6 @@ void FiestaCost::getIntermediateCost(FiestaCost::scalar_t& L) {
 }
 void FiestaCost::getIntermediateCostDerivativeState(FiestaCost::state_vector_t& dLdx) {
   dLdx = gradients_.transpose() * distances_.unaryExpr([this](const auto& x) { return getPenaltyFunctionDerivative(x); });
-  // getIntermediateCostDerivativeStateVerbose(dLdx);
-  // dLdx = FiestaCost::state_vector_t::Zero();
 }
 
 void FiestaCost::getIntermediateCostDerivativeStateVerbose(FiestaCost::state_vector_t& dLdx){

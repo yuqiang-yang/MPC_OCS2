@@ -5,7 +5,7 @@ project(frontend_ompl)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
-  voxblox_ros
+  fiesta
 
 )
 find_package(ompl REQUIRED)

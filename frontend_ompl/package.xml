@@ -16,10 +16,10 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
-  <build_depend>voxblox_ros</build_depend>
+  <build_depend>fiesta</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>voxblox_ros</run_depend>
+  <run_depend>fiesta</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
 

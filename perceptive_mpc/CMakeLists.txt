@@ -17,7 +17,7 @@ set(PACKAGE_DEPENDENCIES
     kindr_ros
     # voxblox
     # voxblox_ros
-    # frontend_ompl
+    frontend_ompl
     fiesta
 )
 
