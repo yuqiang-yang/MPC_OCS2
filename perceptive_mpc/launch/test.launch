@@ -51,8 +51,8 @@
 
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.05"/>
-        <param name="update_esdf_every_n_sec" value="0.1"/>
+        <param name="resolution" value="0.01"/>
+        <param name="update_esdf_every_n_sec" value="9999"/>
 
         <!--Hash Table only-->
         <param name="reserved_size" value="1000000"/>
