@@ -134,8 +134,19 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
     if (h > delta_) {
       return mu_ / (h * h);
     } else {
-      return mu_ / (delta_ * delta_);
+      return mu_ / (delta_ * delta_) ;
     };
   };
+  // scalar_t getPenaltyFunctionValue(scalar_t h) const {
+  //   return 1.0/h/h;
+  // };
+
+  // scalar_t getPenaltyFunctionDerivative(scalar_t h) const {
+  //   return -2.0/h/h/h;
+  // };
+
+  // scalar_t getPenaltyFunctionSecondDerivative(scalar_t h) const {
+  //   return 6.0/h/h/h/h;
+  // };
 };
 }  // namespace perceptive_mpc

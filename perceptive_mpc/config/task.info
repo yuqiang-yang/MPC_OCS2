@@ -137,7 +137,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 1e1
+    scaling 3e0
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -165,7 +165,7 @@ ee_tracking_task
   ; final state weight matrix
   Q_final
   {
-    scaling 0e+1
+    scaling 1e+1
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -185,12 +185,12 @@ fiesta_cost
 {
     activate        1
     mu              1e-2
-    delta           1e-1
+    delta           3e-1
     max_distance    2.0
 }
 orientationCost
 {
-  activate          0
+  activate          1
   weight            1
 }
 
