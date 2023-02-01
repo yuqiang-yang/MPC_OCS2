@@ -40,9 +40,30 @@ namespace perceptive_mpc{
     double margin_z;
     double edgeLength;
     double obstacle_margin;
+    double distance_gain;
     std::shared_ptr<fiesta::ESDFMap> esdf_map;
 };
 
+ class ClearanceObjective : public ob::StateCostIntegralObjective
+ {
+ public:
+     ClearanceObjective(const ob::SpaceInformationPtr& si) :
+         ob::StateCostIntegralObjective(si, true)
+     {
+     }
+  
+     // Our requirement is to maximize path clearance from obstacles,
+     // but we want to represent the objective as a path cost
+     // minimization. Therefore, we set each state's cost to be the
+     // reciprocal of its clearance, so that as state clearance
+     // increases, the state cost decreases.
+     ob::Cost stateCost(const ob::State* s) const override
+     {
+         return ob::Cost(1 / (si_->getStateValidityChecker()->clearance(s) +
+             std::numeric_limits<double>::min()));
+     }
+
+ };
     class FrontEndOMPLRRTStar{
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -50,7 +71,13 @@ namespace perceptive_mpc{
             bool Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory);
         protected:
             ob::OptimizationObjectivePtr getPathLengthObjective(const ob::SpaceInformationPtr& si);
-
+            ob::OptimizationObjectivePtr getBalancedObjective(const ob::SpaceInformationPtr& si)
+            {
+                auto lengthObj(std::make_shared<ob::PathLengthOptimizationObjective>(si));
+                auto clearObj(std::make_shared<ClearanceObjective>(si));
+            
+                return distance_gain_*lengthObj + clearObj;
+            }
             std::shared_ptr<fiesta::ESDFMap> esdf_map_;
             ob::StateSpacePtr space_;
             ob::SpaceInformationPtr si_;
@@ -61,11 +88,11 @@ namespace perceptive_mpc{
             double margin_x_;
             double margin_y_;
             double margin_z_;
+            double distance_gain_;
             double planning_time_;
             double obstacle_margin_;
             struct FrontEndOMPLRRTStarConfig config_;
     };
-
 
 class ValidityChecker : public ob::StateValidityChecker
 {
@@ -83,5 +110,8 @@ protected:
 };
 
 
+
+
+  
 
 }// namespace perceptive mpc

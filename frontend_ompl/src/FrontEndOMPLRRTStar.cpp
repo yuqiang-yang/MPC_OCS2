@@ -3,7 +3,7 @@ using namespace perceptive_mpc;
 
 
 FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
-:config_(config),esdf_map_(config.esdf_map),margin_x_(config.margin_x),margin_y_(config.margin_y),margin_z_(config.margin_z),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin)
+:config_(config),esdf_map_(config.esdf_map),margin_x_(config.margin_x),margin_y_(config.margin_y),margin_z_(config.margin_z),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin),distance_gain_(config.distance_gain)
 {
     space_.reset(new ob::RealVectorStateSpace(3));
     space_->as<ob::RealVectorStateSpace>()->setBounds(0.0,1.0); 
@@ -11,7 +11,9 @@ FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
     si_->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si_,esdf_map_,obstacle_margin_)));
     si_->setup();
     pdef_.reset(new ob::ProblemDefinition(si_));
-    pdef_->setOptimizationObjective(getPathLengthObjective(si_));
+    // pdef_->setOptimizationObjective(getPathLengthObjective(si_));
+    pdef_->setOptimizationObjective(getBalancedObjective(si_));
+
     optimizingPlanner_.reset(new og::RRTstar(si_));
     optimizingPlanner_->setRange(config.edgeLength);
     // optimizingPlanner_->printSettings(std::cout);
@@ -23,22 +25,27 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     ob::ScopedState<> plan_start(space_);
 
     ob::RealVectorBounds bound(3);
-    double min_x = start.coeff(4) < goal.coeff(4)?start.coeff(4):goal.coeff(4);
-    double max_x = start.coeff(4) > goal.coeff(4)?start.coeff(4):goal.coeff(4);
-    bound.setLow(0,min_x-config_.margin_x);
-    bound.setHigh(0,max_x+config_.margin_x);
+    // double min_x = start.coeff(4) < goal.coeff(4)?start.coeff(4):goal.coeff(4);
+    // double max_x = start.coeff(4) > goal.coeff(4)?start.coeff(4):goal.coeff(4);
+    // bound.setLow(0,min_x-config_.margin_x);
+    // bound.setHigh(0,max_x+config_.margin_x);
 
-    double min_y = start.coeff(5) < goal.coeff(5)?start.coeff(5):goal.coeff(5);
-    double max_y = start.coeff(5) > goal.coeff(5)?start.coeff(5):goal.coeff(5);
-    bound.setLow(1,min_y-config_.margin_y);
-    bound.setHigh(1,max_y+config_.margin_y);
+    // double min_y = start.coeff(5) < goal.coeff(5)?start.coeff(5):goal.coeff(5);
+    // double max_y = start.coeff(5) > goal.coeff(5)?start.coeff(5):goal.coeff(5);
+    // bound.setLow(1,min_y-config_.margin_y);
+    // bound.setHigh(1,max_y+config_.margin_y);
 
-    double min_z = start.coeff(6) < goal.coeff(6)?start.coeff(6):goal.coeff(6);
-    double max_z = start.coeff(6) > goal.coeff(6)?start.coeff(6):goal.coeff(6);
-    bound.setLow(2,min_z-config_.margin_z);
-    bound.setHigh(2,max_z+config_.margin_z);
-    std::cerr << "min_x:" << min_x << " min_y:" << min_y << " min_z:" << min_z << std::endl<<"max_x:" << max_x << " max_y:" << max_y
- << " max_z:" << max_z << std::endl;
+    // double min_z = start.coeff(6) < goal.coeff(6)?start.coeff(6):goal.coeff(6);
+    // double max_z = start.coeff(6) > goal.coeff(6)?start.coeff(6):goal.coeff(6);
+    // bound.setLow(2,min_z-config_.margin_z);
+    // bound.setHigh(2,max_z+config_.margin_z);
+    bound.setLow(0,-2.5);
+    bound.setHigh(0,3.5);
+    bound.setLow(1,-2.5);
+    bound.setHigh(1,2.5);    
+    bound.setLow(2,-0.5);
+    bound.setHigh(2,2);
+
     space_->as<ob::RealVectorStateSpace>()->setBounds(bound); 
 
     plan_start->as<ob::RealVectorStateSpace::StateType>()->values[0] = start.coeff(4);
@@ -57,10 +64,10 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     optimizingPlanner_->setup();
     ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
     if(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
-    {
+    {        
         return false;
     }
-
+    // ob::exactSolnPlannerTerminationCondition
     //position path is solve by RRT*
     std::vector<ob::State *> states = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStates();
     size_t rows = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStateCount();
