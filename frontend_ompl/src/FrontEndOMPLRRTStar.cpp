@@ -134,7 +134,7 @@ double ValidityChecker::clearance(const ob::State* state) const{
     else
     {
         std::cerr << "esdf_map misses the point"  <<position.transpose() << std::endl;
-        return 99;
+        return 3.0;
     }
 
 }

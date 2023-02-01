@@ -150,7 +150,7 @@ ee_tracking_task
   ; control weight matrix
   R
   {
-    scaling 1e+0
+    scaling 1e-1
 
     (0,0) 2.0  ; base_drive
     (1,1) 2.0  ; base_turn
@@ -243,5 +243,5 @@ frontEndOMPLRRTStar
   obstacle_margin   0.05
   planning_time     4
   edgeLength        0.4
-  distance_gain     0.0
+  distance_gain     1000.0
 }

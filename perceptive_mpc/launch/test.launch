@@ -15,7 +15,7 @@
     <arg name="isPureSimulation" value="true"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
-    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if ="$(eval arg('isPureSimulation') == false)"/>
+    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
   <rosparam>
       /camera/motion_module/global_time_enabled: true
       /camera/l500_depth_sensor/global_time_enabled: true
@@ -93,7 +93,7 @@
         <param name="visualize_every_n_updates" value="5"/>
         <param name="slice_vis_max_dist" value="2.0"/>
         <!-- relative to the lz if array is used, relative to the origin if hash table is used -->
-        <param name="slice_vis_level" value="1.0"/>
+        <param name="slice_vis_level" value="1.2"/>
         <param name="vis_lower_bound" value="0"/>
         <param name="vis_upper_bound" value="+10"/>
 
