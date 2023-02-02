@@ -185,7 +185,7 @@ fiesta_cost
 {
     activate        1
     mu              1e-2
-    delta           3e-1
+    delta           3e-4
     max_distance    2.0
 }
 orientationCost
@@ -196,7 +196,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          0
+  activate          1
   weight            1
 }
 

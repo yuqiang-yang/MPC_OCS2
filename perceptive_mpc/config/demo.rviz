@@ -32,7 +32,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -294,7 +294,7 @@ Visualization Manager:
       Marker Topic: /perceptive_mpc/collision_points
       Name: Collision Checkpoints
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -343,7 +343,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -358,7 +358,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /perceptive_mpc/front_end_trajectory
@@ -406,8 +406,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 1.9900000095367432
-        Min Value: -0.49000000953674316
+        Max Value: 1.8849999904632568
+        Min Value: -0.06499999761581421
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -424,7 +424,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.019999999552965164
+      Size (m): 0.029999999329447746
       Style: Boxes
       Topic: /kinematic_simulation/ESDFMap/occ_pc
       Unreliable: false
@@ -432,21 +432,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /fiesta/ESDFMap/text
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 0.20000000298023224
       Axes Radius: 0.05000000074505806
@@ -490,25 +482,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.93714714050293
+      Distance: 4.46047306060791
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.9524072408676147
-        Y: 0.38266634941101074
-        Z: 0.5043815970420837
+        X: 1.3305399417877197
+        Y: 0.5864726305007935
+        Z: 0.3802950978279114
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.40979352593421936
+      Pitch: 0.40479350090026855
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.9448139667510986
+      Yaw: 3.1848549842834473
     Saved: ~
 Window Geometry:
   Displays:
