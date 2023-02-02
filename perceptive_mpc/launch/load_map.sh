@@ -1,0 +1,1 @@
+rosservice call /kinematic_simulation/fiesta_load_map "/home/vision/yq_ws/my_mpc/src/map/map_0.03_-2.5_3.5"
