@@ -9,6 +9,8 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
 #include <ompl/base/PlannerTerminationCondition.h>
+#include <ompl/base/PlannerData.h>
+
 
 
 // For ompl::msg::setLogLevel
@@ -16,6 +18,11 @@
 
 // The supported optimal planners, in alphabetical order
 #include <ompl/geometric/planners/rrt/RRTstar.h>
+#include <ompl/geometric/planners/rrt/RRTXstatic.h>
+#include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
+
+
 
 
 // For boost program options
@@ -26,6 +33,7 @@
 #include <memory>
 
 #include "Fiesta.h"
+#include "timing.h"
 
 
 namespace ob = ompl::base;
@@ -76,15 +84,23 @@ namespace perceptive_mpc{
                 auto lengthObj(std::make_shared<ob::PathLengthOptimizationObjective>(si));
                 auto clearObj(std::make_shared<ClearanceObjective>(si));
             
-                return distance_gain_*lengthObj + clearObj;
+                return lengthObj + distance_gain_*clearObj;
             }
             std::shared_ptr<fiesta::ESDFMap> esdf_map_;
             ob::StateSpacePtr space_;
             ob::SpaceInformationPtr si_;
             ob::ProblemDefinitionPtr pdef_;
             using RRTstarPtr = std::shared_ptr<ompl::geometric::RRTstar>;
+            using RRTXStaticPtr = std::shared_ptr<ompl::geometric::RRTXstatic>;
+            using RRTConnectPtr = std::shared_ptr<ompl::geometric::RRTConnect>;
+            using RRTPtr = std::shared_ptr<ompl::geometric::RRT>;
+
             // ob::PlannerPtr optimizingPlanner_;
-            RRTstarPtr optimizingPlanner_;
+            // RRTstarPtr optimizingPlanner_;
+            // RRTXStaticPtr optimizingPlanner_;
+            // RRTConnectPtr optimizingPlanner_;
+            RRTPtr optimizingPlanner_;
+
             double margin_x_;
             double margin_y_;
             double margin_z_;

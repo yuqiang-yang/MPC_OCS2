@@ -49,7 +49,7 @@ void FiestaCost::setCurrentStateAndControl(const FiestaCost::scalar_t& t, const 
         distances_[i] = distance - radii(i); //0.05 is a safe distance.. for debugging. Added by yq.
         gradientsFiesta_.block<1, 3>(i, 3 * i) = gradientFiesta.transpose().cast<double>();
       }else {
-        std::cerr << "the query point is out of the map range! Please change the size."  << position.transpose() << std::endl;
+        // std::cerr << "the query point is out of the map range! Please change the size."  << position.transpose() << std::endl;
         distances_[i] = maxDistance_ - radii(i);
         // gradientsFiesta_.block<1, 3>(i, 3 * i) = gradientFiesta.transpose().cast<double>();
       };

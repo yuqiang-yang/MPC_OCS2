@@ -32,7 +32,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -294,7 +294,7 @@ Visualization Manager:
       Marker Topic: /perceptive_mpc/collision_points
       Name: Collision Checkpoints
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -497,10 +497,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.40479350090026855
+      Pitch: 0.5797933340072632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1848549842834473
+      Yaw: 2.0148463249206543
     Saved: ~
 Window Geometry:
   Displays:

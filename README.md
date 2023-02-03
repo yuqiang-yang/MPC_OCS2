@@ -31,3 +31,6 @@
     + The ESDF construction algorithm of Fast-planner is naive and it cannot handle a small resolution. I try a resolution of 1cm and 2cm, then the program crash. While in Fiesta, a resolution of 3cm in the range (-2.5,-2.5,-0.5)->(3.5,2.5.1.5) still works at 10 hz.
     + The VBD-EDT algorithm also incrementally update the ESDF and has a parameter to restrict the BFS depth. I guess it's also a good choice.
 + Not-Solved Problem : FrontEnd. The parameter of barrier function. The strategy of obstacles avoidance.
+### 2023.2.3 
++ FrontEnd
+    + THe RRT of OMPL is able to find a initial path in about 1ms. But the RRT* seems to be bad at the convergence(sometimes it cannot find a solution in 4s.) and the quality!!!

@@ -196,7 +196,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          1
+  activate          0
   weight            1
 }
 
@@ -241,7 +241,7 @@ frontEndOMPLRRTStar
   margin_y          0.2
   margin_z          0.2
   obstacle_margin   0.05
-  planning_time     4
-  edgeLength        0.4
-  distance_gain     1000.0
+  planning_time     12.0
+  edgeLength        0.2
+  distance_gain     0.0
 }

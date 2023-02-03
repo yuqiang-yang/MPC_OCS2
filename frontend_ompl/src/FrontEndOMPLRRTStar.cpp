@@ -14,7 +14,10 @@ FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
     // pdef_->setOptimizationObjective(getPathLengthObjective(si_));
     pdef_->setOptimizationObjective(getBalancedObjective(si_));
 
-    optimizingPlanner_.reset(new og::RRTstar(si_));
+    // optimizingPlanner_.reset(new og::RRTstar(si_));
+    // optimizingPlanner_.reset(new og::RRTConnect(si_));
+    optimizingPlanner_.reset(new og::RRT(si_));
+
     optimizingPlanner_->setRange(config.edgeLength);
     // optimizingPlanner_->printSettings(std::cout);
 
@@ -23,7 +26,7 @@ FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
 bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory)
 {
     ob::ScopedState<> plan_start(space_);
-
+    ob::PlannerData pData(si_);
     ob::RealVectorBounds bound(3);
     // double min_x = start.coeff(4) < goal.coeff(4)?start.coeff(4):goal.coeff(4);
     // double max_x = start.coeff(4) > goal.coeff(4)?start.coeff(4):goal.coeff(4);
@@ -58,15 +61,38 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
 
     pdef_->setStartAndGoalStates(plan_start, plan_end);
 
-    std::cerr << "plan_start " << start.transpose() <<std::endl<< "plan end" << goal.transpose() << std::endl;
-    std::cerr << "planning_time_" << planning_time_ << std::endl;
+    // std::cerr << "plan_start " << start.transpose() <<std::endl<< "plan end" << goal.transpose() << std::endl;
+    // std::cerr << "planning_time_" << planning_time_ << std::endl;
+
+    
+    if(!si_->getStateValidityChecker()->isValid(plan_end->as<ob::RealVectorStateSpace::StateType>()))
+    {
+        std::cerr << "invalid goal state!!!!!!!"  << si_->getStateValidityChecker()->clearance(plan_end->as<ob::RealVectorStateSpace::StateType>())<< std::endl;
+        return false;
+    }
+    else
+    {
+        std::cerr << "valid goal with clearance" << si_->getStateValidityChecker()->clearance(plan_end->as<ob::RealVectorStateSpace::StateType>()) << std::endl;
+    }
+
+    timing::Timer collision_checker("plan");
     optimizingPlanner_->setProblemDefinition(pdef_);
     optimizingPlanner_->setup();
     ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
-    if(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
-    {        
-        return false;
+    collision_checker.Stop();
+    timing::Timing::Print(std::cout);
+
+    int cnt = 0;
+    while(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
+    {   
+        if(cnt == 5) return false;
+        cnt++;
+        optimizingPlanner_->getPlannerData(pData);
+        // std::cerr << "Cannot find solution: " << "with vertices " << pData.numVertices() << "   iterations:" << optimizingPlanner_->numIterations() << std::endl;
+        ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
     }
+        // std::cerr << "find solution successfully : " << "with vertices " << pData.numVertices() << "   iterations:" << optimizingPlanner_->numIterations() << std::endl;
+
     // ob::exactSolnPlannerTerminationCondition
     //position path is solve by RRT*
     std::vector<ob::State *> states = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStates();

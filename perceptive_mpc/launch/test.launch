@@ -33,7 +33,7 @@
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
       <rosparam file="$(find perceptive_mpc)/config/kinematic_simulation_parameters.yaml"/>
       <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-      <param name="info_rate" value="8.0" />
+      <param name="info_rate" value="80.0" />
       <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <param name="tsdf_voxel_size" value="$(arg tsdf_voxel_size)" />
         <param name="tsdf_voxels_per_side" value="$(arg tsdf_voxels_per_side)"/>

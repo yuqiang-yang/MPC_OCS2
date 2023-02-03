@@ -525,8 +525,8 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   msgPtr->pose.position.x,msgPtr->pose.position.y,msgPtr->pose.position.z;
   Eigen::Matrix<double,Eigen::Dynamic,7> desired_trajectory; 
   
-  std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
-  std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
+  // std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
+  // std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
   bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
   if(!is_success)
@@ -535,7 +535,7 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
     return;
   }
 
-  std::cerr << "debugging traj" << desired_trajectory << std::endl;
+  // std::cerr << "debugging traj" << desired_trajectory << std::endl;
 
 
   visualization_msgs::MarkerArray frontEndTraj;
@@ -574,8 +574,9 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
     }
 
   }
-  std::cerr << "publish marker array" << std::endl;
+  // std::cerr << "publish marker array" << std::endl;
   frontEndVisualizePublisher_.publish(frontEndTraj);
+  if(true) return;
 
   perceptive_mpc::WrenchPoseTrajectory wrenchPoseTrajectory;
   wrenchPoseTrajectory.header.stamp = ros::Time::now();
@@ -641,7 +642,7 @@ void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::Wr
 
     lastPose = desiredPose;
   }
-  costDesiredTrajectories_.display();
+  // costDesiredTrajectories_.display();
   ROS_INFO_STREAM("current time");
 }
 
