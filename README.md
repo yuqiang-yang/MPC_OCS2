@@ -17,6 +17,11 @@
     + change  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hiddem") to  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=default")
     + But annother error occurs.TypeError: No registered converter was able to produce a C++ rvalue of type std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > from this Python object of type unicode
     + It seems that the bug exist in "string pyversion = py::extract<string>(openravepy.attr("__version__"));". Just comment it.
+    + No handlers could be found for logger "openravepy.ikfast" -> it may be a problem in sympy. Check here and install.
+    + The imported target "vtkRenderingPythonTkWidgets" references the file "/usr/lib/x86_64-linux-gnu/libvtkRenderingPythonTkWidgets.so" but this file does not exist. -> locate the library and make a softlink.
+    + comment VTK_GRAPHICS_EXPORT in vtkQuadricDecimation2.h
+    + SetInput() -> SetInputData()
+    + cannot declare ‘::main’ to be a global variable. -> change main to another name e.g.main1
 ### 2023.2.1   
 + change the OMPL frontend to multiobject of clearance and distance. Change the range to a fixed size( This will accelarate the solution finding time).
 + unfortunately, FIESTA can only construct the ESDF around the obstacles. The ESDF and distance_buffer of the place that is far from the obs.( just about 5cm) is UNDEFINED. So the MPC planner cannot acheive the plan because it would react to the obs. only when the arm really close to them.
@@ -34,3 +39,7 @@
 ### 2023.2.3 
 + FrontEnd
     + THe RRT of OMPL is able to find a initial path in about 1ms. But the RRT* seems to be bad at the convergence(sometimes it cannot find a solution in 4s.) and the quality!!!
+
+### 2023.2.7
++ install openrave 0.9.0 in 18.04
+    + https://robots.uc3m.es/installation-guides/install-openrave.html#install-openrave-090-ubuntu-1804-bionic
