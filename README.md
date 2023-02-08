@@ -43,3 +43,15 @@
 ### 2023.2.7
 + install openrave 0.9.0 in 18.04
     + https://robots.uc3m.es/installation-guides/install-openrave.html#install-openrave-090-ubuntu-1804-bionic
+    + Successfully install trajopt
+### 2023.2.8
++ Openrave has a ik function manip.FindIKSolutions(T_w_ee, openravepy.IkFilterOptions.CheckEnvCollisions) that can return a collision free ik. I think it's based on ikfast, so it's not useful for manipulator with Dof > 7;
++ the collision checker of trajopt is done by openrave. The convex decomposition is pointcloud -> filtered -> mesh -> covex hull -> add to openrave. Handle static case. The GJK algorithm may be implemented by BULLET LIBRARY. It's too difficult.
++ PCL and Open3D implement the algorithm to convert pointclouds into convex hull through qhull(quick hull). But there is no convex decomposition.
++ sample in constraint configuration space: planning_with_approximated_constraint_manifolds(OMPL)
+    + https://ros-planning.github.io/moveit_tutorials/doc/planning_with_approximated_constraint_manifolds/planning_with_approximated_constraint_manifolds_tutorial.html
+    + Offlinely construct a approximation graph(edge + vetex) that lies in the task constrains manifolds(different from collision avoidance space.). All edges and vetexes are constraint, the construction of which uses some tricks such as rejection sampling and Jacobian rejection.
+    + The approximation graph can be used for multiple times because it will be same for different scene with same manipulators.
++ How does move it do self-collision checking?(without padding or inflation)
+    + The fcl library has a Collision-manager, which use AABB for the collision for multiple objects(from rough to concrete). It can also check the collision or distance between two Collision-manager(such as robot links and the world obstacles.)
+    + stl is a simple mesh file that only includes the geometry information while dae include the color, texture and so on. 
