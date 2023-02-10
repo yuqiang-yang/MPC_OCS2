@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
-        - /MarkerArray1
         - /PointCloud23
         - /PointCloud1
         - /Marker1
@@ -294,7 +293,7 @@ Visualization Manager:
       Marker Topic: /perceptive_mpc/collision_points
       Name: Collision Checkpoints
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -358,14 +357,6 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /perceptive_mpc/front_end_trajectory
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Queue Size: 100
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -454,6 +445,14 @@ Visualization Manager:
       Topic: /measured_end_effector_pose
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /perceptive_mpc/front_end_trajectory
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -497,10 +496,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5797933340072632
+      Pitch: 0.4447934031486511
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0148463249206543
+      Yaw: 1.7848459482192993
     Saved: ~
 Window Geometry:
   Displays:

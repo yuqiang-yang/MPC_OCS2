@@ -132,7 +132,7 @@ bool KinematicSimulation::run() {
   endEffectorPosePublisher_ = nh_.advertise<geometry_msgs::PoseStamped>("measured_end_effector_pose", 100);
 
   pointsOnRobotPublisher_ = nh_.advertise<visualization_msgs::MarkerArray>("/perceptive_mpc/collision_points", 1, false);
-  frontEndVisualizePublisher_ = nh_.advertise<visualization_msgs::MarkerArray>("/perceptive_mpc/front_end_trajectory", 1, false);
+  frontEndVisualizePublisher_ = nh_.advertise<visualization_msgs::Marker>("/perceptive_mpc/front_end_trajectory", 1, false);
   
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
 
@@ -241,7 +241,7 @@ void KinematicSimulation::parseParameters() {
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.edgeLength", frontEndOMPLRRTStarConfig_.edgeLength);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.collisionCheckerResolution", frontEndOMPLRRTStarConfig_.collisionCheckerResolution);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.distance_gain", frontEndOMPLRRTStarConfig_.distance_gain);
 
 
@@ -538,45 +538,33 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   // std::cerr << "debugging traj" << desired_trajectory << std::endl;
 
 
-  visualization_msgs::MarkerArray frontEndTraj;
-  for(int i = 0; i < desired_trajectory.rows(); i++){
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
-    marker.header.seq = i;
-    marker.id = i;
-    marker.type = visualization_msgs::Marker::SPHERE;
+    // marker.header.seq = i;
+    marker.id = 999;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::DELETE;
+    frontEndVisualizePublisher_.publish(marker);
+
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = desired_trajectory(i,4);    
-    marker.pose.position.y = desired_trajectory(i,5); 
-    marker.pose.position.z = desired_trajectory(i,6); 
     marker.pose.orientation.w = 1;
     marker.pose.orientation.x = 0;
     marker.pose.orientation.y = 0;
     marker.pose.orientation.z = 0;
-    marker.scale.x = 0.05;
-    marker.scale.y = 0.05;
-    marker.scale.z = 0.05;
+    marker.scale.x = 0.03;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
+  for(int i = 0; i < desired_trajectory.rows(); i++){
+    geometry_msgs::Point pt;
 
-    frontEndTraj.markers.push_back(marker);
+    pt.x = desired_trajectory(i,4);    
+    pt.y = desired_trajectory(i,5); 
+    pt.z = desired_trajectory(i,6); 
+    marker.points.push_back(pt);
   }
-  if(desired_trajectory.rows() < lastFrontEndWayPointNum_)
-  {
-    for(int i = desired_trajectory.rows(); i < lastFrontEndWayPointNum_; i++){
-      visualization_msgs::Marker marker;
-      marker.header.frame_id = "odom";
-      marker.header.seq = i;
-      marker.id = i;
-      marker.type = visualization_msgs::Marker::SPHERE;
-      marker.action = visualization_msgs::Marker::DELETE;
-      frontEndTraj.markers.push_back(marker);
-    }
 
-  }
   // std::cerr << "publish marker array" << std::endl;
-  frontEndVisualizePublisher_.publish(frontEndTraj);
-  if(true) return;
+  frontEndVisualizePublisher_.publish(marker);
 
   perceptive_mpc::WrenchPoseTrajectory wrenchPoseTrajectory;
   wrenchPoseTrajectory.header.stamp = ros::Time::now();

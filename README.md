@@ -54,4 +54,9 @@
     + The approximation graph can be used for multiple times because it will be same for different scene with same manipulators.
 + How does move it do self-collision checking?(without padding or inflation)
     + The fcl library has a Collision-manager, which use AABB for the collision for multiple objects(from rough to concrete). It can also check the collision or distance between two Collision-manager(such as robot links and the world obstacles.)
-    + stl is a simple mesh file that only includes the geometry information while dae include the color, texture and so on. 
+    + stl is a simple mesh file that only includes the geometry information while dae include the color, texture and so on.
++ The gradient infomation in trajopt is local-linearized(Assume that the contact point and the normal vector remain the same in an short peroids). I think it's not graceful way to handle the obstacles. It's also time-comsuming.
+
+### 2023.2.10
++ Problem： The RRT star converge too slow and it seems not to optimize for a better solution at all
+    + solved: The reason exists in the concept i misunderstand OMPL optimizingPlanner_->setRange. At first i consider it as a parameter that determines the resolution of the collision checker, so i set it to a relatively small value (e.g. 0.02). In this case the RRT*(or RRTX) is hard to optimize. Acually, the collision checker resolution is determined by the si_->setStateValidityCheckingResolution()[default 0.01]. So, just remove the sentence of optimizingPlanner_->setRange and keep the range to the default value.

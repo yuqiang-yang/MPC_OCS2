@@ -46,7 +46,7 @@ namespace perceptive_mpc{
     double margin_x;
     double margin_y;
     double margin_z;
-    double edgeLength;
+    double collisionCheckerResolution;
     double obstacle_margin;
     double distance_gain;
     std::shared_ptr<fiesta::ESDFMap> esdf_map;
@@ -84,7 +84,7 @@ namespace perceptive_mpc{
                 auto lengthObj(std::make_shared<ob::PathLengthOptimizationObjective>(si));
                 auto clearObj(std::make_shared<ClearanceObjective>(si));
             
-                return lengthObj + distance_gain_*clearObj;
+                return distance_gain_*lengthObj + clearObj;
             }
             std::shared_ptr<fiesta::ESDFMap> esdf_map_;
             ob::StateSpacePtr space_;
@@ -99,7 +99,7 @@ namespace perceptive_mpc{
             // RRTstarPtr optimizingPlanner_;
             // RRTXStaticPtr optimizingPlanner_;
             // RRTConnectPtr optimizingPlanner_;
-            RRTPtr optimizingPlanner_;
+            // RRTPtr optimizingPlanner_;
 
             double margin_x_;
             double margin_y_;
