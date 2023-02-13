@@ -112,6 +112,8 @@ class ESDFMap {
 
 
   void SetAllVoxelFree(); //add by yq. only use in the intialization.
+  void SetAllVoxelOccupied(); //add by yq. only use in the intialization.
+
  public:
 #ifdef HASH_TABLE
   ESDFMap(Eigen::Vector3d origin, double resolution, int reserve_size = 0);

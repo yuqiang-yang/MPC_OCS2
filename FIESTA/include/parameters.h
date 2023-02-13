@@ -11,7 +11,7 @@
 #define BLOCK
 #define BITWISE
 #define DEBUG
-#define SIGNED_NEEDED
+// #define SIGNED_NEEDED
 
 namespace fiesta {
 

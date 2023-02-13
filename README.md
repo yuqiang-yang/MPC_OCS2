@@ -61,3 +61,7 @@
 + Problem： The RRT star converge too slow and it seems not to optimize for a better solution at all
     + solved: The reason exists in the concept i misunderstand OMPL optimizingPlanner_->setRange. At first i consider it as a parameter that determines the resolution of the collision checker, so i set it to a relatively small value (e.g. 0.02). In this case the RRT*(or RRTX) is hard to optimize. Acually, the collision checker resolution is determined by the si_->setStateValidityCheckingResolution()[default 0.01]. So, just remove the sentence of optimizingPlanner_->setRange and keep the range to the default value.
 + change signed fiesta, but not tested
+
+### 2023.2.13
++ Highly related work:A Collision-Free MPC for Whole-Body Dynamic Locomotion and Manipulation
+    + Fiesta, FCL and OCS2.

@@ -685,13 +685,12 @@ void fiesta::ESDFMap::GetSliceMarker(visualization_msgs::Marker &m, int slice, i
 #else
   for (int x = min_vec_(0); x <= max_vec_(0); ++x)
     for (int y = min_vec_(1); y <= max_vec_(1); ++y) 
-    // for(int e = 0;e<20;e++)
     {
       
       int z = slice;
       // int z = e*5;
       Eigen::Vector3i vox = Eigen::Vector3i(x, y, z);
-      if (distance_buffer_[Vox2Idx(vox)] < 0 /*|| distance_buffer_[Vox2Idx(vox)] >= infinity_*/)
+      if (distance_buffer_[Vox2Idx(vox)] < -100 /*|| distance_buffer_[Vox2Idx(vox)] >= infinity_*/)
         continue;
       // if (distance_buffer_[Vox2Idx(vox)] < 0 || distance_buffer_[Vox2Idx(vox)] >= infinity_)
       //   {
@@ -1178,5 +1177,16 @@ void fiesta::ESDFMap::SetAllVoxelFree()
       Eigen::Vector3i pos;
       pos << x ,y,z;
       SetOccupancy(pos,0);
+    }
+}
+
+void fiesta::ESDFMap::SetAllVoxelOccupied()
+{
+    for (int x = min_vec_(0); x <= max_vec_(0); ++x)
+    for (int y = min_vec_(1); y <= max_vec_(1); ++y)
+    for (int z = min_vec_(2); z <= max_vec_(2); ++z) {
+      Eigen::Vector3i pos;
+      pos << x ,y,z;
+      SetOccupancy(pos,1);
     }
 }

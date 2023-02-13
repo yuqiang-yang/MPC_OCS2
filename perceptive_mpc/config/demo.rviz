@@ -31,7 +31,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -397,8 +397,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 1.8849999904632568
-        Min Value: -0.06499999761581421
+        Max Value: 0.5649999976158142
+        Min Value: -0.03500000014901161
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -423,13 +423,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 0.20000000298023224
       Axes Radius: 0.05000000074505806
@@ -450,7 +450,7 @@ Visualization Manager:
       Marker Topic: /perceptive_mpc/front_end_trajectory
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -496,10 +496,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4447934031486511
+      Pitch: 0.4447932839393616
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.7848459482192993
+      Yaw: 2.459846019744873
     Saved: ~
 Window Geometry:
   Displays:

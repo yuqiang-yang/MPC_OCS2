@@ -25,6 +25,9 @@
 #include <unordered_set>
 
 #include "fiesta/filename.h"
+
+#include <functional> // std::plus
+#include <algorithm> // std::transform
 namespace fiesta {
 
 // sensor_msgs::PointCloud2::ConstPtr
@@ -41,6 +44,7 @@ public:
     ESDFMap *esdf_map_;
 #ifdef SIGNED_NEEDED
     ESDFMap *inv_esdf_map_;
+    ESDFMap *signed_esdf_map_;
 #endif
     bool new_msg_ = false;
     pcl::PointCloud<pcl::PointXYZ> cloud_;
@@ -68,13 +72,13 @@ public:
 #else
     std::vector<int> set_free_, set_occ_;
 #endif
-#ifdef SIGNED_NEEDED
-     void Visualization(ESDFMap *esdf_map,ESDFMap *esdf_map_inv, bool global_vis, const std::string &text);
-     void GetSliceMarker(ESDFMap *esdf_map,ESDFMap *esdf_map_inv,visualization_msgs::Marker &m, int slice, int id,
-                                     Eigen::Vector4d color, double max_dist);
-#else
+// #ifdef SIGNED_NEEDED
+//      void Visualization(ESDFMap *esdf_map,ESDFMap *esdf_map_inv, bool global_vis, const std::string &text);
+//      void GetSliceMarker(ESDFMap *esdf_map,ESDFMap *esdf_map_inv,visualization_msgs::Marker &m, int slice, int id,
+//                                      Eigen::Vector4d color, double max_dist);
+// #else
     void Visualization(ESDFMap *esdf_map, bool global_vis, const std::string &text);
-#endif
+// #endif
 #ifdef PROBABILISTIC
     void RaycastProcess(int i, int part, int tt);
     void RaycastMultithread();
@@ -100,7 +104,7 @@ public:
          #else
          esdf_map_->LoadMap(req.name);
          inv_esdf_map_->LoadMap(req.name+"inv");
-          Visualization(esdf_map_,inv_esdf_map_, parameters_.global_vis_, "");
+          // Visualization(esdf_map_,inv_esdf_map_, parameters_.global_vis_, "");
           #endif
          return true;
          ///
@@ -135,13 +139,19 @@ Fiesta<DepthMsgType, PoseMsgType>::Fiesta(ros::NodeHandle node) {
 
 #ifdef SIGNED_NEEDED
      inv_esdf_map_ = new ESDFMap(parameters_.l_cornor_, parameters_.resolution_, parameters_.map_size_);
+     signed_esdf_map_ = new ESDFMap(parameters_.l_cornor_, parameters_.resolution_, parameters_.map_size_);
 #endif
 #endif
 
 #ifdef PROBABILISTIC
      esdf_map_->SetParameters(parameters_.p_hit_, parameters_.p_miss_,
                               parameters_.p_min_, parameters_.p_max_, parameters_.p_occ_);
+#ifdef SIGNED_NEEDED
+     inv_esdf_map_->SetParameters(parameters_.p_hit_, parameters_.p_miss_,
+                              parameters_.p_min_, parameters_.p_max_, parameters_.p_occ_);                              
 #endif
+#endif
+
 #ifndef HASH_TABLE
      set_free_.resize(esdf_map_->grid_total_size_);
      set_occ_.resize(esdf_map_->grid_total_size_);
@@ -176,6 +186,20 @@ Fiesta<DepthMsgType, PoseMsgType>::Fiesta(ros::NodeHandle node) {
 
      //add by yq for debug
      esdf_map_->SetAllVoxelFree();
+     #ifdef SIGNED_NEEDED
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     inv_esdf_map_->SetAllVoxelOccupied();
+     inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
+     #endif
      update_mesh_timer_ =
          node.createTimer(ros::Duration(parameters_.update_esdf_every_n_sec_),
                           &Fiesta::UpdateEsdfEvent, this);
@@ -189,9 +213,9 @@ Fiesta<DepthMsgType, PoseMsgType>::~Fiesta() {
      delete esdf_map_;
 #ifdef SIGNED_NEEDED
      delete inv_esdf_map_;
+     delete signed_esdf_map_;
 #endif
 }
-#ifndef SIGNED_NEEDED
 
 template<class DepthMsgType, class PoseMsgType>
 void Fiesta<DepthMsgType, PoseMsgType>::Visualization(ESDFMap *esdf_map, bool global_vis, const std::string &text) {
@@ -239,186 +263,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::Visualization(ESDFMap *esdf_map, bool gl
           text_pub_.publish(marker);
      }
 }
-#else`
 
-inline std_msgs::ColorRGBA RainbowColorMap(double h) {
-  std_msgs::ColorRGBA color;
-  color.a = 1;
-  // blend over HSV-values (more colors)
-
-  double s = 1.0;
-  double v = 1.0;
-
-  h -= floor(h);
-  h *= 6;
-  int i;
-  double m, n, f;
-
-  i = floor(h);
-  f = h - i;
-  if (!(i & 1))
-    f = 1 - f;  // if i is even
-  m = v * (1 - s);
-  n = v * (1 - s * f);
-
-  switch (i) {
-    case 6:
-    case 0:color.r = v;
-      color.g = n;
-      color.b = m;
-      break;
-    case 1:color.r = n;
-      color.g = v;
-      color.b = m;
-      break;
-    case 2:color.r = m;
-      color.g = v;
-      color.b = n;
-      break;
-    case 3:color.r = m;
-      color.g = n;
-      color.b = v;
-      break;
-    case 4:color.r = n;
-      color.g = m;
-      color.b = v;
-      break;
-    case 5:color.r = v;
-      color.g = m;
-      color.b = n;
-      break;
-    default:color.r = 1;
-      color.g = 0.5;
-      color.b = 0.5;
-      break;
-  }
-
-  return color;
-}
-template<class DepthMsgType, class PoseMsgType>
-void Fiesta<DepthMsgType, PoseMsgType>::GetSliceMarker(ESDFMap *esdf_map,ESDFMap *esdf_map_inv,visualization_msgs::Marker &m, int slice, int id,
-                                   Eigen::Vector4d color, double max_dist)
-{
-  m.header.frame_id = "odom";
-  m.id = id;
-  m.type = visualization_msgs::Marker::POINTS;
-  m.action = visualization_msgs::Marker::MODIFY;
-  m.scale.x = esdf_map->resolution_;
-  m.scale.y = esdf_map->resolution_;
-  m.scale.z = esdf_map->resolution_;
-  m.pose.orientation.w = 1;
-  m.pose.orientation.x = 0;
-  m.pose.orientation.y = 0;
-  m.pose.orientation.z = 0;
-
-  m.points.clear();
-  m.colors.clear();
-  // iterate the map
-  int cnt = 0;
-  std_msgs::ColorRGBA c;
-
-  for (int x = esdf_map->min_vec_(0); x <= esdf_map->max_vec_(0); ++x)
-    for (int y = esdf_map->min_vec_(1); y <= esdf_map->max_vec_(1); ++y) 
-    {
-      
-      int z = slice;
-      Eigen::Vector3i vox = Eigen::Vector3i(x, y, z);
-      if (esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)] < 0 && esdf_map_inv->distance_buffer_[esdf_map->Vox2Idx(vox)] < 0/*|| distance_buffer_[Vox2Idx(vox)] >= infinity_*/)
-        continue;
-      // if (distance_buffer_[Vox2Idx(vox)] < 0 || distance_buffer_[Vox2Idx(vox)] >= infinity_)
-      //   {
-      //     distance_buffer_[Vox2Idx(vox)] = max_dist;
-      //   }
-      cnt++;
-      Eigen::Vector3d pos;
-      esdf_map->Vox2Pos(vox, pos);
-
-      geometry_msgs::Point p;
-      p.x = pos(0);
-      p.y = pos(1);
-      p.z = pos(2);
-      double tmp_color = 0;
-      if(esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)] <= max_dist && esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)] > 0)
-      {
-           tmp_color = esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)]/max_dist;
-      }
-      else if(esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)] < 0 && esdf_map_inv->distance_buffer_[esdf_map_inv->Vox2Idx(vox)] > 0)
-      {
-           tmp_color = -esdf_map_inv->distance_buffer_[esdf_map_inv->Vox2Idx(vox)]/max_dist;
-      }
-      else if(esdf_map->distance_buffer_[esdf_map->Vox2Idx(vox)] > max_dist)
-      {
-           tmp_color = 1;
-      }
-      else if(esdf_map_inv->distance_buffer_[esdf_map_inv->Vox2Idx(vox)] > max_dist)
-      {
-           tmp_color = -1;
-      }
-      else
-      {
-           tmp_color = 0;
-      }
-      c = RainbowColorMap(
-          tmp_color);
-          c.a = 0.5;
-      m.points.push_back(p);
-      m.colors.push_back(c);
-    }
-
-}
-
-template<class DepthMsgType, class PoseMsgType>
-void Fiesta<DepthMsgType, PoseMsgType>::Visualization(ESDFMap *esdf_map,ESDFMap *esdf_map_inv, bool global_vis, const std::string &text)
- {
-     if (esdf_map!=nullptr && esdf_map_inv!=nullptr) {
-          if (global_vis)
-          {
-               esdf_map->SetOriginalRange();
-               esdf_map_inv->SetOriginalRange();
-          }
-          else
-          {     esdf_map->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_, false);
-               esdf_map_inv->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_, false);
-          }
-          sensor_msgs::PointCloud pc;
-          esdf_map->GetPointCloud(pc, parameters_.vis_lower_bound_, parameters_.vis_upper_bound_);
-          pc.header.stamp = ros::Time().now();
-          occupancy_pub_.publish(pc);
-          visualization_msgs::Marker slice_marker;
-          esdf_map->GetSliceMarker(slice_marker, parameters_.slice_vis_level_, 100,
-                                   Eigen::Vector4d(0, 1.0, 0, 1), parameters_.slice_vis_max_dist_);
-          slice_pub_.publish(slice_marker);
-     }
-     if (!text.empty()) {
-          visualization_msgs::Marker marker;
-          marker.header.frame_id = "odom";
-          marker.header.stamp = ros::Time::now();
-          marker.id = 3456;
-          marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-          marker.action = visualization_msgs::Marker::MODIFY;
-
-          marker.pose.position.x = 8.0;
-          marker.pose.position.y = 2.0;
-          marker.pose.position.z = 3.0;
-          marker.pose.orientation.x = 0.0;
-          marker.pose.orientation.y = 0.0;
-          marker.pose.orientation.z = 0.0;
-          marker.pose.orientation.w = 1.0;
-
-          marker.text = text;
-
-          marker.scale.x = 0.3;
-          marker.scale.y = 0.3;
-          marker.scale.z = 0.6;
-
-          marker.color.r = 0.0f;
-          marker.color.g = 0.0f;
-          marker.color.b = 1.0f;
-          marker.color.a = 1.0f;
-          text_pub_.publish(marker);
-     }
-}
-#endif
 
 #ifdef PROBABILISTIC
 
@@ -748,18 +593,24 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
      if (esdf_map_->CheckUpdate()) {
           timing::Timer update_esdf_timer("UpdateESDF");
           if (parameters_.global_update_)
+          {
                esdf_map_->SetOriginalRange();
+          }
           else
+          {
                esdf_map_->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_);
+          }
+
           esdf_map_->UpdateOccupancy(parameters_.global_update_);
           esdf_map_->UpdateESDF();
 #ifdef SIGNED_NEEDED
           // TODO: Complete this SIGNED_NEEDED
+          inv_esdf_map_->SetOriginalRange();
+
             inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
             inv_esdf_map_->UpdateESDF();
 #endif
           update_esdf_timer.Stop();
-          timing::Timing::Print(std::cout);
      }
 //    ros::Time t2 = ros::Time::now();
 
@@ -768,13 +619,22 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
 //                       + " ms\n" + "Average update Time\n" +
 //                       timing::Timing::SecondsToTimeString(timing::Timing::GetMeanSeconds("UpdateESDF") * 1000)
 //                       + " ms";
-
+timing::Timer update_esdf_timer("visualization");
      if (parameters_.visualize_every_n_updates_!=0 && esdf_cnt_%parameters_.visualize_every_n_updates_==0) {
 #ifdef SIGNED_NEEDED
-          Visualization(esdf_map_, inv_esdf_map_,parameters_.global_vis_, "");
+
+     std::copy(std::begin(esdf_map_->occupancy_buffer_),std::end(esdf_map_->occupancy_buffer_),std::begin(signed_esdf_map_->occupancy_buffer_));
+     std::transform( std::begin(esdf_map_->distance_buffer_), std::end(esdf_map_->distance_buffer_),
+          std::begin(inv_esdf_map_->distance_buffer_),
+          std::begin(signed_esdf_map_->distance_buffer_),
+          []( double a, double b ) { return a-b ; } ) ;
+
+     Visualization(signed_esdf_map_,parameters_.global_vis_, "");
 #else
           Visualization(esdf_map_, parameters_.global_vis_, "");
 #endif
+     update_esdf_timer.Stop();
+          timing::Timing::Print(std::cout);
 
      }
 
