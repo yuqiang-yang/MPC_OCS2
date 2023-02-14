@@ -48,6 +48,8 @@ public:
 #endif
     bool new_msg_ = false;
     pcl::PointCloud<pcl::PointXYZ> cloud_;
+
+    int esdfUpdateCnt_ = 0;
 #ifndef PROBABILISTIC
     sensor_msgs::PointCloud2::ConstPtr sync_pc_;
 #endif
@@ -603,6 +605,8 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
 
           esdf_map_->UpdateOccupancy(parameters_.global_update_);
           esdf_map_->UpdateESDF();
+          esdfUpdateCnt_++;
+          
 #ifdef SIGNED_NEEDED
           // TODO: Complete this SIGNED_NEEDED
           inv_esdf_map_->SetOriginalRange();
@@ -634,7 +638,7 @@ timing::Timer update_esdf_timer("visualization");
           Visualization(esdf_map_, parameters_.global_vis_, "");
 #endif
      update_esdf_timer.Stop();
-          timing::Timing::Print(std::cout);
+          // timing::Timing::Print(std::cout);
 
      }
 

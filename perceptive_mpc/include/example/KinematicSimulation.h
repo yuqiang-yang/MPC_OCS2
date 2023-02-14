@@ -119,10 +119,10 @@ class KinematicSimulation {
   ros::Publisher armStatePublisher_;
   ros::Publisher endEffectorPosePublisher_;
   ros::Publisher pointsOnRobotPublisher_;
-  ros::Publisher comPublisher_;
   ros::Publisher cameraTransformPublisher_;
   ros::Publisher frontEndVisualizePublisher_;
-  ros::Publisher zmpPublisher_;
+  ros::Publisher wholebodyControlPublisher_;
+
   ros::Subscriber desiredEndEffectorPoseSubscriber_;
   ros::Subscriber wholebodyStateSubscriber_;
   ros::Subscriber desiredEndEffectorWrenchPoseTrajectorySubscriber_;
@@ -139,7 +139,8 @@ class KinematicSimulation {
   // thread 3 updates the tf for visualization
   bool tfUpdate(ros::Rate rate);
 
-
+  bool waitForESDFReady_;
+  int ESDFUpdateCnt_ ;
 
   // compute the current end effector Pose on the base of the latest observation
   kindr::HomTransformQuatD getEndEffectorPose();

@@ -8,7 +8,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="isPureSimulation" value="true"/>
+    <arg name="isPureSimulation" value="false"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
@@ -20,7 +20,7 @@
     <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
         <param name="publish_frequency" value="100"/>
     </node>
-    <node name="mue_receive_and_control" pkg="wholebody_control" type="fakePublisher.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
+    <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
         <param name="ur_ip"           value="192.168.100.2"/>
         <param name="ur_control_activate"   value="false"/>
     </node>

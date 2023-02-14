@@ -47,7 +47,8 @@ using namespace perceptive_mpc;
 
 KinematicSimulation::KinematicSimulation(const ros::NodeHandle& nh)
     : nh_(nh), mpcUpdateFailed_(false), planAvailable_(false), kinematicInterfaceConfig_(),isFirstObservationReceived_(false),lastFrontEndWayPointNum_(0) {
-      
+        waitForESDFReady_ = false;
+        ESDFUpdateCnt_ = 0;
     }
 
 bool KinematicSimulation::run() {
@@ -56,13 +57,9 @@ bool KinematicSimulation::run() {
   parseParameters();
   loadTransforms();
 
-  kinematicInterfaceConfig_.baseMass = 70;
-  kinematicInterfaceConfig_.baseCOM = Eigen::Vector3d::Zero();
-
   //Fiesta
   ros::NodeHandle node("~");
   fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
-
 
   PerceptiveMpcInterfaceConfig config;
   config.taskFileName = mpcTaskFile_;
@@ -90,6 +87,7 @@ bool KinematicSimulation::run() {
     ros::Rate(100).sleep();
   }
   ROS_INFO("Joint state subscriber is connected.");
+  wholebodyControlPublisher_ = nh_.advertise<std_msgs::Float64MultiArray>("/wholebodycontrol", 1, false);
   wholebodyStateSubscriber_ = nh_.subscribe("/wholebodystate", 1, &KinematicSimulation::wholebodyStateCb, this);
   while(ros::ok() && wholebodyStateSubscriber_.getNumPublishers() == 0 && !isPureSimulation_){
      ros::Rate(100).sleep();
@@ -137,17 +135,33 @@ bool KinematicSimulation::run() {
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
 
 
+
+
+  std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
   // Tracker worker
+  // wait for a stable esdf map 
+  while(esdf.esdfUpdateCnt_ < 5)
+  {
+
+    ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
+    ros::spinOnce();
+    ros::Rate(2).sleep();
+  }
+  /*update the observation time. Or the MPC horizon will fail.*/
+  observation_.time() = ros::Time::now().toSec();
+  setCurrentObservation(observation_);
+
+
   std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
-
-
   // Mpc update worker
   mpcUpdateFrequency_ = (mpcUpdateFrequency_ == -1) ? 100 : mpcUpdateFrequency_;
+
+  ocs2Interface_->resetMpc();
+  mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
+  mpcInterface_->reset();
   std::thread mpcUpdateWorker(&KinematicSimulation::mpcUpdate, this, ros::Rate(mpcUpdateFrequency_));
 
   // TF update worker
-  std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
-
   ros::spin();
   trackerWorker.join();
   mpcUpdateWorker.join();
@@ -340,6 +354,17 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
                                         << std::endl);
       optimalState_ = optimalState;
 
+
+      if(!isPureSimulation_)
+      {
+        std_msgs::Float64MultiArray msg;
+        msg.data.resize(8);
+        for(int i = 0; i < 8;i ++)
+        {
+          msg.data[i] = controlInput(i);
+        }
+        wholebodyControlPublisher_.publish(msg);
+      }
     } catch (const std::runtime_error& ex) {
       ROS_ERROR_STREAM("runtime_error occured!");
       ROS_ERROR_STREAM("Caught exception while calling [KinematicSimulation::trackerLoop]. Message: " << ex.what());
@@ -373,26 +398,14 @@ bool KinematicSimulation::mpcUpdate(ros::Rate rate) {
   
     try {
       {
-        // TODO: uncomment for admittance control on hardware:
-        //        auto adaptedCostDesiredTrajectory = costDesiredTrajectories_;
-        //        kindr::WrenchD measuredWrench; // input measured wrench from sensor here
-        //        admittanceReferenceModule.adaptPath(rate.cycleTime().toSec(), adaptedCostDesiredTrajectory.desiredStateTrajectory(),
-        //        measuredWrench); mpcInterface_->setTargetTrajectories(adaptedCostDesiredTrajectory);
         boost::shared_lock<boost::shared_mutex> costDesiredTrajectoryLock(costDesiredTrajectoryMutex_);
         mpcInterface_->setTargetTrajectories(costDesiredTrajectories_);
-        // if(cnt % 50 == 0)
-        //   {
-        //     costDesiredTrajectories_.display();
-        //     ROS_INFO_STREAM("current time");
-        //   }
       }
       {
         boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
         setCurrentObservation(observation_);
       }
-      // if (esdfCachingServer_) {
-      //   esdfCachingServer_->updateInterpolator();
-      // }
+
     MidPeroidTime = std::chrono::steady_clock::now();
       {
         mpcInterface_->advanceMpc();
@@ -443,10 +456,10 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
       publishBaseTransform(currentObservation);
       publishArmState(currentObservation);
       publishEndEffectorPose();
-      // if(isPureSimulation_)
+      if(isPureSimulation_)
         publishCameraTransform(currentObservation);
-      // else
-      //   publishCameraTransform(observationBuffer_);
+      else
+        publishCameraTransform(observationBuffer_);
       if (pointsOnRobot_) {
         pointsOnRobotPublisher_.publish(pointsOnRobot_->getVisualization(currentObservation.state()));
       }
@@ -457,7 +470,6 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
         costDesiredTrajectories = costDesiredTrajectories_;
       }
 
-      // publishZmp(currentObservation, costDesiredTrajectories);
     } catch (const std::runtime_error& ex) {
       ROS_ERROR_STREAM("runtime_error occured!");
       ROS_ERROR_STREAM("Caught exception while calling [KinematicSimulation::tfUpdate]. Message: " << ex.what());
@@ -709,7 +721,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
     tfBroadcaster_.sendTransform( 
         tf::StampedTransform(		  
           tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
-          ros::Time(observation.time()),"odom", "camera_depth_optical_frame")); 
+          ros::Time::now(),"odom", "camera_depth_optical_frame")); 
           
   // for test only by yq
   // world_T_rgb = world_T_rgb.inverse();
