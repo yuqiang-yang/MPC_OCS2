@@ -92,7 +92,7 @@ class WBController():
 if __name__ == '__main__':
     rospy.init_node('mue_interface_node', anonymous=True)
     ur_ip = rospy.get_param('ur_ip','192.168.100.2')
-    ur_control_activate = rospy.get_param('ur_control_activate',False)
+    ur_control_activate = rospy.get_param('ur_control_activate',True)
     base_pub = rospy.Publisher ("/mobile_base/cmd_vel", Twist,queue_size=0) 
     base_sub = rospy.Subscriber("/mobile_base/odom",Odometry,car_sub_callback)
     
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     wb_state_pub = rospy.Publisher ("/wholebodystate", Float64MultiArray,queue_size=0) 
     cnt = 0
 
-    while not rospy.is_shutdown():
+    while not rospy.is_shutdown() :
         # print('out',control_time)
         arm_state = np.array(rtde_r.getActualQ())
         # print(rtde_r.getActualQd())
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         #     print('int')
         #     control_time -= 0.01
         #     is_new_control_msg = False
-        if ur_control_activate:
+        if ur_control_activate and rtde_c.isProgramRunning():
             wbc.control(base_desired_vel,arm_desired_vel)
             # print('control msg received!!')
             

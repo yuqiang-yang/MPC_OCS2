@@ -24,7 +24,7 @@ void ManipulabilityCost::intermediateCostFunction(ad_scalar_t time, const ad_dyn
     costValue = calculateDeterminant(baseToWrist3Jacobian);
     costValue = static_cast<ad_scalar_t>(-weight_)*CppAD::sqrt(costValue);
 
-    std::cerr << "(debugging) Manipulability cost:" << costValue << std::endl;
+    // std::cerr << "(debugging) Manipulability cost:" << costValue << std::endl;
 
 }
 

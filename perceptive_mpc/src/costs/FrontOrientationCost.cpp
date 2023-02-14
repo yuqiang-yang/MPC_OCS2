@@ -6,7 +6,7 @@ void FrontOrientationCost::intermediateCostFunction(ad_scalar_t time, const ad_d
                                 const ad_dynamic_vector_t& parameters, ad_scalar_t& costValue) const{
     costValue = kinematics_->getEEOrientationAtan(state.tail<6>());
     costValue = costValue * costValue * static_cast<ad_scalar_t>(weight_);
-    std::cerr << "(debugging) FrontOrientationCost" << costValue << std::endl;
+    // std::cerr << "(debugging) FrontOrientationCost" << costValue << std::endl;
 
 }
 

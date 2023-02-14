@@ -64,4 +64,4 @@
 
 ### 2023.2.13
 + Highly related work:A Collision-Free MPC for Whole-Body Dynamic Locomotion and Manipulation
-    + Fiesta, FCL and OCS2.
+    + Fiesta, FCL and OCS2. 

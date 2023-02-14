@@ -240,8 +240,8 @@ frontEndOMPLRRTStar
   margin_x                    0.2
   margin_y                    0.2
   margin_z                    0.2
-  obstacle_margin             0.1
+  obstacle_margin             0.05
   planning_time               2
   collisionCheckerResolution  0.02
-  distance_gain               5.0
+  distance_gain               7.0
 }

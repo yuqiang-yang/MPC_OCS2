@@ -8,7 +8,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
@@ -29,7 +29,7 @@
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
       <rosparam file="$(find perceptive_mpc)/config/kinematic_simulation_parameters.yaml"/>
       <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-      <param name="info_rate" value="3.0" />
+      <param name="info_rate" value="1.0" />
       <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <param name="world_frame" value="odom" />
         <param name="update_mesh_every_n_sec" value="0.0" />
@@ -123,7 +123,7 @@
             </rosparam>
         </node>
 
-        <node name="robot_body_filter" pkg="nodelet" type="nodelet" args="load sensor_filters/pointcloud2_filter_chain pointcloud_filter_chain">
+        <node name="robot_body_filter" pkg="nodelet" type="nodelet" args="load sensor_filters/pointcloud2_filter_chain pointcloud_filter_chain" output="log">
             <rosparam file="$(find perceptive_mpc)/config/tradr_realsense_l515.yaml"/>
             <remap from="~input" to= "outlier_filtered_pointcloud" />
             <remap from="~output" to="pointcloud_filtered" />            

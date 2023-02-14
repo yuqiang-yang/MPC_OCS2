@@ -104,9 +104,9 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
     ocs2::loadData::loadEigenMatrix(taskFile, "ee_tracking_task.Q_final", config.eePoseQFinal);
     config.kinematics = kinematicsInterface_;
 
-    std::cerr << "Q:       \n" << config.eePoseQ << std::endl;
-    std::cerr << "R:       \n" << config.R << std::endl;
-    std::cerr << "Q_final: \n" << config.eePoseQFinal << std::endl;
+    // std::cerr << "Q:       \n" << config.eePoseQ << std::endl;
+    // std::cerr << "R:       \n" << config.R << std::endl;
+    // std::cerr << "Q_final: \n" << config.eePoseQFinal << std::endl;
 
     std::shared_ptr<QuadraticEndeffectorTrackingCost> eeCost(new QuadraticEndeffectorTrackingCost(config));
     eeCost->initialize("ee_quadratic_cost", libraryFolder_, modelSettings_.recompileLibraries_);
@@ -116,27 +116,27 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
 
   bool useFiestaCost = false;
   ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.activate", useFiestaCost);
-  std::cerr << "fiesta_cost.activate:       \n" << useFiestaCost << std::endl;
+  // std::cerr << "fiesta_cost.activate:       \n" << useFiestaCost << std::endl;
 
   if (fiestaConfig_ && useFiestaCost) { //add by yq
     ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.mu", fiestaConfig_->mu);
-    std::cerr << "fiesta_cost.mu:       \n" << fiestaConfig_->mu << std::endl;
+    // std::cerr << "fiesta_cost.mu:       \n" << fiestaConfig_->mu << std::endl;
     ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.delta", fiestaConfig_->delta);
-    std::cerr << "fiesta_cost.delta:       \n" << fiestaConfig_->delta << std::endl;
+    // std::cerr << "fiesta_cost.delta:       \n" << fiestaConfig_->delta << std::endl;
     ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.max_distance", fiestaConfig_->maxDistance);
-    std::cerr << "fiesta_cost.max_distance:       \n" << fiestaConfig_->maxDistance << std::endl;
+    // std::cerr << "fiesta_cost.max_distance:       \n" << fiestaConfig_->maxDistance << std::endl;
     std::shared_ptr<FiestaCost> fiestaCost(new FiestaCost(*fiestaConfig_));
     weightedCostFunctions.push_back(std::make_pair(1, fiestaCost));
   }
 
   bool useFrontOrientationCost = false;
   ocs2::loadData::loadCppDataType(taskFile, "orientationCost.activate", useFrontOrientationCost);
-  std::cerr << "orientationCost.activate:   " << useFrontOrientationCost << std::endl;
+  // std::cerr << "orientationCost.activate:   " << useFrontOrientationCost << std::endl;
   if(useFrontOrientationCost){
     FrontOrientationCostConfig config;
     config.kinematics = kinematicsInterface_;
     ocs2::loadData::loadCppDataType(taskFile, "orientationCost.weight", config.weight);
-    std::cerr << "orientationCost.weight:   "<< config.weight<< std::endl;
+    // std::cerr << "orientationCost.weight:   "<< config.weight<< std::endl;
     std::shared_ptr<FrontOrientationCost> frontOrientationCost(new FrontOrientationCost(config));
     frontOrientationCost->initialize("front_orientation_cost",libraryFolder_, modelSettings_.recompileLibraries_);
     weightedCostFunctions.push_back(std::make_pair(1,frontOrientationCost));
@@ -144,12 +144,12 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
 
   bool useManipulailityCost = false;
   ocs2::loadData::loadCppDataType(taskFile, "manipulabilityCost.activate", useManipulailityCost);
-  std::cerr << "ManipulailityCost.activate:   " << useManipulailityCost << std::endl;
+  // std::cerr << "ManipulailityCost.activate:   " << useManipulailityCost << std::endl;
   if(useManipulailityCost){
     ManipulabilityCostConfig config;
     config.kinematics = kinematicsInterface_;
     ocs2::loadData::loadCppDataType(taskFile, "manipulabilityCost.weight", config.weight);
-    std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
+    // std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
     std::shared_ptr<ManipulabilityCost> manipulabilityCost(new ManipulabilityCost(config));
     manipulabilityCost->initialize("manipulability_cost",libraryFolder_, modelSettings_.recompileLibraries_);
     weightedCostFunctions.push_back(std::make_pair(1,manipulabilityCost));
@@ -163,9 +163,9 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
   ocs2::loadData::loadEigenMatrix(taskFile, "limits.upper", upperLimits);
   Eigen::VectorXd velocityLimits((int)Definitions::INPUT_DIM_);
   ocs2::loadData::loadEigenMatrix(taskFile, "limits.velocity", velocityLimits);
-  std::cerr << "lowerLimits:       \n" << lowerLimits.transpose() << std::endl;
-  std::cerr << "upperLimits:       \n" << upperLimits.transpose() << std::endl;
-  std::cerr << "velocityLimits:    \n" << velocityLimits.transpose() << std::endl;
+  // std::cerr << "lowerLimits:       \n" << lowerLimits.transpose() << std::endl;
+  // std::cerr << "upperLimits:       \n" << upperLimits.transpose() << std::endl;
+  // std::cerr << "velocityLimits:    \n" << velocityLimits.transpose() << std::endl;
 
   bool useJointSpaceConstraints = false;
   ocs2::loadData::loadCppDataType(taskFile, "limits.enforce_limits", useJointSpaceConstraints);
@@ -173,7 +173,7 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
   if (useJointSpaceConstraints) {
     double positionMpcMarginDeg = 0;
     ocs2::loadData::loadCppDataType(taskFile, "limits.position_mpc_margin_deg", positionMpcMarginDeg);
-    std::cerr << "positionMpcMarginDeg:       \n" << positionMpcMarginDeg << std::endl;
+    // std::cerr << "positionMpcMarginDeg:       \n" << positionMpcMarginDeg << std::endl;
     double positionMpcMarginRad = positionMpcMarginDeg / 180 * M_PI;
 
     setupConstraints(lowerLimits, upperLimits, velocityLimits, positionMpcMarginRad);
@@ -229,8 +229,8 @@ void PerceptiveMpcInterface::setupConstraints(const Eigen::VectorXd& lowerLimits
   linearConstraintPtr->ddhdudx_.resize(linearConstraintPtr->numInequalityConstraint_, linear_constraint_t::input_state_matrix_t::Zero());
 
   for (int i = 0; i < linearConstraintPtr->numInequalityConstraint_; i++) {
-    std::cerr << "Constraint " << i << ": " << linearConstraintPtr->h0_[i] << " + [" << linearConstraintPtr->dhdx_[i].transpose()
-              << "] * x + [" << linearConstraintPtr->dhdu_[i].transpose() << "] * u >= 0" << std::endl;
+    // std::cerr << "Constraint " << i << ": " << linearConstraintPtr->h0_[i] << " + [" << linearConstraintPtr->dhdx_[i].transpose()
+    //           << "] * x + [" << linearConstraintPtr->dhdu_[i].transpose() << "] * u >= 0" << std::endl;
   }
 
   constraintPtr_ = move(linearConstraintPtr);

@@ -140,7 +140,7 @@ bool KinematicSimulation::run() {
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
   // Tracker worker
   // wait for a stable esdf map 
-  while(esdf.esdfUpdateCnt_ < 5)
+  while(esdf.esdfUpdateCnt_ < 5 && !isPureSimulation_)
   {
 
     ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
@@ -192,7 +192,7 @@ void KinematicSimulation::loadTransforms() {
     kinematicInterfaceConfig_.transformBase_X_ArmMount(0, 3) = transformStamped.transform.translation.x;
     kinematicInterfaceConfig_.transformBase_X_ArmMount(1, 3) = transformStamped.transform.translation.y;
     kinematicInterfaceConfig_.transformBase_X_ArmMount(2, 3) = transformStamped.transform.translation.z;
-    ROS_INFO_STREAM("baseToArmMount_: " << std::endl << kinematicInterfaceConfig_.transformBase_X_ArmMount);
+    // ROS_INFO_STREAM("baseToArmMount_: " << std::endl << kinematicInterfaceConfig_.transformBase_X_ArmMount);
   }
 
   {
@@ -219,7 +219,7 @@ void KinematicSimulation::loadTransforms() {
     kinematicInterfaceConfig_.transformToolMount_X_Endeffector(1, 3) = 0.0;
     kinematicInterfaceConfig_.transformToolMount_X_Endeffector(2, 3) = 0.0;
     kinematicInterfaceConfig_.transformToolMount_X_Endeffector(3, 3) = 1.0; //dont forget this!!!
-    ROS_INFO_STREAM("wrist2ToEETransform_: " << std::endl << kinematicInterfaceConfig_.transformToolMount_X_Endeffector);
+    // ROS_INFO_STREAM("wrist2ToEETransform_: " << std::endl << kinematicInterfaceConfig_.transformToolMount_X_Endeffector);
   }
 }
 
@@ -856,7 +856,7 @@ std::shared_ptr<FiestaCostConfig> KinematicSimulation::configureCollisionAvoidan
         double segmentId = collisionPoints[i][j][0];
         double radius = collisionPoints[i][j][1];
         pointsAndRadii[i].push_back(pair_t(segmentId, radius));
-        ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
+        // ROS_INFO_STREAM("segment=" << i << ". relative pos on segment:" << segmentId << ". radius:" << radius);
       }
     }
     perceptive_mpc::PointsOnRobotConfig config;
@@ -893,7 +893,6 @@ void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& ms
   observationBuffer_.state().tail<6>() = pf.tail<7>().head<6>();
   latestObservationTime_ = ros::Time(pf(9));
   // std::cerr << "observationBuff state" << observationBuffer_.state().transpose()  << std::endl;
-
   // std::cerr << "observationBuff time" << observationBuffer_.time() << " " << latestObservationTime_ << std::endl;
   observationBuffer_.time() = latestObservationTime_.toSec();
   isFirstObservationReceived_ = true;

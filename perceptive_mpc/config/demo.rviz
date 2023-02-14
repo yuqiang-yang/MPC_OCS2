@@ -31,7 +31,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -475,25 +475,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.46047306060791
+      Distance: 3.039687395095825
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.3305399417877197
-        Y: 0.5864726305007935
-        Z: 0.3802950978279114
+        X: 0.9216077923774719
+        Y: 0.962520956993103
+        Z: 0.6712647080421448
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4447932839393616
+      Pitch: 0.4947977662086487
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.459846019744873
+      Yaw: 1.9498400688171387
     Saved: ~
 Window Geometry:
   Displays:
