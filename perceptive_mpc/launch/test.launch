@@ -8,11 +8,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="tsdf_voxel_size" value="0.1"/>
-
-    <arg name="tsdf_voxels_per_side" value="16"/>
-
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <!-- Load robot description -->                                               
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
@@ -33,10 +29,8 @@
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
       <rosparam file="$(find perceptive_mpc)/config/kinematic_simulation_parameters.yaml"/>
       <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
-      <param name="info_rate" value="80.0" />
+      <param name="info_rate" value="3.0" />
       <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
-        <param name="tsdf_voxel_size" value="$(arg tsdf_voxel_size)" />
-        <param name="tsdf_voxels_per_side" value="$(arg tsdf_voxels_per_side)"/>
         <param name="world_frame" value="odom" />
         <param name="update_mesh_every_n_sec" value="0.0" />
         <param name="publish_map_every_n_sec" value="0.0"/>

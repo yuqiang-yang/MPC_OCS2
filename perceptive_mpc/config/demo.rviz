@@ -397,8 +397,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.5649999976158142
-        Min Value: -0.03500000014901161
+        Max Value: 1.8849999904632568
+        Min Value: -0.06499999761581421
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -423,13 +423,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 0.20000000298023224
       Axes Radius: 0.05000000074505806

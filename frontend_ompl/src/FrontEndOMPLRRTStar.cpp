@@ -82,7 +82,7 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     int cnt = 0;
     while(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
     {   
-        if(cnt == 5) return false;
+        if(cnt == 3) return false;
         cnt++;
         optimizingPlanner_->getPlannerData(pData);
         // std::cerr << "Cannot find solution: " << "with vertices " << pData.numVertices() << "   iterations:" << optimizingPlanner_->numIterations() << std::endl;
