@@ -140,7 +140,7 @@ bool KinematicSimulation::run() {
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
   // Tracker worker
   // wait for a stable esdf map 
-  while(esdf.esdfUpdateCnt_ < 5 && !isPureSimulation_)
+  while(esdf.esdfUpdateCnt_ < 5 && !isPureSimulation_ && realsenseActivate_)
   {
 
     ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
@@ -237,6 +237,10 @@ void KinematicSimulation::parseParameters() {
   infoRate_ = pNh.param<double>("info_rate", 3.0);
 
   isPureSimulation_ = pNh.param<bool>("isPureSimulation", true);
+  urControlActivate_ = pNh.param<bool>("ur_control_activate", true);
+  realsenseActivate_ = pNh.param<bool>("realsenseActivate", true);
+
+
   std::cerr << "isPureSimulation_" << isPureSimulation_ <<std::endl;
   verbose_ = pNh.param<bool>("verbose", false);
   auto defaultForceStd = pNh.param<std::vector<double>>("default_external_force", std::vector<double>());

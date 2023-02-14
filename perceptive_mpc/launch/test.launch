@@ -8,10 +8,15 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="isPureSimulation" value="true"/>
-    <!-- Load robot description -->                                               
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
+    <arg name="isPureSimulation" value="false"/>
+    <arg name="ur_control_activate" value="true"/>
+
+    <arg name="realsenseActivate" value="true"/>
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
+
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
+
+
   <rosparam>
       /camera/motion_module/global_time_enabled: true
       /camera/l500_depth_sensor/global_time_enabled: true
@@ -22,7 +27,7 @@
     </node>
     <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
         <param name="ur_ip"           value="192.168.100.2"/>
-        <param name="ur_control_activate"   value="false"/>
+        <param name="ur_control_activate"   value="$(arg ur_control_activate)"/>
     </node>
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
      <node pkg="perceptive_mpc" name="kinematic_simulation" type="perceptive_mpc_kinematic_simulation" output="screen"> 
@@ -41,8 +46,9 @@
         <param name="verbose" value="false" />
 
         <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
+        <param name="realsenseActivate" value ="$(arg realsenseActivate)"/>
 
-
+        <param name="ur_control_activate" value ="$(arg ur_control_activate)"/>
         <!-- fiesta parameter -->
 
         <param name="resolution" value="0.03"/>

@@ -91,8 +91,8 @@ class WBController():
 
 if __name__ == '__main__':
     rospy.init_node('mue_interface_node', anonymous=True)
-    ur_ip = rospy.get_param('ur_ip','192.168.100.2')
-    ur_control_activate = rospy.get_param('ur_control_activate',True)
+    ur_ip = rospy.get_param('~ur_ip','192.168.100.3')
+    ur_control_activate = rospy.get_param('~ur_control_activate',True)
     base_pub = rospy.Publisher ("/mobile_base/cmd_vel", Twist,queue_size=0) 
     base_sub = rospy.Subscriber("/mobile_base/odom",Odometry,car_sub_callback)
     
@@ -126,8 +126,8 @@ if __name__ == '__main__':
     wbc = WBController(base_pub,rtde_c,WBControllerConfig)
     time.sleep(0.1)
     while base_sub.get_num_connections() == 0:
-        # print('waiting')
-        time.sleep(0.05)
+        print('waiting')
+        time.sleep(0.2)
     wb_state_pub = rospy.Publisher ("/wholebodystate", Float64MultiArray,queue_size=0) 
     cnt = 0
 

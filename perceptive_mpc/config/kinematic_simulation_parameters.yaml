@@ -1,7 +1,7 @@
 mpc_update_frequency: 60
 tf_update_frequency: 20
-max_linear_velocity: 0.35
-max_angular_velocity: 0.35
+max_linear_velocity: 0.2
+max_angular_velocity: 0.2
 control_loop_frequency: 100
 default_external_force: [0, 0, 0]
 default_external_torque: [0, 0, 0]

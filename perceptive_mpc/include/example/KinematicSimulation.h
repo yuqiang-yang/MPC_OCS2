@@ -142,6 +142,8 @@ class KinematicSimulation {
   bool waitForESDFReady_;
   int ESDFUpdateCnt_ ;
 
+  bool urControlActivate_;
+  bool realsenseActivate_;
   // compute the current end effector Pose on the base of the latest observation
   kindr::HomTransformQuatD getEndEffectorPose();
 
