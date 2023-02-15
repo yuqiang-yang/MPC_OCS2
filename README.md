@@ -65,3 +65,9 @@
 ### 2023.2.13
 + Highly related work:A Collision-Free MPC for Whole-Body Dynamic Locomotion and Manipulation
     + Fiesta, FCL and OCS2. 
+### 2023.2.14
++ Make some improvement to the project. In simulation it can finish the job.
+    + wait for the FIESTA to be stable. Then start the MPC loop. Remember to reset the obseravation time before initial run MPC update(the first update determines the start of the horizon windows.) If not, the horizon time will be smaller than current time and the program cannot work
+    + record the video of 0.4m/s
+### 2023.2.15
++ tracIK and KDL. The core of these two algorithms is easy. That is, solve a optimization problem about the error in Cart. space while maintaining the joint limits contraint through NewTon's method(q_next = q + j^-1*error) or SQP(through NLopt). Their drawback lies in the optimality and the collision avoidance. TracIK return only one solution based on some metics(such as manipulability or speed). I think we also need to do collision check after a solution if found. Since it can found a solution in ms, the Collision-free-IK can be realized in realtime. For more detail:https://bitbucket.org/traclabs/trac_ik/src/master/trac_ik_lib/
