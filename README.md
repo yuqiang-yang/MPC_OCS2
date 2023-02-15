@@ -71,3 +71,6 @@
     + record the video of 0.4m/s
 ### 2023.2.15
 + tracIK and KDL. The core of these two algorithms is easy. That is, solve a optimization problem about the error in Cart. space while maintaining the joint limits contraint through NewTon's method(q_next = q + j^-1*error) or SQP(through NLopt). Their drawback lies in the optimality and the collision avoidance. TracIK return only one solution based on some metics(such as manipulability or speed). I think we also need to do collision check after a solution if found. Since it can found a solution in ms, the Collision-free-IK can be realized in realtime. For more detail:https://bitbucket.org/traclabs/trac_ik/src/master/trac_ik_lib/
++ Some bug:
+    + sometimes the program crash because the rollout unstable or memory leak(?). I think the reason is that some component such as ESDF are not well-ready after we start the mpc update. When we turn on the manipulator cost or the esdf waiting, it rarely happens.
++ use sphere to tightly surround the mobile base and the end-effector(camera). The radius of the sphere is defined in the voxblox.yaml. The position is fixed in the URKinematics.cpp

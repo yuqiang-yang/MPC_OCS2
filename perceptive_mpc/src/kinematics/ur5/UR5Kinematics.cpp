@@ -98,7 +98,7 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
         {
           directionVector(0) = i == 0? x_bias:-x_bias;
           directionVector(1) = j == 0? y_bias:-y_bias;
-          directionVector(2) = k == 0? 0.3+z_bias:0.3-z_bias;
+          directionVector(2) = k == 0? 0.3+z_bias:0.35-z_bias;
           result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
           // std::cerr << "resultIndex" << resultIndex << std::endl;
         }
@@ -171,7 +171,18 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
 
 
   for (int i = 0; i < points[linkIndex].size(); i++) {
-    Eigen::Matrix<SCALAR_T, 4, 1> directionVector = nextStep.col(3);
+      Eigen::Matrix<SCALAR_T, 4, 1> directionVector;
+    if(i == 0)
+    {
+      directionVector << (SCALAR_T)0.0, (SCALAR_T)0.0, (SCALAR_T)0.12, (SCALAR_T)1.0;
+    }else if(i == 1)
+    {
+      directionVector << (SCALAR_T)0.0, (SCALAR_T)0.0, (SCALAR_T)0.15, (SCALAR_T)1.0;      
+    }else if(i == 2)
+    {
+      directionVector << (SCALAR_T)-0.1, (SCALAR_T)-0.1, (SCALAR_T)0.0, (SCALAR_T)1.0;      
+    }
+
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
     result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
   }

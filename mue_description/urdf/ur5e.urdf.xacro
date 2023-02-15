@@ -365,13 +365,52 @@
     
     
     <!-- TODO: Attach a compliance tool link -->
-    <!-- <joint name="${prefix}tool_joint" type="fixed">
+     <joint name="${prefix}tool_joint" type="fixed">
       <parent link="${prefix}wrist_3_link"/>
-      <child link="${prefix}tool_link"/>
-      <origin xyz="0 ${wrist_3_length /2.0} 0" rpy="${-pi / 2.0} 0 ${pi / 2.0}"/>
+      <child link="led_link"/>
+      <origin xyz="0.0 ${wrist_3_length /2.0} 0.0" rpy="-${pi/2} -${pi/4} 0"/>
     </joint>
-    
-    <link name="${prefix}tool_link">
+      <link
+    name="led_link">
+    <inertial>
+      <origin
+        xyz="1.21787819461004E-05 0.100506072293884 -0.0657375008490545"
+        rpy="0 0 0" />
+      <mass
+        value="0.371972272144732" />
+      <inertia
+        ixx="0.000365303407927441"
+        ixy="-3.7389349002342E-06"
+        ixz="-2.15485729111802E-07"
+        iyy="0.000348595669290982"
+        iyz="-2.48733343135974E-06"
+        izz="0.000454214073639837" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mue_description/meshes/led_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.698039215686274 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mue_description/meshes/led_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+    <!-- <link name="${prefix}tool_link">
 	    <visual>
           <origin xyz="0 0 0" rpy="-0.01 0 0" />
           <geometry>
@@ -379,8 +418,8 @@
           </geometry>
           <material name="white"/>
         </visual>
-    </link>
- 
+    </link> -->
+ <!--
    <gazebo reference="${prefix}tool_link">
       <kp value="0.0"/>
       <kd value="1.0"/>
@@ -390,7 +429,7 @@
     
 
     <!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
-     <joint name="${prefix}ee_fixed_joint" type="fixed">
+     <!-- <joint name="${prefix}ee_fixed_joint" type="fixed">
       <parent link="${prefix}wrist_3_link" /> 
       <child link ="${prefix}ee_link" />
       <origin xyz="0.0 ${wrist_3_length} 0.0" rpy="0.0 0.0 ${pi/2.0}" /> 
@@ -409,14 +448,16 @@
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
-    </link>
+    </link> -->
 
+
+<!-- 
     <gazebo reference="${prefix}ee_link">
       <kp value="0.0"/> 
       <kd value="1.0"/> 
       <minDepth value="0.2"/>
       <maxVel value="0"/>
-    </gazebo> 
+    </gazebo>  -->
 
 
     <!-- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->

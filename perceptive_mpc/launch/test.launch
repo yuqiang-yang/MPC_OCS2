@@ -8,7 +8,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="isPureSimulation" value="true"/>
+    <arg name="isPureSimulation" value="false"/>
     <arg name="ur_control_activate" value="false"/>
 
     <arg name="realsenseActivate" value="false"/>
@@ -43,7 +43,7 @@
         <param name="publish_slices" value="false" />
         <param name="publish_pointclouds" value="false" />
         <param name="use_tf_transforms" value="false" />
-        <param name="verbose" value="true" />
+        <param name="verbose" value="false" />
 
         <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
         <param name="realsenseActivate" value ="$(arg realsenseActivate)"/>

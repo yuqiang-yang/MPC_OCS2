@@ -116,7 +116,7 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
 
   bool useFiestaCost = false;
   ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.activate", useFiestaCost);
-  // std::cerr << "fiesta_cost.activate:       \n" << useFiestaCost << std::endl;
+  std::cerr << "fiesta_cost.activate:       \n" << useFiestaCost << std::endl;
 
   if (fiestaConfig_ && useFiestaCost) { //add by yq
     ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.mu", fiestaConfig_->mu);

@@ -176,17 +176,12 @@ ee_tracking_task
   }
 }
 
-regularization
-{
-    stateCostRegularization 0
-}
-
 fiesta_cost
 {
     activate        1
     mu              5e-3
     delta           4e-3
-    max_distance    2.0
+    max_distance    3.0
 }
 orientationCost
 {
@@ -196,7 +191,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          0
+  activate          1
   weight            1
 }
 

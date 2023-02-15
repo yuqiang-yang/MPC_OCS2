@@ -38,6 +38,7 @@
       <origin xyz="0.224311 0 0.6" rpy="0.0 0.0 -1.5707963"/>
     </joint>
 
+
 <!-- Link to Gazebo library -->
 
     <xacro:property name="joint_names" value="$(arg tf_prefix)shoulder_pan_joint 
