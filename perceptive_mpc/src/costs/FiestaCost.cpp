@@ -40,6 +40,7 @@ void FiestaCost::setCurrentStateAndControl(const FiestaCost::scalar_t& t, const 
     Eigen::VectorXd radii = pointsOnRobot_->getRadii();
     assert(positionsPointsOnRobot.size() % 3 == 0);
     int numPoints = pointsOnRobot_->numOfPoints();
+    // std::cerr << "numPoints" << numPoints <<std::endl;
     for (int i = 0; i < numPoints; i++) {
       Eigen::Vector3d gradientFiesta ;
       gradientFiesta << 0.0, 0.0, 0.0;

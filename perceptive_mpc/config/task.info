@@ -196,7 +196,7 @@ orientationCost
 
 manipulabilityCost
 {
-  activate          1
+  activate          0
   weight            1
 }
 

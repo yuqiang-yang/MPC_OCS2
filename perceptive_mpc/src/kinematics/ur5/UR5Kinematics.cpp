@@ -68,7 +68,7 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
   if (dim == 0) {
     return Eigen::Matrix<SCALAR_T, 3, -1>(3, 0);
   }
-  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim); //use two sphere to surround the mobile base. Howerver, the code is just a trash!!!
+  Eigen::Matrix<SCALAR_T, 3, -1> result(3, dim); //use 4 sphere to surround the mobile base.
   int resultIndex = 0;
   int linkIndex = 0;
 
@@ -90,11 +90,19 @@ Eigen::Matrix<SCALAR_T, 3, -1> UR5Kinematics<SCALAR_T>::computeArmState2Multiple
     Eigen::Matrix<SCALAR_T, 4, 1> directionVector;
     directionVector << (SCALAR_T)0.0, (SCALAR_T)0.0, (SCALAR_T)0.6, (SCALAR_T)1.0;
     directionVector.template head<3>() = directionVector.template head<3>() * (SCALAR_T)points[linkIndex][i];
-    if(i == 0)
-      directionVector(0) -= 0.2;
-    else if(i == 1)
-      directionVector(0) += 0.2;
-    result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
+    double x_bias = 0.16,y_bias = 0.1,z_bias = 0.1;
+
+    for(int i = 0;i < 2;i++)
+      for(int j = 0;j < 2;j++)
+        for(int k = 0;k < 2;k++)
+        {
+          directionVector(0) = i == 0? x_bias:-x_bias;
+          directionVector(1) = j == 0? y_bias:-y_bias;
+          directionVector(2) = k == 0? 0.3+z_bias:0.3-z_bias;
+          result.col(resultIndex++) = (transformWorld_X_Endeffector * directionVector).template head<3>();
+          // std::cerr << "resultIndex" << resultIndex << std::endl;
+        }
+    break;
   }
   linkIndex++;
   transformWorld_X_Endeffector = transformWorld_X_Endeffector * nextStep;
