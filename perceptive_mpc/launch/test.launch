@@ -8,11 +8,11 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
 
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <arg name="ur_control_activate" value="false"/>
 
     <arg name="realsenseActivate" value="true"/>
-    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" />
+    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
 
     <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
 
@@ -33,7 +33,6 @@
      <node pkg="perceptive_mpc" name="kinematic_simulation" type="perceptive_mpc_kinematic_simulation" output="screen"> 
       <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
       <rosparam file="$(find perceptive_mpc)/config/kinematic_simulation_parameters.yaml"/>
-      <rosparam file="$(find perceptive_mpc)/config/voxblox.yaml"/>
       <param name="info_rate" value="1.0" />
       <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <param name="world_frame" value="odom" />
@@ -43,7 +42,7 @@
         <param name="publish_slices" value="false" />
         <param name="publish_pointclouds" value="false" />
         <param name="use_tf_transforms" value="false" />
-        <param name="verbose" value="false" />
+        <param name="verbose" value="true" />
 
         <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
         <param name="realsenseActivate" value ="$(arg realsenseActivate)"/>

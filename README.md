@@ -77,3 +77,10 @@
 
 + Not solved problem:
     + the mpc are unstable when the esdf is updating.
+
+### 2023.2.16
++ In realworld experiment, when we turn off the code start flag (It means the initial value of MPC will be value that are got from the last update. If we use cold start, the initial value of MPC will always be the cuurent joint configuration), the system will often be unstable. But this doesnot happen when we conduct the simulation.
++ In realword experiment, the MPC rate is low. It takes about 50ms one cycle. But if we use the same setting to conduct the simulation, only 20ms is needed.
++ the ostream object of C++ cannot be created. But we can create a stringstream object to initialize an ostream object. Then we can concat different string through <<.
++ OCS2 core use the CppAD CG to get the function value and jacobian. The CppADCG can load dynamicLib via a class and get the CppAD model about the cost value and jacobian. I think this facilates the extension of the program. If the cost functions(or system dynamics) don't change, we can reuse the library without recompilation. 
+    + If want to use the dynamic weighting, we can change the getIntermediateParameters Function (including the template parameters about the parameter dims) to get a dynamic weighted cost.

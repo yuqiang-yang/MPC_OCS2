@@ -47,12 +47,12 @@ slq
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
       displayShortSummary          0
-      debugPrintRollout            1
+      debugPrintRollout            0
 
       AbsTolODE                      1e-5	;1e-6
       RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-3
-      maxNumStepsPerSecond           50000
+      maxNumStepsPerSecond           20000
       simulationIsConstrained        0
       noStateConstraints             1
       inequalityConstraintMu         1e-2
@@ -75,7 +75,7 @@ slq
       AbsTolODE                      1e-5	;1e-6
       RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-3
-      maxNumStepsPerSecond           50000
+      maxNumStepsPerSecond           20000
       checkNumericalStability        0
   }
 }
@@ -93,7 +93,7 @@ mpc
 
 
   debugPrint                     0
-  coldStart                      0
+  coldStart                      1
   recedingHorizon                1      ; use receding horizon MPC
 
   useParallelRiccatiSolver       1      ; use disjoint riccati solver in MP case and recedingHorizon fashion
@@ -105,7 +105,7 @@ mpc
   adaptiveRosMsgTimeWindow       0
 
   mpcDesiredFrequency            20      ; [Hz]
-  mrtDesiredFrequency            400     ; [Hz]
+  mrtDesiredFrequency            100     ; [Hz]
 }
 
 ;interface settings
@@ -222,8 +222,8 @@ limits
   {
     (0,0)  1.0     ; base_linear [m/s]
     (1,0)  1.5     ; base_rot [rad/s]
-    (2,0)  1.2     ; arm_1 [rad/s]
-    (3,0)  1.2     ; arm_2 [rad/s]
+    (2,0)  2.2     ; arm_1 [rad/s]
+    (3,0)  2.2     ; arm_2 [rad/s]
     (4,0)  2.4     ; arm_3 [rad/s]
     (5,0)  2.4     ; arm_4 [rad/s]
     (6,0)  2.7     ; arm_5 [rad/s]

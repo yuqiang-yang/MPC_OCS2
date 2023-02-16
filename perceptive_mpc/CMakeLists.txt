@@ -93,7 +93,7 @@ add_library(${PROJECT_NAME}
   src/kinematics/ur5/UR5Kinematics.cpp
   # src/kinematics/ur3/UR3Kinematics.cpp
   # src/EsdfCachingServer.cpp
-  src/AdmittanceReferenceModule.cpp
+  # src/AdmittanceReferenceModule.cpp
   
 )
 

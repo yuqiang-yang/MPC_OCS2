@@ -369,7 +369,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastMultithread() {
        set_occ_.clear();
 #endif
      int tt = ++tot_;
-     timing::Timer raycastingTimer("raycasting");
+     // timing::Timer raycastingTimer("raycasting");
 
      if (parameters_.ray_cast_num_thread_==0) {
           RaycastProcess(0, cloud_.points.size(), tt);
@@ -383,7 +383,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastMultithread() {
                thread.join();
           }
      }
-     raycastingTimer.Stop();
+     // raycastingTimer.Stop();
 }
 
 #endif // PROBABILISTIC
@@ -623,7 +623,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
 //                       + " ms\n" + "Average update Time\n" +
 //                       timing::Timing::SecondsToTimeString(timing::Timing::GetMeanSeconds("UpdateESDF") * 1000)
 //                       + " ms";
-timing::Timer update_esdf_timer("visualization");
+// timing::Timer update_esdf_timer("visualization");
      if (parameters_.visualize_every_n_updates_!=0 && esdf_cnt_%parameters_.visualize_every_n_updates_==0) {
 #ifdef SIGNED_NEEDED
 
@@ -637,7 +637,7 @@ timing::Timer update_esdf_timer("visualization");
 #else
           Visualization(esdf_map_, parameters_.global_vis_, "");
 #endif
-     update_esdf_timer.Stop();
+     // update_esdf_timer.Stop();
           // timing::Timing::Print(std::cout);
 
      }

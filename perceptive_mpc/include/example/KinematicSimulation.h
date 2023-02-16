@@ -58,7 +58,7 @@
 // #include <perceptive_mpc/EsdfCachingServer.hpp>
 #include "ocs2_core/Dimensions.h"
 #include "FrontEndOMPLRRTStar.hpp"
-
+#include "timing.h"
 // TODO: uncomment for admittance control on hardware:
 // #include <perceptive_mpc/AdmittanceReferenceModule.hpp>
 
