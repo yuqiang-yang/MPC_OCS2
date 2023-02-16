@@ -74,3 +74,6 @@
 + Some bug:
     + sometimes the program crash because the rollout unstable or memory leak(?). I think the reason is that some component such as ESDF are not well-ready after we start the mpc update. When we turn on the manipulator cost or the esdf waiting, it rarely happens.
 + use sphere to tightly surround the mobile base and the end-effector(camera). The radius of the sphere is defined in the voxblox.yaml. The position is fixed in the URKinematics.cpp
+
++ Not solved problem:
+    + the mpc are unstable when the esdf is updating.

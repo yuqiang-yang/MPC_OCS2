@@ -47,7 +47,7 @@ slq
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
       displayShortSummary          0
-      debugPrintRollout            0
+      debugPrintRollout            1
 
       AbsTolODE                      1e-5	;1e-6
       RelTolODE                      1e-3	;1e-4

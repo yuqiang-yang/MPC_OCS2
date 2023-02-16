@@ -349,11 +349,11 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
                                         << "    controlInput:  " << controlInput.transpose() << std::endl
                                         << "    actual pos:   "  << currentPosition.transpose() << std::endl
                                         << "    desired pos:  " << desiredPose.head<Definitions::POSE_DIM>().tail<3>().transpose() << std::endl
-                                        << "EE position in ARM:"<< currentPositionInArmFr.transpose() << std::endl
+                                        // << "EE position in ARM:"<< currentPositionInArmFr.transpose() << std::endl
                                         // << "EE orientation in ARM:"<< (angleAxie.axis()*angleAxie.angle()).transpose() << std::endl
-                                        << "    actual rot:   "  << currentEndEffectorPose.getRotation().toImplementation().coeffs().transpose()<< std::endl
+                                        // << "    actual rot:   "  << currentEndEffectorPose.getRotation().toImplementation().coeffs().transpose()<< std::endl
                                         // << "    desired rot:   " << desiredPose.head<Definitions::POSE_DIM>().head<4>().transpose() << std::endl
-                                        << "EEOrientation atan:"<< getEEAtan() << std::endl
+                                        // << "EEOrientation atan:"<< getEEAtan() << std::endl
                                         << "  manipulability:  "<< getManipulability()<< std::endl
                                         << std::endl);
       optimalState_ = optimalState;

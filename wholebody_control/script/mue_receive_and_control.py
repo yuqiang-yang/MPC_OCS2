@@ -69,7 +69,7 @@ class WBController():
                 joint_vel[i] = current_arm_vel[i] + self.arm_max_acc*dt*np.sign(joint_vel[i]-current_arm_vel[i])
             if abs(joint_vel[i]) > self.arm_max_vel:
                 joint_vel[i] = self.arm_max_vel*np.sign(joint_vel[i])
-        joint_vel[5] = 0
+        # joint_vel[5] = 0
         # print('current',current_arm_vel,'desired',joint_vel)
         if abs(current_car_vel[0]-vel.linear.x) > self.car_linear_acc*dt:
             vel.linear.x = current_car_vel[0] + np.sign(vel.linear.x-current_car_vel[0])*self.car_linear_acc*dt
