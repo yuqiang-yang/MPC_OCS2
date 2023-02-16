@@ -369,7 +369,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastMultithread() {
        set_occ_.clear();
 #endif
      int tt = ++tot_;
-     // timing::Timer raycastingTimer("raycasting");
+     timing::Timer raycastingTimer("raycasting");
 
      if (parameters_.ray_cast_num_thread_==0) {
           RaycastProcess(0, cloud_.points.size(), tt);
@@ -383,7 +383,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastMultithread() {
                thread.join();
           }
      }
-     // raycastingTimer.Stop();
+     raycastingTimer.Stop();
 }
 
 #endif // PROBABILISTIC
@@ -593,7 +593,6 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
      // std::cout << "Running " << esdf_cnt_ << " updates." << std::endl;
 //    ros::Time t1 = ros::Time::now();
      if (esdf_map_->CheckUpdate()) {
-          timing::Timer update_esdf_timer("UpdateESDF");
           if (parameters_.global_update_)
           {
                esdf_map_->SetOriginalRange();
@@ -602,8 +601,11 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
           {
                esdf_map_->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_);
           }
+          timing::Timer update_occ_timer("UpdateOcc");
 
           esdf_map_->UpdateOccupancy(parameters_.global_update_);
+          timing::Timer update_esdf_timer("UpdateESDF");
+
           esdf_map_->UpdateESDF();
           esdfUpdateCnt_++;
           

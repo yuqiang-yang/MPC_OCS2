@@ -5,7 +5,7 @@
 #include "ESDFMap.h"
 #include <math.h>
 #include <time.h>
-
+#include "timing.h"
 using std::cout;
 using std::endl;
 
@@ -280,6 +280,7 @@ void fiesta::ESDFMap::UpdateESDF() {
 //    startTime = clock();
 //    UpdateOccupancy();
   // cout << "Insert " << insert_queue_.size() << "\tDelete " << delete_queue_.size() << endl;
+  timing::Timer insert_queue_timer("insert_queue");
   while (!insert_queue_.empty()) {
     QueueElement xx = insert_queue_.front();
     insert_queue_.pop();
@@ -294,6 +295,8 @@ void fiesta::ESDFMap::UpdateESDF() {
       update_queue_.push(xx);
     }
   }
+  insert_queue_timer.Stop();
+  timing::Timer delete_queue__timer("delete_queue_");
   while (!delete_queue_.empty()) {
     QueueElement xx = delete_queue_.front();
 
@@ -340,6 +343,8 @@ void fiesta::ESDFMap::UpdateESDF() {
       head_[idx] = undefined_;
     } // if
   } // delete_queue_
+  delete_queue__timer.Stop();
+  timing::Timer update_queue_timer("update_queue_");
   int times = 0, change_num = 0;
   while (!update_queue_.empty()) {
     QueueElement xx = update_queue_.front();
