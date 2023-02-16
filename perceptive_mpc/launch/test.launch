@@ -11,7 +11,7 @@
     <!-- Connect RTDE or not -->
     <arg name="ur_control_activate" value="false"/>
     <!-- Enable the camera and ESDF -->
-    <arg name="realsenseActivate" value="false"/>
+    <arg name="realsenseActivate" value="true"/>
 
 
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>

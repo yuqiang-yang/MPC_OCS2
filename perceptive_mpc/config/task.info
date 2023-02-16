@@ -93,7 +93,7 @@ mpc
 
 
   debugPrint                     0
-  coldStart                      1
+  coldStart                      0
   recedingHorizon                1      ; use receding horizon MPC
 
   useParallelRiccatiSolver       1      ; use disjoint riccati solver in MP case and recedingHorizon fashion

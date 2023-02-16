@@ -184,5 +184,6 @@ class KinematicSimulation {
   double infoRate_;
   bool isFirstObservationReceived_;
   bool isPureSimulation_;
+  MpcInterface::state_vector_t initialState_;
 };
 }  // namespace perceptive_mpc

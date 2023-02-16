@@ -151,7 +151,7 @@ void PerceptiveMpcInterface::loadSettings(const std::string& taskFile) {
     ocs2::loadData::loadCppDataType(taskFile, "manipulabilityCost.weight", config.weight);
     // std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
     std::shared_ptr<ManipulabilityCost> manipulabilityCost(new ManipulabilityCost(config));
-    manipulabilityCost->initialize("manipulability_cost",libraryFolder_, modelSettings_.recompileLibraries_);
+    manipulabilityCost->initialize("manipulability_cost",libraryFolder_, false);  //disable recompile this library
     weightedCostFunctions.push_back(std::make_pair(1,manipulabilityCost));
   } 
 

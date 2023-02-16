@@ -56,6 +56,7 @@ bool KinematicSimulation::run() {
   parseParameters();
   loadTransforms();
   initRosTopic();
+
   //Fiesta
   ros::NodeHandle node("~");
   fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
@@ -67,57 +68,46 @@ bool KinematicSimulation::run() {
   if(config.fiestaConfig) //not nullptr
   {
     config.fiestaConfig->esdfMap.reset(esdf.esdf_map_); //set the esdf map
+    frontEndOMPLRRTStarConfig_.esdf_map.reset(esdf.esdf_map_);  //set the FrontEnd
+    frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
   }
-  ocs2Interface_.reset(new PerceptiveMpcInterface(config));
+  //set the ovservation to the tf 
+  observation_.time() = ros::Time::now().toSec();
+  observation_.state() = isPureSimulation_ ? initialState_ : observationBuffer_.state();
+  std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
+  // wait for a stable esdf map 
+  while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
+  {
+    ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
+    ros::spinOnce();
+    ros::Rate(2).sleep();
+  }
 
+  //construct perceptive MPC and set initial state
+  ocs2Interface_.reset(new PerceptiveMpcInterface(config));
+  observation_.time() = ros::Time::now().toSec();
+  observation_.state() = isPureSimulation_ ? initialState_ : observationBuffer_.state();
+  initialTime_ = observation_.time();
+  ocs2Interface_->setInitialState(observation_.state());  
   mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
   mpcInterface_->reset();
-   
+  setCurrentObservation(observation_);
+  optimalState_ = observation_.state();
 
-  frontEndOMPLRRTStarConfig_.esdf_map.reset(esdf.esdf_map_);
-  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
-  // Init ros stuff
-  armStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/joint_states", 10);
-  ROS_INFO("Waiting for joint states subscriber ...");
-  while (ros::ok() && armStatePublisher_.getNumSubscribers() == 0) {
-    ros::Rate(100).sleep();
-  }
-  ROS_INFO("Joint state subscriber is connected.");
-  wholebodyControlPublisher_ = nh_.advertise<std_msgs::Float64MultiArray>("/wholebodycontrol", 1, false);
-  wholebodyStateSubscriber_ = nh_.subscribe("/wholebodystate", 1, &KinematicSimulation::wholebodyStateCb, this);
-  while(ros::ok() && wholebodyStateSubscriber_.getNumPublishers() == 0 && !isPureSimulation_){
-     ros::Rate(100).sleep();
-  }
-  while(ros::ok() && !isPureSimulation_){
-    ros::spinOnce();
-    ros::Rate(10).sleep();
-    if(isFirstObservationReceived_) break;
-  }
-  if(!isPureSimulation_)
-  {
-    observation_.state() = observationBuffer_.state();
-    observation_.time() = ros::Time::now().toSec();
-    ocs2Interface_->setInitialState(observation_.state());  
-    optimalState_ = observation_.state();
-    initialTime_ = observation_.time();
-    ROS_INFO("wholebody state publisher is connected.");
-    setCurrentObservation(observation_);
-  }
-  else
-  {
-    observation_.state() = ocs2Interface_->getInitialState();
-    observation_.time() = ros::Time::now().toSec();
-    ocs2Interface_->setInitialState(observation_.state());  
-    optimalState_ = observation_.state();
-    initialTime_ = observation_.time();
-    setCurrentObservation(observation_);
-  }
-
+  //set after the observation_ is initialized. 
   initializeCostDesiredTrajectory();
-  ROS_INFO_STREAM("Starting from initial state: " << observation_.state().transpose());
-  ROS_INFO_STREAM("Initial time (delta): " << observation_.time() - initialTime_);
-  
-  std::cerr << wholebodyStateSubscriber_.getNumPublishers() << std::endl;
+
+
+  std::thread mpcUpdateWorker(&KinematicSimulation::mpcUpdate, this, ros::Rate(mpcUpdateFrequency_));
+  std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
+
+  ros::spin();
+  trackerWorker.join();
+  mpcUpdateWorker.join();
+  tfUpdateWorker.join();
+  return true;
+}
+void KinematicSimulation::initRosTopic(){
   desiredEndEffectorPoseSubscriber_ =
       nh_.subscribe("/perceptive_mpc/desired_end_effector_pose", 1, &KinematicSimulation::desiredEndEffectorPoseCb, this);
   desiredEndEffectorWrenchPoseTrajectorySubscriber_ = nh_.subscribe("/perceptive_mpc/desired_end_effector_wrench_pose_trajectory", 1,
@@ -128,39 +118,24 @@ bool KinematicSimulation::run() {
   frontEndVisualizePublisher_ = nh_.advertise<visualization_msgs::Marker>("/perceptive_mpc/front_end_trajectory", 1, false);
   
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
-
-
-  std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
-  // wait for a stable esdf map 
-  // while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
-  // {
-  //   ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
-  //   ros::spinOnce();
-  //   ros::Rate(2).sleep();
-  // }
-  /*update the observation time. Or the MPC horizon will fail.*/
-  observation_.time() = ros::Time::now().toSec();
-  setCurrentObservation(observation_);
-
-
-  std::thread trackerWorker(&KinematicSimulation::trackerLoop, this, ros::Rate(controlLoopFrequency_));
-  // Mpc update worker
-  mpcUpdateFrequency_ = (mpcUpdateFrequency_ == -1) ? 100 : mpcUpdateFrequency_;
-
-  ocs2Interface_->resetMpc();
-  mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
-  mpcInterface_->reset();
-  std::thread mpcUpdateWorker(&KinematicSimulation::mpcUpdate, this, ros::Rate(mpcUpdateFrequency_));
-
-  // TF update worker
-  ros::spin();
-  trackerWorker.join();
-  mpcUpdateWorker.join();
-  tfUpdateWorker.join();
-  return true;
-}
-void KinematicSimulation::initRosTopic(){
-  
+  armStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/joint_states", 10);
+  ROS_INFO("Waiting for joint states subscriber ...");
+  while (ros::ok() && armStatePublisher_.getNumSubscribers() == 0) {
+    ros::Rate(100).sleep();
+  }
+  ROS_INFO("Joint state subscriber is connected.");
+  ROS_INFO("Waiting for wholebodyState publisher.");
+  wholebodyControlPublisher_ = nh_.advertise<std_msgs::Float64MultiArray>("/wholebodycontrol", 1, false);
+  wholebodyStateSubscriber_ = nh_.subscribe("/wholebodystate", 1, &KinematicSimulation::wholebodyStateCb, this);
+  while(ros::ok() && wholebodyStateSubscriber_.getNumPublishers() == 0 && !isPureSimulation_){
+     ros::Rate(100).sleep();
+  }
+  ROS_INFO("WholebodyState publisher is connected.");
+  while(ros::ok() && !isPureSimulation_){
+    ros::spinOnce();
+    ros::Rate(10).sleep();
+    if(isFirstObservationReceived_) break;
+  }
 }
 void KinematicSimulation::loadTransforms() {
   UR5Kinematics<double> kinematics(kinematicInterfaceConfig_);
@@ -255,6 +230,7 @@ void KinematicSimulation::parseParameters() {
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.collisionCheckerResolution", frontEndOMPLRRTStarConfig_.collisionCheckerResolution);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.distance_gain", frontEndOMPLRRTStarConfig_.distance_gain);
 
+  ocs2::loadData::loadEigenMatrix(packagePath + "/config/" +mpcTaskFile_, "initialState", initialState_);
 }
 
 
@@ -681,7 +657,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
 
   
   // tfBroadcaster_.sendTransform(base_transform);
-  //use the StampedTransform type to facilate the presentation of tf tree, or the publish rate is 10000(undefined).
+  // use the StampedTransform type to facilate the presentation of tf tree, or the publish rate is 10000(undefined).
     tfBroadcaster_.sendTransform( 
         tf::StampedTransform(		  
           tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
