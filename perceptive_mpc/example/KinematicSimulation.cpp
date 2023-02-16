@@ -53,10 +53,9 @@ KinematicSimulation::KinematicSimulation(const ros::NodeHandle& nh)
 
 bool KinematicSimulation::run() {
 
-
   parseParameters();
   loadTransforms();
-
+  initRosTopic();
   //Fiesta
   ros::NodeHandle node("~");
   fiesta::Fiesta<sensor_msgs::PointCloud2::ConstPtr, geometry_msgs::TransformStamped::ConstPtr> esdf(node);
@@ -73,9 +72,6 @@ bool KinematicSimulation::run() {
 
   mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
   mpcInterface_->reset();
-
-  // TODO: uncomment for admittance control on hardware:
-  // admittanceReferenceModule.initialize();
    
 
   frontEndOMPLRRTStarConfig_.esdf_map.reset(esdf.esdf_map_);
@@ -112,7 +108,6 @@ bool KinematicSimulation::run() {
     observation_.state() = ocs2Interface_->getInitialState();
     observation_.time() = ros::Time::now().toSec();
     ocs2Interface_->setInitialState(observation_.state());  
-
     optimalState_ = observation_.state();
     initialTime_ = observation_.time();
     setCurrentObservation(observation_);
@@ -135,18 +130,14 @@ bool KinematicSimulation::run() {
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
 
 
-
-
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
-  // Tracker worker
   // wait for a stable esdf map 
-  while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
-  {
-
-    ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
-    ros::spinOnce();
-    ros::Rate(2).sleep();
-  }
+  // while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
+  // {
+  //   ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
+  //   ros::spinOnce();
+  //   ros::Rate(2).sleep();
+  // }
   /*update the observation time. Or the MPC horizon will fail.*/
   observation_.time() = ros::Time::now().toSec();
   setCurrentObservation(observation_);
@@ -168,7 +159,9 @@ bool KinematicSimulation::run() {
   tfUpdateWorker.join();
   return true;
 }
-
+void KinematicSimulation::initRosTopic(){
+  
+}
 void KinematicSimulation::loadTransforms() {
   UR5Kinematics<double> kinematics(kinematicInterfaceConfig_);
   tf2_ros::Buffer tfBuffer;
@@ -261,13 +254,6 @@ void KinematicSimulation::parseParameters() {
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.collisionCheckerResolution", frontEndOMPLRRTStarConfig_.collisionCheckerResolution);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.distance_gain", frontEndOMPLRRTStarConfig_.distance_gain);
-
-
-
-  // ROS_INFO_STREAM("frontEndOMPLRRTStar: " << std::endl << "planning_time:"  << frontEndOMPLRRTStarConfig_.planning_time<<  std::endl 
-  // <<"search_region_margin:" <<  frontEndOMPLRRTStarConfig_.margin_x <<" "<< frontEndOMPLRRTStarConfig_.margin_y<<" "<< frontEndOMPLRRTStarConfig_.margin_z<< std::endl
-  // <<"obstacle_margin:"<< frontEndOMPLRRTStarConfig_.obstacle_margin);
-  
 
 }
 

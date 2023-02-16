@@ -174,7 +174,7 @@ class KinematicSimulation {
 
   void loadTransforms();
   void initializeCostDesiredTrajectory();
-
+  void initRosTopic();
   kindr::HomTransformQuatD getEndEffectorPoseInArmFr();
   double getEEAtan();
   double getManipulability();
