@@ -86,3 +86,16 @@
     + If want to use the dynamic weighting, we can change the getIntermediateParameters Function (including the template parameters about the parameter dims) to get a dynamic weighted cost.
 + Something that is hard to explain happens. When I wait for esdf stable in real experiment.  In about 1/2 cases the mpc update rate is slow(about 40ms), otherwise it's 16ms. The former cases are usually unstable. -> I change the execution order to make the MPC initilize at last and then the program seems to work well.
 + If we use coldStart, the mobile manipulator is hard to stay in a fixed point. It tend to oscillate around a point and gradually become unstable. Some i change to the warmStart mode and beg the mpc to work fine.
+
+### 2023.2.17
++ If you start a thread in a function, you should use thread.join() or thread.detach(). Otherwise, when this function exits, segement fault will happen. Use thread.detach will make the thread independent. Until the main function return, the thread keeps working.
++ the static variable in the member function belongs to all instance of the class. They share the same static variable.
+
++ We'd better avoid change in the header file because it will take a much longer build time. 
+
++ Try to change the fiesta to multi-thread version. Fail!
+    + The most time-comsuming part of FIESTA is updateESDF and the most time-comsuming part of the updateESDF is the updateQueue. So i try to change the BFS of updateQueue to accelelate. The problem lies in:
+        + The queue in STL is not thread-safe. So we should first change to a thread-safe queue, which frequently lock the thread when push or pop from the queue. The lock will make the multi-thread slow because in most time the update procedure frequently pushes and pops element to the queue. The lock will make the multi-thread behave just like a single-thread.
+        + If we don't lock the thread when push or pop from the queue, the program crash!!
+        + After we add multi-thread, the time comsuption don't decrease in a satisfactory maner. Howerver, it will take more CPU resource.
+        
