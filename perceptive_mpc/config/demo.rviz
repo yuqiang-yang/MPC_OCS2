@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /occupyVoxel1
         - /frontEndPath1
       Splitter Ratio: 0.5
     Tree Height: 728
@@ -27,7 +28,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: occupyVoxel
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -328,8 +329,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.7450000047683716
-        Min Value: -0.06499999761581421
+        Max Value: 0.5249999761581421
+        Min Value: -0.4749999940395355
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -346,7 +347,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.029999999329447746
+      Size (m): 0.05000000074505806
       Style: Boxes
       Topic: /kinematic_simulation/ESDFMap/occ_pc
       Unreliable: false
@@ -412,10 +413,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7997981905937195
+      Pitch: 0.274798721075058
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0648441314697266
+      Yaw: 2.7798471450805664
     Saved: ~
 Window Geometry:
   Displays:

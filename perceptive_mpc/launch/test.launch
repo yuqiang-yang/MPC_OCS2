@@ -7,7 +7,7 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
     <!-- Simulation/Experiment -->
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <!-- Connect RTDE or not -->
     <arg name="ur_control_activate" value="false"/>
     <!-- Enable the camera and ESDF -->
@@ -49,8 +49,8 @@
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.03"/>
-        <param name="update_esdf_every_n_sec" value="0.2"/>
+        <param name="resolution" value="0.05"/>
+        <param name="update_esdf_every_n_sec" value="0.1"/>
 
         <!--Hash Table only-->
         <param name="reserved_size" value="1000000"/>

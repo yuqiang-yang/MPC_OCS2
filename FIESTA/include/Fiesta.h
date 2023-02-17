@@ -601,7 +601,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
           {
                esdf_map_->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_);
           }
-          timing::Timer update_occ_timer("UpdateOcc");
+          // timing::Timer update_occ_timer("UpdateOcc");
 
           esdf_map_->UpdateOccupancy(parameters_.global_update_);
           timing::Timer update_esdf_timer("UpdateESDF");
