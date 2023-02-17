@@ -53,7 +53,7 @@ public:
     void push(const value_type &new_value){
         std::lock_guard<std::mutex>lk(mut);
         data_queue.push(std::move(new_value));
-        data_cond.notify_one();
+        // data_cond.notify_one();
     }
     /*
      * 从队列中弹出一个元素,如果队列为空就阻塞
@@ -80,7 +80,7 @@ public:
      * 返回队列是否为空
      * */
     auto empty() const->decltype(data_queue.empty()) {
-        std::lock_guard<std::mutex>lk(mut);
+        // std::lock_guard<std::mutex>lk(mut);
         return data_queue.empty();
     }
     /*

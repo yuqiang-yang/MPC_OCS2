@@ -23,7 +23,6 @@ namespace fiesta {
 //                                         Eigen::Vector3i(0, 0, -1), Eigen::Vector3i(0, 0, 1)};
 
    const static int num_dirs_ = 18; // faces & enges
-   const int THREAD_NUM = 1;
 
    const Eigen::Vector3i dirs_[num_dirs_] = {Eigen::Vector3i(-1, 0, 0), Eigen::Vector3i(1, 0, 0),
                                         Eigen::Vector3i(0, -1, 0), Eigen::Vector3i(0, 1, 0),
@@ -164,7 +163,7 @@ struct Parameters {
   // transforms
   Eigen::Matrix4d T_B_C_, T_D_B_;
 
-
+  int update_num_thread_;
 
   void SetParameters(const ros::NodeHandle &node);
 };

@@ -188,6 +188,7 @@ Fiesta<DepthMsgType, PoseMsgType>::Fiesta(ros::NodeHandle node) {
 
      //add by yq for debug
      esdf_map_->SetAllVoxelFree();
+     esdf_map_->setThreadNum(parameters_.update_num_thread_);
      #ifdef SIGNED_NEEDED
      inv_esdf_map_->SetAllVoxelOccupied();
      inv_esdf_map_->UpdateOccupancy(parameters_.global_update_);
@@ -272,6 +273,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::Visualization(ESDFMap *esdf_map, bool gl
 template<class DepthMsgType, class PoseMsgType>
 void Fiesta<DepthMsgType, PoseMsgType>::RaycastProcess(int i, int part, int tt) {
      Eigen::Vector3d half = Eigen::Vector3d(0.5, 0.5, 0.5);
+     int total_num = 0;
      for (int idx = part*i; idx < part*(i + 1); idx++) {
           std::vector<Eigen::Vector3d> output;
           if (idx > cloud_.points.size())
@@ -319,7 +321,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastProcess(int i, int part, int tt) 
                   parameters_.r_cornor_/parameters_.resolution_,
                   &output);
           // std::cout << "raycast output size" << output.size() << std::endl;
-     
+          total_num += output.size();
           for (int i = output.size() - 2; i >= 0; i--) {
                Eigen::Vector3d tmp = (output[i] + half)*parameters_.resolution_;
 
@@ -359,6 +361,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::RaycastProcess(int i, int part, int tt) 
                }
           }
      }
+     // std::cout << "raycast total num" << total_num << std::endl;
 }
 
 template<class DepthMsgType, class PoseMsgType>
@@ -601,7 +604,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
           {
                esdf_map_->SetUpdateRange(cur_pos_ - parameters_.radius_, cur_pos_ + parameters_.radius_);
           }
-          timing::Timer update_occ_timer("UpdateOcc");
+          // timing::Timer update_occ_timer("UpdateOcc"); 
 
           esdf_map_->UpdateOccupancy(parameters_.global_update_);
           timing::Timer update_esdf_timer("UpdateESDF");

@@ -98,6 +98,8 @@ class ESDFMap {
   std::vector<Eigen::Vector3i> closest_obstacle_;
   std::vector<int> head_, prev_, next_;
   std::vector<bool> updateThreadCanWork_;
+  std::vector<int> updateThreadTimes_;
+
   std::queue<QueueElement> insert_queue_;
   std::queue<QueueElement> delete_queue_;
   fiesta::mt::threadsafe_queue<QueueElement> update_queue_;
@@ -178,6 +180,8 @@ class ESDFMap {
   // only for test, check between Ground Truth calculated by k-d tree
   bool CheckWithGroundTruth();
 #endif
+   int THREAD_NUM;
+   void setThreadNum(int num);
 
 };
 }

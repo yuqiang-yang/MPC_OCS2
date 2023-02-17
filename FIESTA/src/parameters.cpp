@@ -40,6 +40,9 @@ void fiesta::Parameters::SetParameters(const ros::NodeHandle &node) {
   node.param<double>("depth_filter_max_dist", depth_filter_max_dist_, 10.f);
   node.param<double>("depth_filter_min_dist", depth_filter_min_dist_, 0.1f);
   node.param<int>("depth_filter_margin", depth_filter_margin_, 0);
+  
+  update_num_thread_ = 1;
+  node.param<int>("update_num_thread", update_num_thread_, 1);
 
 #ifdef HASH_TABLE
   l_cornor_ << -100.f, -100.f, -100.f;

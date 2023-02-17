@@ -90,3 +90,5 @@
 ### 2023.2.17
 + If you start a thread in a function, you should use thread.join() or thread.detach(). Otherwise, when this function exits, segement fault will happen. Use thread.detach will make the thread independent. Until the main function return, the thread keeps working.
 + the static variable in the member function belongs to all instance of the class. They share the same static variable.
+
++ We'd better avoid change in the header file because it will take a much longer build time. 

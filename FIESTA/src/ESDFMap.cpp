@@ -7,7 +7,6 @@
 #include <time.h>
 #include "timing.h"
 #include "thread"
-#include "parameters.h"
 #include <chrono>
 
 using std::cout;
@@ -219,16 +218,20 @@ fiesta::ESDFMap::ESDFMap(Eigen::Vector3d origin, double resolution_, Eigen::Vect
   std::fill(head_.begin(), head_.end(), undefined_);
   std::fill(prev_.begin(), prev_.end(), undefined_);
   std::fill(next_.begin(), next_.end(), undefined_);
-
+  THREAD_NUM = 1;
   updateThreadCanWork_.resize(THREAD_NUM);
   std::fill(updateThreadCanWork_.begin(), updateThreadCanWork_.end(), false);
-
+  std::fill(updateThreadTimes_.begin(),updateThreadTimes_.end(),0);
 
 
 }
 
 #endif
-
+void fiesta::ESDFMap::setThreadNum(int num){
+  THREAD_NUM = num;
+  updateThreadCanWork_.resize(THREAD_NUM);  
+  updateThreadTimes_.resize(THREAD_NUM);
+}
 #ifdef PROBABILISTIC
 void fiesta::ESDFMap::SetParameters(double p_hit, double p_miss, double p_min, double p_max, double p_occ) {
   prob_hit_log_ = Logit(p_hit);
@@ -285,19 +288,18 @@ bool fiesta::ESDFMap::UpdateOccupancy(bool global_map) {
   return !insert_queue_.empty() || !delete_queue_.empty();
 }
 void fiesta::ESDFMap::multiThreadUpdateWorker(int id){
-
+  QueueElement xx;
   while(true)
   {
-    int times = 0, change_num = 0;
+    int change_num = 0;
     while (!update_queue_.empty() && updateThreadCanWork_[id] == true) {
-    QueueElement xx;;
     if(!update_queue_.try_pop(xx)) break;
 //QueueElement xx = update_queue_.top();
 
     int idx = Vox2Idx(xx.point_);
     if (xx.distance_ != distance_buffer_[idx])
       continue;
-    times++;
+    updateThreadTimes_[id]++;
     bool change = false;
     for (int i = 0; i < num_dirs_; i++) {
       Eigen::Vector3i new_pos = xx.point_ + dirs_[i];
@@ -308,7 +310,9 @@ void fiesta::ESDFMap::multiThreadUpdateWorker(int id){
         double tmp = Dist(xx.point_, closest_obstacle_[new_pos_idx]);
 
         if (distance_buffer_[idx] > tmp ) {
+          timing::Timer lockTimer("lock");
           std::unique_lock<std::shared_mutex> lock(updateMutex_);
+          lockTimer.Stop();
 
           distance_buffer_[idx] = tmp;
           change = true;
@@ -335,7 +339,10 @@ void fiesta::ESDFMap::multiThreadUpdateWorker(int id){
 
         double tmp = Dist(new_pos, closest_obstacle_[idx]);
         if (distance_buffer_[new_pos_id] > tmp) {
+          timing::Timer lockTimer("lock");
           std::unique_lock<std::shared_mutex> lock(updateMutex_);
+                lockTimer.Stop();
+
           distance_buffer_[new_pos_id] = tmp;
           DeleteFromList(Vox2Idx(closest_obstacle_[new_pos_id]), new_pos_id);
 
@@ -346,10 +353,10 @@ void fiesta::ESDFMap::multiThreadUpdateWorker(int id){
       }
     }
   }
-
+  if(updateThreadCanWork_[id]){
   updateThreadCanWork_[id] = false;
-  std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  std::cout << "updateWorker" <<id << " finish!!" <<std::endl;
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
 }
 }
 void fiesta::ESDFMap::UpdateESDF() {
@@ -358,13 +365,13 @@ void fiesta::ESDFMap::UpdateESDF() {
   // cout << "isFirstRun" << isFirstRun <<std::endl;
   if(isFirstRun){
   isFirstRun = false;
-  std::thread th[THREAD_NUM];
+  std::thread* th = new std::thread[THREAD_NUM];
   for(int i = 0;i < THREAD_NUM;i ++){
     th[i] = std::thread(&fiesta::ESDFMap::multiThreadUpdateWorker,this,i);
     th[i].detach();
   }
   }
-  timing::Timer insert_queue_timer("insert_queue");
+  // std::cout << "insert_queue_.size()"<<insert_queue_.size() << std::endl;
   while (!insert_queue_.empty()) {
     QueueElement xx = insert_queue_.front();
     insert_queue_.pop();
@@ -379,8 +386,7 @@ void fiesta::ESDFMap::UpdateESDF() {
       update_queue_.push(xx);
     }
   }
-  insert_queue_timer.Stop();
-  timing::Timer delete_queue__timer("delete_queue_");
+  // std::cout << "delete_queue_.size()"<<delete_queue_.size() << std::endl;
   while (!delete_queue_.empty()) {
     QueueElement xx = delete_queue_.front();
 
@@ -427,13 +433,15 @@ void fiesta::ESDFMap::UpdateESDF() {
       head_[idx] = undefined_;
     } // if
   } // delete_queue_
-  delete_queue__timer.Stop();
   timing::Timer update_queue_timer("update_queue_");
   std::fill(updateThreadCanWork_.begin(),updateThreadCanWork_.end(),true);
+  std::fill(updateThreadTimes_.begin(),updateThreadTimes_.end(),0);
+
+
   while(true){
     bool finished = true;
-    for(auto flag:updateThreadCanWork_){
-      if(flag == false){
+    for(bool flag:updateThreadCanWork_){
+      if(flag == true){
         finished = false;
       }
     }
@@ -441,6 +449,11 @@ void fiesta::ESDFMap::UpdateESDF() {
       break;
     }
   }
+  // for(int i = 0;i < THREAD_NUM;i++){
+  //   std::cout << "worker" << i << " finish" << updateThreadTimes_[i] << std::endl;
+  // }  
+    // int times = 0, change_num = 0;
+    // std::cout << "update_queue_.size()"<<update_queue_.size() << std::endl;
 
   // cout << "Expanding " << times << " nodes, with change_num = " << change_num << ", accumulator = " << total_time_
       //  << endl;
