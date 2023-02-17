@@ -367,11 +367,11 @@
     <!-- TODO: Attach a compliance tool link -->
      <joint name="${prefix}tool_joint" type="fixed">
       <parent link="${prefix}wrist_3_link"/>
-      <child link="led_link"/>
+      <child link="${prefix}led_link"/>
       <origin xyz="0.0 ${wrist_3_length /2.0} 0.0" rpy="-${pi/2} -${pi/4} 0"/>
     </joint>
       <link
-    name="led_link">
+    name="${prefix}led_link">
     <inertial>
       <origin
         xyz="1.21787819461004E-05 0.100506072293884 -0.0657375008490545"

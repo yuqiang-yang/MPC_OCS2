@@ -105,6 +105,8 @@ class KinematicSimulation {
 
   boost::shared_mutex observationMutex_;
   Observation observation_;
+  MpcInterface::state_vector_t MidObservation_;
+  MpcInterface::state_vector_t FinalObservation_;
   Observation observationBuffer_;
   KinematicInterfaceConfig kinematicInterfaceConfig_;
 
@@ -117,6 +119,9 @@ class KinematicSimulation {
   // ros
   ros::NodeHandle nh_;
   ros::Publisher armStatePublisher_;
+  ros::Publisher midStatePublisher_;
+  ros::Publisher finalStatePublisher_;
+
   ros::Publisher endEffectorPosePublisher_;
   ros::Publisher pointsOnRobotPublisher_;
   ros::Publisher cameraTransformPublisher_;
@@ -144,14 +149,15 @@ class KinematicSimulation {
 
   bool urControlActivate_;
   bool realsenseActivate_;
+  
   // compute the current end effector Pose on the base of the latest observation
   kindr::HomTransformQuatD getEndEffectorPose();
 
   // publish the transform from odom to the robot base
-  void publishBaseTransform(const Observation& observation);
+  void publishBaseTransform(const Observation& observation,std::string tf_prefix);
 
   // publish the joint state message of the arm state
-  void publishArmState(const Observation& observation);
+  void publishArmState(const Observation& observation,std::string tf_prefix);
 
   void publishCameraTransform(const Observation& observation);
   // publish the current end effector pose to ros
@@ -180,6 +186,7 @@ class KinematicSimulation {
   double getManipulability();
 
   private:
+  double horizon_;
   bool verbose_;
   double infoRate_;
   bool isFirstObservationReceived_;

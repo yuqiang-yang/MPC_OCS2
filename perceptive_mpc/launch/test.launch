@@ -15,18 +15,31 @@
 
 
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
-
-    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
-
+    <!-- <group ns="current_robot"> -->
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    <!-- </group> -->
+    <group ns="mid">
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro' tf_prefix:=mid"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    </group>
+    <group ns="final">
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro' tf_prefix:=final"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    </group>
     <!-- remove a warning about the realsense time  -->
     <rosparam>
         /camera/motion_module/global_time_enabled: true
         /camera/l500_depth_sensor/global_time_enabled: true
         /camera/rgb_camera/global_time_enabled: true
     </rosparam>
-    <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
-        <param name="publish_frequency" value="100"/>
-    </node>
+
     <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
         <param name="ur_ip"           value="192.168.100.2"/>
         <param name="ur_control_activate"   value="$(arg ur_control_activate)"/>
@@ -69,11 +82,11 @@
         <param name="ray_cast_num_thread" value="0"/>
 
         <!-- probabilistic grid map -->
-        <param name="p_hit" value="0.70"/>
+        <param name="p_hit" value="0.75"/>
         <param name="p_miss" value="0.2"/>
         <param name="p_min" value="0.12"/>
-        <param name="p_max" value="0.97"/>
-        <param name="p_occ" value="0.80"/>
+        <param name="p_max" value="0.92"/>
+        <param name="p_occ" value="0.72"/>
 
         <!-- global / local -->
         <param name="global_map" value="true"/>

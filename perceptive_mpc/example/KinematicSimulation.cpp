@@ -119,6 +119,9 @@ void KinematicSimulation::initRosTopic(){
   
   cameraTransformPublisher_ = nh_.advertise<geometry_msgs::TransformStamped>("/perceptive_mpc/odomToCamera", 1, false);
   armStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/joint_states", 10);
+  midStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/mid/joint_states", 10);
+  finalStatePublisher_ = nh_.advertise<sensor_msgs::JointState>("/final/joint_states", 10);
+
   ROS_INFO("Waiting for joint states subscriber ...");
   while (ros::ok() && armStatePublisher_.getNumSubscribers() == 0) {
     ros::Rate(100).sleep();
@@ -231,6 +234,9 @@ void KinematicSimulation::parseParameters() {
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.distance_gain", frontEndOMPLRRTStarConfig_.distance_gain);
 
   ocs2::loadData::loadEigenMatrix(packagePath + "/config/" +mpcTaskFile_, "initialState", initialState_);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "mpcTimeHorizon.timehorizon", horizon_);
+
+  
 }
 
 
@@ -283,6 +289,8 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       try {
         mpcInterface_->updatePolicy();
         mpcInterface_->evaluatePolicy(observation.time(), observation.state(), optimalState, controlInput, subsystem);
+        mpcInterface_->evaluatePolicy(observation.time() + horizon_ / 2.0, observation.state(), MidObservation_, controlInput, subsystem);
+        mpcInterface_->evaluatePolicy(observation.time() + horizon_, observation.state(), FinalObservation_, controlInput, subsystem);
         // TODO: for integration on hardware, send the computed control inputs to the motor controllers
       } catch (const std::runtime_error& ex) {
         ROS_ERROR_STREAM("runtime_error occured11!");
@@ -388,13 +396,24 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
 
     try {
       Observation currentObservation;
+      Observation midObservation;
+      Observation finalObservation;
       {
         boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
         currentObservation = observation_;
+        midObservation.time() = ros::Time::now().toSec();
+        midObservation.state() = MidObservation_;
+        finalObservation.time() = ros::Time::now().toSec();
+        finalObservation.state() = FinalObservation_;
         // std::cerr << "observation_222" << observation_.state().transpose() << std::endl;
       }
-      publishBaseTransform(currentObservation);
-      publishArmState(currentObservation);
+      
+      publishBaseTransform(currentObservation,"");
+      publishArmState(currentObservation,"");
+      publishBaseTransform(currentObservation,"mid");
+      publishArmState(currentObservation,"mid");
+      publishBaseTransform(currentObservation,"final");
+      publishArmState(currentObservation,"final");
       publishEndEffectorPose();
       if(isPureSimulation_)
         publishCameraTransform(currentObservation);
@@ -586,10 +605,10 @@ void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::Wr
   ROS_INFO_STREAM("current time");
 }
 
-void KinematicSimulation::publishBaseTransform(const Observation& observation) {
+void KinematicSimulation::publishBaseTransform(const Observation& observation,std::string tf_prefix) {
   geometry_msgs::TransformStamped base_transform;
   base_transform.header.frame_id = "odom";
-  base_transform.child_frame_id = "base_footprint";
+  base_transform.child_frame_id = tf_prefix + "base_footprint";
 
   const Eigen::Quaterniond currentRotation = Eigen::Quaterniond(observation.state().head<Definitions::BASE_STATE_DIM_>().head<4>());
   const Eigen::Matrix<double, 3, 1> currentPosition = observation.state().head<Definitions::BASE_STATE_DIM_>().tail<3>();
@@ -681,16 +700,28 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
 
 
 }
-void KinematicSimulation::publishArmState(const Observation& observation) {
+void KinematicSimulation::publishArmState(const Observation& observation,std::string tf_prefix) {
   sensor_msgs::JointState armState;
   armState.header.stamp = ros::Time::now();
-  armState.name = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
+  armState.name = {tf_prefix +"shoulder_pan_joint", tf_prefix +"shoulder_lift_joint", tf_prefix +"elbow_joint", tf_prefix +"wrist_1_joint", tf_prefix +"wrist_2_joint", tf_prefix +"wrist_3_joint"};
   armState.position.resize(Definitions::ARM_STATE_DIM_);
   Eigen::VectorXd armConfiguration = observation.state().tail<6>();
   for (size_t joint_idx = 0; joint_idx < Definitions::ARM_STATE_DIM_; joint_idx++) {
     armState.position[joint_idx] = armConfiguration(joint_idx);
   }
-  armStatePublisher_.publish(armState);
+  if(tf_prefix.length() == 0)
+  {
+    armStatePublisher_.publish(armState);
+  }
+  else if(tf_prefix == "mid")
+  {
+        midStatePublisher_.publish(armState);
+  }
+  else if(tf_prefix == "final")
+  {
+    finalStatePublisher_.publish(armState);
+  }
+
 }
 
 void KinematicSimulation::publishEndEffectorPose() {
