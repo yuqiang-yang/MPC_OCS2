@@ -104,7 +104,9 @@ target_link_libraries(test_fiesta
         ${PCL_LIBRARIES}
         ${OpenCV_LIBS}
         )
-
+add_executable(test_thread
+        src/test_multithread.cpp
+)
 
 install(TARGETS fiestalib
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

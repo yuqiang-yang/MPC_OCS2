@@ -6,6 +6,10 @@
 #include <math.h>
 #include <time.h>
 #include "timing.h"
+#include "thread"
+#include "parameters.h"
+#include <chrono>
+
 using std::cout;
 using std::endl;
 
@@ -196,6 +200,7 @@ fiesta::ESDFMap::ESDFMap(Eigen::Vector3d origin, double resolution_, Eigen::Vect
   num_hit_.resize(grid_total_size_);
   num_miss_.resize(grid_total_size_);
 
+
   std::fill(distance_buffer_.begin(), distance_buffer_.end(), (double) undefined_);
   // std::fill(distance_buffer_.begin(), distance_buffer_.end(), (double) infinity_); //change by yq
 
@@ -214,6 +219,11 @@ fiesta::ESDFMap::ESDFMap(Eigen::Vector3d origin, double resolution_, Eigen::Vect
   std::fill(head_.begin(), head_.end(), undefined_);
   std::fill(prev_.begin(), prev_.end(), undefined_);
   std::fill(next_.begin(), next_.end(), undefined_);
+
+  updateThreadCanWork_.resize(THREAD_NUM);
+  std::fill(updateThreadCanWork_.begin(), updateThreadCanWork_.end(), false);
+
+
 
 }
 
@@ -274,12 +284,86 @@ bool fiesta::ESDFMap::UpdateOccupancy(bool global_map) {
 #endif
   return !insert_queue_.empty() || !delete_queue_.empty();
 }
+void fiesta::ESDFMap::multiThreadUpdateWorker(int id){
 
+  while(true)
+  {
+    int times = 0, change_num = 0;
+    while (!update_queue_.empty() && updateThreadCanWork_[id] == true) {
+    QueueElement xx;;
+    if(!update_queue_.try_pop(xx)) break;
+//QueueElement xx = update_queue_.top();
+
+    int idx = Vox2Idx(xx.point_);
+    if (xx.distance_ != distance_buffer_[idx])
+      continue;
+    times++;
+    bool change = false;
+    for (int i = 0; i < num_dirs_; i++) {
+      Eigen::Vector3i new_pos = xx.point_ + dirs_[i];
+      if (VoxInRange(new_pos)) {
+        int new_pos_idx = Vox2Idx(new_pos);
+        if (closest_obstacle_[new_pos_idx](0) == undefined_)
+          continue;
+        double tmp = Dist(xx.point_, closest_obstacle_[new_pos_idx]);
+
+        if (distance_buffer_[idx] > tmp ) {
+          std::unique_lock<std::shared_mutex> lock(updateMutex_);
+
+          distance_buffer_[idx] = tmp;
+          change = true;
+          DeleteFromList(Vox2Idx(closest_obstacle_[idx]), idx);
+
+          int new_obs_idx = Vox2Idx(closest_obstacle_[new_pos_idx]);
+          InsertIntoList(new_obs_idx, idx);
+          closest_obstacle_[idx] = closest_obstacle_[new_pos_idx];
+        }
+      }
+    }
+
+    if (change) {
+      change_num++;
+      update_queue_.push(QueueElement{xx.point_, distance_buffer_[idx]});
+      continue;
+    }
+
+    int new_obs_idx = Vox2Idx(closest_obstacle_[idx]);
+    for (const auto &dir : dirs_) {
+      Eigen::Vector3i new_pos = xx.point_ + dir;
+      if (VoxInRange(new_pos)) {
+        int new_pos_id = Vox2Idx(new_pos);
+
+        double tmp = Dist(new_pos, closest_obstacle_[idx]);
+        if (distance_buffer_[new_pos_id] > tmp) {
+          std::unique_lock<std::shared_mutex> lock(updateMutex_);
+          distance_buffer_[new_pos_id] = tmp;
+          DeleteFromList(Vox2Idx(closest_obstacle_[new_pos_id]), new_pos_id);
+
+          InsertIntoList(new_obs_idx, new_pos_id);
+          closest_obstacle_[new_pos_id] = closest_obstacle_[idx];
+          update_queue_.push(QueueElement{new_pos, tmp});
+        }
+      }
+    }
+  }
+
+  updateThreadCanWork_[id] = false;
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  std::cout << "updateWorker" <<id << " finish!!" <<std::endl;
+}
+}
 void fiesta::ESDFMap::UpdateESDF() {
-//    clock_t startTime,endTime;
-//    startTime = clock();
 //    UpdateOccupancy();
-  // cout << "Insert " << insert_queue_.size() << "\tDelete " << delete_queue_.size() << endl;
+  static bool isFirstRun = true;
+  // cout << "isFirstRun" << isFirstRun <<std::endl;
+  if(isFirstRun){
+  isFirstRun = false;
+  std::thread th[THREAD_NUM];
+  for(int i = 0;i < THREAD_NUM;i ++){
+    th[i] = std::thread(&fiesta::ESDFMap::multiThreadUpdateWorker,this,i);
+    th[i].detach();
+  }
+  }
   timing::Timer insert_queue_timer("insert_queue");
   while (!insert_queue_.empty()) {
     QueueElement xx = insert_queue_.front();
@@ -345,62 +429,19 @@ void fiesta::ESDFMap::UpdateESDF() {
   } // delete_queue_
   delete_queue__timer.Stop();
   timing::Timer update_queue_timer("update_queue_");
-  int times = 0, change_num = 0;
-  while (!update_queue_.empty()) {
-    QueueElement xx = update_queue_.front();
-//            QueueElement xx = update_queue_.top();
-
-    update_queue_.pop();
-    int idx = Vox2Idx(xx.point_);
-    if (xx.distance_ != distance_buffer_[idx])
-      continue;
-    times++;
-    bool change = false;
-    for (int i = 0; i < num_dirs_; i++) {
-      Eigen::Vector3i new_pos = xx.point_ + dirs_[i];
-      if (VoxInRange(new_pos)) {
-        int new_pos_idx = Vox2Idx(new_pos);
-        if (closest_obstacle_[new_pos_idx](0) == undefined_)
-          continue;
-        double tmp = Dist(xx.point_, closest_obstacle_[new_pos_idx]);
-
-        if (distance_buffer_[idx] > tmp ) {
-          distance_buffer_[idx] = tmp;
-          change = true;
-          DeleteFromList(Vox2Idx(closest_obstacle_[idx]), idx);
-
-          int new_obs_idx = Vox2Idx(closest_obstacle_[new_pos_idx]);
-          InsertIntoList(new_obs_idx, idx);
-          closest_obstacle_[idx] = closest_obstacle_[new_pos_idx];
-        }
+  std::fill(updateThreadCanWork_.begin(),updateThreadCanWork_.end(),true);
+  while(true){
+    bool finished = true;
+    for(auto flag:updateThreadCanWork_){
+      if(flag == false){
+        finished = false;
       }
     }
-
-    if (change) {
-      change_num++;
-      update_queue_.push(QueueElement{xx.point_, distance_buffer_[idx]});
-      continue;
-    }
-
-    int new_obs_idx = Vox2Idx(closest_obstacle_[idx]);
-    for (const auto &dir : dirs_) {
-      Eigen::Vector3i new_pos = xx.point_ + dir;
-      if (VoxInRange(new_pos)) {
-        int new_pos_id = Vox2Idx(new_pos);
-
-        double tmp = Dist(new_pos, closest_obstacle_[idx]);
-        if (distance_buffer_[new_pos_id] > tmp) {
-          distance_buffer_[new_pos_id] = tmp;
-          DeleteFromList(Vox2Idx(closest_obstacle_[new_pos_id]), new_pos_id);
-
-          InsertIntoList(new_obs_idx, new_pos_id);
-          closest_obstacle_[new_pos_id] = closest_obstacle_[idx];
-          update_queue_.push(QueueElement{new_pos, tmp});
-        }
-      }
+    if(finished == true){
+      break;
     }
   }
-  total_time_ += times;
+
   // cout << "Expanding " << times << " nodes, with change_num = " << change_num << ", accumulator = " << total_time_
       //  << endl;
 //    endTime = clock();
@@ -480,8 +521,6 @@ double fiesta::ESDFMap::GetDistance(Eigen::Vector3d pos) {
 
   Eigen::Vector3i vox;
   Pos2Vox(pos, vox);
-
-  return GetDistance(vox);
 }
 
 double fiesta::ESDFMap::GetDistance(Eigen::Vector3i vox) {

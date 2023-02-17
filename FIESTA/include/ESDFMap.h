@@ -16,6 +16,8 @@
 #include <sensor_msgs/PointCloud.h>
 #include "parameters.h"
 #include <fstream>
+#include <shared_mutex>
+#include "threadSafeQueue.h"
 
 namespace fiesta {
 #ifdef HASH_TABLE
@@ -61,6 +63,9 @@ class ESDFMap {
   int Vox2Idx(Eigen::Vector3i vox);
   int Vox2Idx(Eigen::Vector3i vox, int sub_sampling_factor);
   void Pos2Vox(Eigen::Vector3d pos, Eigen::Vector3i &vox);
+
+  void multiThreadUpdateWorker(int id);
+
   Eigen::Vector3i Idx2Vox(int idx);
 
   // HASH TABLE related
@@ -79,6 +84,7 @@ class ESDFMap {
   Eigen::Vector3d min_range_, max_range_;  // map range in pos
   Eigen::Vector3i grid_size_;             // map range in index
   int grid_size_yz_;
+  std::shared_mutex updateMutex_;
 #endif
 
 // data are saved in vector
@@ -91,10 +97,10 @@ class ESDFMap {
   std::vector<int> num_hit_, num_miss_;
   std::vector<Eigen::Vector3i> closest_obstacle_;
   std::vector<int> head_, prev_, next_;
-
+  std::vector<bool> updateThreadCanWork_;
   std::queue<QueueElement> insert_queue_;
   std::queue<QueueElement> delete_queue_;
-  std::queue<QueueElement> update_queue_;
+  fiesta::mt::threadsafe_queue<QueueElement> update_queue_;
   std::queue<QueueElement> occupancy_queue_;
 
 // Map Properties

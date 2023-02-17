@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(frontend_ompl)
+set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS} -O3 -Wall -pthread") # -Wextra -Werror
 
 # Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS

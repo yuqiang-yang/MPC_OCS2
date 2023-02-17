@@ -27,7 +27,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: filteredPointcloud
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -301,7 +301,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -316,7 +316,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /robot_model_for_contains_test
@@ -328,8 +328,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.7450000047683716
-        Min Value: -0.06499999761581421
+        Max Value: 1.375
+        Min Value: 0.23499999940395355
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -354,13 +354,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /perceptive_mpc/front_end_trajectory
@@ -412,10 +412,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7997981905937195
+      Pitch: 0.41979849338531494
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0648441314697266
+      Yaw: 2.904846668243408
     Saved: ~
 Window Geometry:
   Displays:
