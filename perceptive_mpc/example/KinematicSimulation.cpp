@@ -425,10 +425,10 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
       publishBaseTransform(finalObservation,"final");
       publishArmState(finalObservation,"final");
       publishEndEffectorPose();
-      if(isPureSimulation_)
+      // if(isPureSimulation_)
         publishCameraTransform(currentObservation);
-      else
-        publishCameraTransform(observationBuffer_);
+      // else
+        // publishCameraTransform(observationBuffer_);
       if (pointsOnRobot_) {
         pointsOnRobotPublisher_.publish(pointsOnRobot_->getVisualization(currentObservation.state()));
       }
