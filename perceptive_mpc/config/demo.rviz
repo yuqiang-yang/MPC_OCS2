@@ -57,7 +57,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.800000011920929
+    - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -332,8 +332,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.625
-        Min Value: -0.4749999940395355
+        Max Value: 1.8849999904632568
+        Min Value: -0.06499999761581421
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -534,7 +534,7 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Alpha: 0.5
+    - Alpha: 0.20000000298023224
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -723,7 +723,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.270542144775391
+      Distance: 1.6231746673583984
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -738,10 +738,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.42979881167411804
+      Pitch: 0.389799028635025
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.989860534667969
+      Yaw: 1.7666783332824707
     Saved: ~
 Window Geometry:
   Displays:

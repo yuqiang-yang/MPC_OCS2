@@ -12,13 +12,26 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
 {
     ob::RealVectorBounds bound(3);
 
-    bound.setLow(0,-2.5);
-    bound.setHigh(0,3.5);
-    bound.setLow(1,-2.5);
-    bound.setHigh(1,2.5);    
-    bound.setLow(2,-0.5);
-    bound.setHigh(2,2);
+    // bound.setLow(0,-2.5);
+    // bound.setHigh(0,3.5);
+    // bound.setLow(1,-2.5);
+    // bound.setHigh(1,2.5);    
+    // bound.setLow(2,-0.5);
+    // bound.setHigh(2,2);
+    double min_x = start.coeff(4) < goal.coeff(4)?start.coeff(4):goal.coeff(4);
+    double max_x = start.coeff(4) > goal.coeff(4)?start.coeff(4):goal.coeff(4);
+    bound.setLow(0,min_x-config_.margin_x);
+    bound.setHigh(0,max_x+config_.margin_x);
 
+    double min_y = start.coeff(5) < goal.coeff(5)?start.coeff(5):goal.coeff(5);
+    double max_y = start.coeff(5) > goal.coeff(5)?start.coeff(5):goal.coeff(5);
+    bound.setLow(1,min_y-config_.margin_y);
+    bound.setHigh(1,max_y+config_.margin_y);
+
+    double min_z = start.coeff(6) < goal.coeff(6)?start.coeff(6):goal.coeff(6);
+    double max_z = start.coeff(6) > goal.coeff(6)?start.coeff(6):goal.coeff(6);
+    bound.setLow(2,min_z-config_.margin_z);
+    bound.setHigh(2,max_z+config_.margin_z);
 
     space_.reset(new ob::RealVectorStateSpace(3));
     space_->as<ob::RealVectorStateSpace>()->setBounds(bound); 
@@ -149,6 +162,7 @@ double ValidityChecker::clearance(const ob::State* state) const{
 
     Eigen::Vector3d gradientFiesta ;
     gradientFiesta << 0.0, 0.0, 0.0;
+    if(!esdf_map_) return 3.0;
     double distance = esdf_map_->GetDistWithGradTrilinear(position,gradientFiesta);
     if (distance != -1) {
         // std::cerr << "the query point distance is " << distance << std::endl;

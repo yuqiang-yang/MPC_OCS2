@@ -129,7 +129,7 @@ initialState
   (9,0)  1.571    ; arm_3
   (10,0) -1.571     ; arm_4
   (11,0) -1.571     ; arm_5
-  (12,0) 2.094    ; arm_6
+  (12,0) -2.61    ; arm_6
 }
 
 ee_tracking_task
@@ -137,7 +137,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 3e0
+    scaling 1e1
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -150,7 +150,7 @@ ee_tracking_task
   ; control weight matrix
   R
   {
-    scaling 2e0
+    scaling 1e0
 
     (0,0) 1.0  ; base_drive
     (1,1) 1.0  ; base_turn
@@ -179,8 +179,8 @@ ee_tracking_task
 fiesta_cost
 {
     activate        1
-    mu              5e-3
-    delta           4e-3
+    mu              1e-3
+    delta           1e-3
     max_distance    3.0
 }
 orientationCost
@@ -207,7 +207,7 @@ limits
     (2,0)  -6.28     ; arm_3
     (3,0)  -6.28     ; arm_4
     (4,0)  -6.28     ; arm_5
-    (5,0)  -6.28     ; arm_6
+    (5,0)  -4     ; arm_6
   }
   upper
   {
@@ -216,7 +216,7 @@ limits
     (2,0)  6.28     ; arm_3
     (3,0)  6.28     ; arm_4
     (4,0)  6.28     ; arm_5
-    (5,0)  6.28     ; arm_6
+    (5,0)  0     ; arm_6
   }
   velocity
   {
@@ -232,11 +232,11 @@ limits
 }
 frontEndOMPLRRTStar
 {
-  margin_x                    0.2
-  margin_y                    0.2
-  margin_z                    0.2
-  obstacle_margin             0.05
+  margin_x                    0.5
+  margin_y                    0.5
+  margin_z                    0.5
+  obstacle_margin             0.07
   planning_time               2
   collisionCheckerResolution  0.02
-  distance_gain               7.0
+  distance_gain               5.0
 }

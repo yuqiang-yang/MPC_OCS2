@@ -123,6 +123,7 @@ class KinematicSimulation {
   ros::Publisher finalStatePublisher_;
 
   ros::Publisher endEffectorPosePublisher_;
+  ros::Publisher markerPosePublisher_;
   ros::Publisher pointsOnRobotPublisher_;
   ros::Publisher cameraTransformPublisher_;
   ros::Publisher frontEndVisualizePublisher_;
@@ -163,6 +164,7 @@ class KinematicSimulation {
   // publish the current end effector pose to ros
   void publishEndEffectorPose();
 
+  void publishMarkerPose(const Observation& observation);
     // parse all ros parameters
   void parseParameters();
 

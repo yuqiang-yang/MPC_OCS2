@@ -15,22 +15,38 @@ class SingleMarkerBroadcaster:
         self.pose = PoseStamped()
 
         self.pose_pub = rospy.Publisher('/perceptive_mpc/desired_end_effector_pose', PoseStamped, queue_size=1)
-
+        self.pose_sub = rospy.Subscriber('/perceptive_mpc/set_marker_pose',PoseStamped,self.set_marker_pose)
         self.global_frame = 'odom'
 
     def makeBox(self, msg):
         marker = Marker()
 
         marker.type = Marker.SPHERE
-        marker.scale.x = msg.scale * 0.45
-        marker.scale.y = msg.scale * 0.45
-        marker.scale.z = msg.scale * 0.45
-        marker.color.r = 0.0
+        marker.scale.x = msg.scale * 0.6
+        marker.scale.y = msg.scale * 0.6
+        marker.scale.z = msg.scale * 0.6
+        marker.color.r = 0.5
         marker.color.g = 0.5
         marker.color.b = 0.5
         marker.color.a = 0.5
         return marker
+    def set_marker_pose(self,receive_pose):
+        print('receive pose msg')
+        int_marker = self.int_marker
+        int_marker.header.stamp = rospy.Time.now()
+        self.pose.header = int_marker.header
 
+        int_marker.pose.position.x = receive_pose.pose.position.x
+        int_marker.pose.position.y = receive_pose.pose.position.y
+        int_marker.pose.position.z = receive_pose.pose.position.z
+        self.pose.pose.position = int_marker.pose.position
+
+        int_marker.pose.orientation.x = receive_pose.pose.orientation.x
+        int_marker.pose.orientation.y = receive_pose.pose.orientation.y
+        int_marker.pose.orientation.z = receive_pose.pose.orientation.z
+        int_marker.pose.orientation.w = receive_pose.pose.orientation.w
+        self.pose.pose.orientation = int_marker.pose.orientation        
+    
     def create_marker(self):
         self.int_marker = InteractiveMarker()
         int_marker = self.int_marker
@@ -50,7 +66,7 @@ class SingleMarkerBroadcaster:
         self.pose.pose.orientation = int_marker.pose.orientation
 
 
-        int_marker.scale = 0.2
+        int_marker.scale = 0.15
 
         int_marker.name = "PoseTarget"
         int_marker.description = "Pose target for the end effector"

@@ -39,6 +39,7 @@
         /camera/l500_depth_sensor/global_time_enabled: true
         /camera/rgb_camera/global_time_enabled: true
     </rosparam>
+    <node name="interactive_pose_node" pkg="perceptive_mpc" type="interactive_marker.py" output="screen"/>
 
     <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
         <param name="ur_ip"           value="192.168.100.2"/>
@@ -113,7 +114,6 @@
         <remap from="~transform" to="/perceptive_mpc/odomToCamera"/>
     </node> 
 
-    <node name="interactive_pose_node" pkg="perceptive_mpc" type="interactive_marker.py" output="screen"/>
     
     <group ns="pointcloud_filter">
         <node pkg="nodelet" type="nodelet" name="pointcloud_filter_chain"  args="manager"/>

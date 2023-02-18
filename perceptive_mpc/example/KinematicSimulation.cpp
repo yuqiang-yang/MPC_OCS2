@@ -76,6 +76,7 @@ bool KinematicSimulation::run() {
   observation_.state() = isPureSimulation_ ? initialState_ : observationBuffer_.state();
   MidObservation_ = observation_.state();
   FinalObservation_ = observation_.state();
+  publishMarkerPose(observation_);
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
   // wait for a stable esdf map 
   while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
@@ -115,6 +116,7 @@ void KinematicSimulation::initRosTopic(){
   desiredEndEffectorWrenchPoseTrajectorySubscriber_ = nh_.subscribe("/perceptive_mpc/desired_end_effector_wrench_pose_trajectory", 1,
                                                                     &KinematicSimulation::desiredWrenchPoseTrajectoryCb, this);
   endEffectorPosePublisher_ = nh_.advertise<geometry_msgs::PoseStamped>("measured_end_effector_pose", 100);
+  markerPosePublisher_ = nh_.advertise<geometry_msgs::PoseStamped>("/perceptive_mpc/set_marker_pose", 1);
 
   pointsOnRobotPublisher_ = nh_.advertise<visualization_msgs::MarkerArray>("/perceptive_mpc/collision_points", 1, false);
   frontEndVisualizePublisher_ = nh_.advertise<visualization_msgs::Marker>("/perceptive_mpc/front_end_trajectory", 1, false);
@@ -506,12 +508,18 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   // std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
   // std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
-  bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
-  if(!is_success)
-  {
-    ROS_ERROR("Found no frontEnd solution");
-    return;
+  try{
+    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
+    if(!is_success)
+    {
+      ROS_ERROR("Found no frontEnd solution");
+      return;
+    }
   }
+  catch(const std::exception ex){
+    std::cerr << "frontend raise an error:" << ex.what() << std::endl;
+  }
+
 
   // std::cerr << "debugging traj" << desired_trajectory << std::endl;
 
@@ -611,6 +619,24 @@ void KinematicSimulation::desiredWrenchPoseTrajectoryCb(const perceptive_mpc::Wr
   // costDesiredTrajectories_.display();
   ROS_INFO_STREAM("current time");
 }
+
+void KinematicSimulation::publishMarkerPose(const Observation& observation){
+  auto currentEndEffectorPose = getEndEffectorPose();
+  Eigen::Vector3d currentPosition = currentEndEffectorPose.getPosition().toImplementation();
+  Eigen::Quaterniond currentRotation = currentEndEffectorPose.getRotation().getUnique().toImplementation();
+  geometry_msgs::PoseStamped poseStamp;
+  poseStamp.header.stamp = ros::Time::now();
+  poseStamp.pose.position.x = currentPosition(0);
+  poseStamp.pose.position.y = currentPosition(1);
+  poseStamp.pose.position.z = currentPosition(2);  
+
+  poseStamp.pose.orientation.x = currentRotation.x();
+  poseStamp.pose.orientation.y = currentRotation.y();
+  poseStamp.pose.orientation.z = currentRotation.z();
+  poseStamp.pose.orientation.w = currentRotation.w();
+
+  markerPosePublisher_.publish(poseStamp);
+  }
 
 void KinematicSimulation::publishBaseTransform(const Observation& observation,std::string tf_prefix) {
   geometry_msgs::TransformStamped base_transform;
