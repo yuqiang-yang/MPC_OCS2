@@ -82,8 +82,9 @@ bool KinematicSimulation::run() {
   while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
   {
     ROS_INFO_STREAM("wait until the esdf become stable! " << esdf.esdfUpdateCnt_);
+    observation_.time() = ros::Time::now().toSec();
     ros::spinOnce();
-    ros::Rate(2).sleep();
+    ros::Rate(10).sleep();
   }
 
   //construct perceptive MPC and set initial state
@@ -714,7 +715,7 @@ void KinematicSimulation::publishCameraTransform(const Observation& observation)
     tfBroadcaster_.sendTransform( 
         tf::StampedTransform(		  
           tf::Transform(tf::Quaternion(cameraRotation.coeffs()(0), cameraRotation.coeffs()(1), cameraRotation.coeffs()(2), cameraRotation.coeffs()(3)), tf::Vector3(cameraPosition(0),cameraPosition(1),cameraPosition(2))),
-          ros::Time::now(),"odom", "camera_depth_optical_frame")); 
+          ros::Time(observation.time()),"odom", "camera_depth_optical_frame")); 
           
   // for test only by yq
   // world_T_rgb = world_T_rgb.inverse();

@@ -7,11 +7,11 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find perceptive_mpc)/config/demo.rviz"/>
     <!-- Simulation/Experiment -->
-    <arg name="isPureSimulation" value="true"/>
+    <arg name="isPureSimulation" value="false"/>
     <!-- Connect RTDE or not -->
     <arg name="ur_control_activate" value="false"/>
     <!-- Enable the camera and ESDF -->
-    <arg name="realsenseActivate" value="false"/>
+    <arg name="realsenseActivate" value="true"/>
 
 
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
@@ -63,8 +63,8 @@
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.03"/>
-        <param name="update_esdf_every_n_sec" value="0.1"/>
+        <param name="resolution" value="0.05"/>
+        <param name="update_esdf_every_n_sec" value="0.05"/>
 
         <!--Hash Table only-->
         <param name="reserved_size" value="1000000"/>
@@ -124,7 +124,7 @@
                 filter_field_name: 'z'
                 filter_limit_min: 0.0
                 filter_limit_max: 2.0
-                leaf_size: 0.01
+                leaf_size: 0.005
             </rosparam>
         </node>
 
@@ -133,7 +133,7 @@
             <remap from="~output" to="outlier_filtered_pointcloud" />
             <rosparam>
                 mean_k: 20
-                stddev: 1
+                stddev: 1.5
             </rosparam>
         </node>
 
