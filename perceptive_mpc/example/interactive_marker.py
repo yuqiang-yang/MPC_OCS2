@@ -32,6 +32,7 @@ class SingleMarkerBroadcaster:
         return marker
     def set_marker_pose(self,receive_pose):
         print('receive pose msg')
+        self.int_marker = InteractiveMarker()
         int_marker = self.int_marker
         int_marker.header.stamp = rospy.Time.now()
         self.pose.header = int_marker.header
@@ -45,25 +46,26 @@ class SingleMarkerBroadcaster:
         int_marker.pose.orientation.y = receive_pose.pose.orientation.y
         int_marker.pose.orientation.z = receive_pose.pose.orientation.z
         int_marker.pose.orientation.w = receive_pose.pose.orientation.w
-        self.pose.pose.orientation = int_marker.pose.orientation        
-    
+        self.pose.pose.orientation = int_marker.pose.orientation  
+        interactiveTargetPose.create_marker()
+        interactiveTargetPose.apply_changes()
     def create_marker(self):
-        self.int_marker = InteractiveMarker()
+        # self.int_marker = InteractiveMarker()
         int_marker = self.int_marker
         int_marker.header.frame_id = self.global_frame
         int_marker.header.stamp = rospy.Time.now()
         self.pose.header = int_marker.header
 
-        int_marker.pose.position.x = 1.0
-        int_marker.pose.position.y = 0.0
-        int_marker.pose.position.z = 0.0
-        self.pose.pose.position = int_marker.pose.position
+        # int_marker.pose.position.x = 1.0
+        # int_marker.pose.position.y = 0.0
+        # int_marker.pose.position.z = 0.0
+        # self.pose.pose.position = int_marker.pose.position
 
-        int_marker.pose.orientation.x = -0.707
-        int_marker.pose.orientation.y = 0.707
-        int_marker.pose.orientation.z = 0.0
-        int_marker.pose.orientation.w = 0.0
-        self.pose.pose.orientation = int_marker.pose.orientation
+        # int_marker.pose.orientation.x = -0.707
+        # int_marker.pose.orientation.y = 0.707
+        # int_marker.pose.orientation.z = 0.0
+        # int_marker.pose.orientation.w = 0.0
+        # self.pose.pose.orientation = int_marker.pose.orientation
 
 
         int_marker.scale = 0.15
@@ -134,8 +136,7 @@ if __name__ == '__main__':
 
     try:
         interactiveTargetPose = SingleMarkerBroadcaster()
-        interactiveTargetPose.create_marker()
-        interactiveTargetPose.apply_changes()
+
     except rospy.ROSInterruptException:
         pass
 

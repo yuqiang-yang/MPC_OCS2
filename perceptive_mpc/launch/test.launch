@@ -9,7 +9,7 @@
     <!-- Simulation/Experiment -->
     <arg name="isPureSimulation" value="false"/>
     <!-- Connect RTDE or not -->
-    <arg name="ur_control_activate" value="false"/>
+    <arg name="ur_control_activate" value="true"/>
     <!-- Enable the camera and ESDF -->
     <arg name="realsenseActivate" value="true"/>
 

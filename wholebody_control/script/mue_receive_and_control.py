@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3
 import rospy
 import time
 import rtde_control
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         wb_state.data = np.concatenate((car_state,arm_state,[rospy.Time().now().to_time()]),axis=0)
         wb_state_pub.publish(wb_state)
         time.sleep(0.01)
-    rtde_c.speedStop(10);
+    rtde_c.speedStop();
 
 
 

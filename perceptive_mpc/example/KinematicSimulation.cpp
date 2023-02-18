@@ -91,12 +91,14 @@ bool KinematicSimulation::run() {
   ocs2Interface_.reset(new PerceptiveMpcInterface(config));
   observation_.time() = ros::Time::now().toSec();
   observation_.state() = isPureSimulation_ ? initialState_ : observationBuffer_.state();
+  observationBuffer_.time() = ros::Time::now().toSec();
   initialTime_ = observation_.time();
   ocs2Interface_->setInitialState(observation_.state());  
   mpcInterface_ = std::make_shared<MpcInterface>(ocs2Interface_->getMpc());
   mpcInterface_->reset();
   setCurrentObservation(observation_);
   optimalState_ = observation_.state();
+  publishMarkerPose(observation_);
 
   //set after the observation_ is initialized. 
   initializeCostDesiredTrajectory();
@@ -263,8 +265,9 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       {
         boost::unique_lock<boost::shared_mutex> lockGuard(observationMutex_);
         observation_.state() = observationBuffer_.state();
+        observation_.time() = observationBuffer_.time();
         // observation_.state() = optimalState_;
-        observation_.time() = ros::Time::now().toSec();
+        // observation_.time() = ros::Time::now().toSec();
         observation = observation_;
         // std::cerr << "observation_" << observation_.state().transpose() << std::endl;
       }
