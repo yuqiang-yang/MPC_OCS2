@@ -81,7 +81,6 @@ void MRT_BASE<STATE_DIM, INPUT_DIM>::evaluatePolicy(scalar_t currentTime, const 
     //                  std::to_string(currentPrimalSolution_->timeTrajectory_.back())
     //           << std::endl;
   }
-
   mpcInput = currentPrimalSolution_->controllerPtr_->computeInput(currentTime, currentState);
   EigenLinearInterpolation<state_vector_t>::interpolate(currentTime, mpcState, &currentPrimalSolution_->timeTrajectory_,
                                                         &currentPrimalSolution_->stateTrajectory_);
@@ -89,6 +88,16 @@ void MRT_BASE<STATE_DIM, INPUT_DIM>::evaluatePolicy(scalar_t currentTime, const 
   mode = currentPrimalSolution_->modeSchedule_.modeAtTime(currentTime);
 }
 
+// template <size_t STATE_DIM, size_t INPUT_DIM>
+// void MRT_BASE<STATE_DIM, INPUT_DIM>::getPolicyFinalState(scalar_t& finalTime, state_vector_t& mpcState, input_vector_t& mpcInput,
+//                       size_t& mode){
+//   finalTime = currentPrimalSolution_->timeTrajectory_.back();
+//   EigenLinearInterpolation<state_vector_t>::interpolate(finalTime, mpcState, &currentPrimalSolution_->timeTrajectory_,
+//                                                         &currentPrimalSolution_->stateTrajectory_);
+
+//   mpcInput = currentPrimalSolution_->controllerPtr_->computeInput(finalTime, mpcState);
+
+// }
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/

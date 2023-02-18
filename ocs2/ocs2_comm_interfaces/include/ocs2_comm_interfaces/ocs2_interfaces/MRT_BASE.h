@@ -141,6 +141,11 @@ class MRT_BASE {
   void evaluatePolicy(scalar_t currentTime, const state_vector_t& currentState, state_vector_t& mpcState, input_vector_t& mpcInput,
                       size_t& mode);
 
+// //add by yq
+//  void getPolicyFinalState(scalar_t& finalTime, state_vector_t& mpcState, input_vector_t& mpcInput,
+//                       size_t& mode);
+
+
   /**
    * @brief Rolls out the control policy from the current time and state to get the next state and input using the MPC policy.
    *

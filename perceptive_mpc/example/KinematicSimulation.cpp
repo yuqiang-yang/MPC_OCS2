@@ -74,6 +74,8 @@ bool KinematicSimulation::run() {
   //set the ovservation to the tf 
   observation_.time() = ros::Time::now().toSec();
   observation_.state() = isPureSimulation_ ? initialState_ : observationBuffer_.state();
+  MidObservation_ = observation_.state();
+  FinalObservation_ = observation_.state();
   std::thread tfUpdateWorker(&KinematicSimulation::tfUpdate, this, ros::Rate(tfUpdateFrequency_));
   // wait for a stable esdf map 
   while(esdf.esdfUpdateCnt_ < 5 /*&& !isPureSimulation_*/ && realsenseActivate_)
@@ -235,7 +237,7 @@ void KinematicSimulation::parseParameters() {
 
   ocs2::loadData::loadEigenMatrix(packagePath + "/config/" +mpcTaskFile_, "initialState", initialState_);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "mpcTimeHorizon.timehorizon", horizon_);
-
+  std::cerr << "horizon_" << horizon_ <<std::endl;
   
 }
 
@@ -274,6 +276,8 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       }
 
       MpcInterface::input_vector_t controlInput;
+      MpcInterface::input_vector_t finalInput;
+
       MpcInterface::state_vector_t optimalState;
       
       int N = costDesiredTrajectories_.desiredStateTrajectory().size();
@@ -286,11 +290,14 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
 
 
       size_t subsystem;
+      double finalTime;
+
       try {
         mpcInterface_->updatePolicy();
+        mpcInterface_->evaluatePolicy(observation.time() + horizon_ / 4.0, observation.state(), MidObservation_, controlInput, subsystem);
+        mpcInterface_->evaluatePolicy(observation.time() + horizon_+1, observation.state(), FinalObservation_, controlInput, subsystem);
+        // mpcInterface_->getPolicyFinalState(finalTime,FinalObservation_,finalInput,subsystem);
         mpcInterface_->evaluatePolicy(observation.time(), observation.state(), optimalState, controlInput, subsystem);
-        mpcInterface_->evaluatePolicy(observation.time() + horizon_ / 2.0, observation.state(), MidObservation_, controlInput, subsystem);
-        mpcInterface_->evaluatePolicy(observation.time() + horizon_, observation.state(), FinalObservation_, controlInput, subsystem);
         // TODO: for integration on hardware, send the computed control inputs to the motor controllers
       } catch (const std::runtime_error& ex) {
         ROS_ERROR_STREAM("runtime_error occured11!");
@@ -303,16 +310,16 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       }
       ROS_INFO_STREAM_THROTTLE(infoRate_, std::endl
                                         << "    time:          " << observation.time() - initialTime_ << std::endl
+                                        // << "    finalTime:     " << finalTime - initialTime_ << std::endl
                                         << "    current_state: " << observation.state().transpose() << std::endl
+                                        // << "    mid_state:     " << MidObservation_.transpose() << std::endl
+                                        // << "    final_state:   " << FinalObservation_.transpose() << std::endl
                                         << "    optimalState:  " << optimalState.transpose() << std::endl
                                         << "    controlInput:  " << controlInput.transpose() << std::endl
+                                        // << "    finalInput:    " << finalInput.transpose() << std::endl
                                         << "    actual pos:   "  << currentPosition.transpose() << std::endl
                                         << "    desired pos:  " << desiredPose.head<Definitions::POSE_DIM>().tail<3>().transpose() << std::endl
-                                        // << "EE position in ARM:"<< currentPositionInArmFr.transpose() << std::endl
-                                        // << "EE orientation in ARM:"<< (angleAxie.axis()*angleAxie.angle()).transpose() << std::endl
-                                        // << "    actual rot:   "  << currentEndEffectorPose.getRotation().toImplementation().coeffs().transpose()<< std::endl
-                                        // << "    desired rot:   " << desiredPose.head<Definitions::POSE_DIM>().head<4>().transpose() << std::endl
-                                        // << "EEOrientation atan:"<< getEEAtan() << std::endl
+                                        
                                         << "  manipulability:  "<< getManipulability()<< std::endl
                                         << timing::Timing::Print()  
                                         << std::endl);
@@ -410,10 +417,10 @@ bool KinematicSimulation::tfUpdate(ros::Rate rate) {
       
       publishBaseTransform(currentObservation,"");
       publishArmState(currentObservation,"");
-      publishBaseTransform(currentObservation,"mid");
-      publishArmState(currentObservation,"mid");
-      publishBaseTransform(currentObservation,"final");
-      publishArmState(currentObservation,"final");
+      publishBaseTransform(midObservation,"mid");
+      publishArmState(midObservation,"mid");
+      publishBaseTransform(finalObservation,"final");
+      publishArmState(finalObservation,"final");
       publishEndEffectorPose();
       if(isPureSimulation_)
         publishCameraTransform(currentObservation);
@@ -611,6 +618,7 @@ void KinematicSimulation::publishBaseTransform(const Observation& observation,st
   base_transform.child_frame_id = tf_prefix + "base_footprint";
 
   const Eigen::Quaterniond currentRotation = Eigen::Quaterniond(observation.state().head<Definitions::BASE_STATE_DIM_>().head<4>());
+  currentRotation.normalized();
   const Eigen::Matrix<double, 3, 1> currentPosition = observation.state().head<Definitions::BASE_STATE_DIM_>().tail<3>();
 
   base_transform.transform.translation.x = currentPosition(0);

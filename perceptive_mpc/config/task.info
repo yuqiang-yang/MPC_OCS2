@@ -137,7 +137,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 5e0
+    scaling 3e0
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -150,7 +150,7 @@ ee_tracking_task
   ; control weight matrix
   R
   {
-    scaling 1e0
+    scaling 2e0
 
     (0,0) 1.0  ; base_drive
     (1,1) 1.0  ; base_turn

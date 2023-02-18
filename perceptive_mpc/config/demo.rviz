@@ -31,7 +31,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: occupyVoxel
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -57,7 +57,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 1
+    - Alpha: 0.800000011920929
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -370,7 +370,7 @@ Visualization Manager:
       Marker Topic: /perceptive_mpc/front_end_trajectory
       Name: frontEndPath
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 0.5
@@ -738,10 +738,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5847986936569214
+      Pitch: 0.42979881167411804
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.829855442047119
+      Yaw: 5.989860534667969
     Saved: ~
 Window Geometry:
   Displays:

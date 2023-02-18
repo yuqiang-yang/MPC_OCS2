@@ -11,7 +11,7 @@
     <!-- Connect RTDE or not -->
     <arg name="ur_control_activate" value="false"/>
     <!-- Enable the camera and ESDF -->
-    <arg name="realsenseActivate" value="true"/>
+    <arg name="realsenseActivate" value="false"/>
 
 
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
@@ -62,7 +62,7 @@
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.05"/>
+        <param name="resolution" value="0.03"/>
         <param name="update_esdf_every_n_sec" value="0.1"/>
 
         <!--Hash Table only-->
