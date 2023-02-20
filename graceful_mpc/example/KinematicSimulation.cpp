@@ -434,14 +434,15 @@ void KinematicSimulation::initializeCostDesiredTrajectory() {
   boost::unique_lock<boost::shared_mutex> costDesiredTrajectoryLock(costDesiredTrajectoryMutex_);
   costDesiredTrajectories_.clear();
   reference_vector_t reference = reference_vector_t::Zero();
+  std::cerr << "initial observation: "<<observation_.state().transpose() << std::endl;
   auto currentEndEffectorPose = getEndEffectorPose();
   reference.head<Definitions::POSE_DIM>().head<4>() = currentEndEffectorPose.getRotation().getUnique().toImplementation().coeffs();
   reference.head<Definitions::POSE_DIM>().tail<3>() = currentEndEffectorPose.getPosition().toImplementation();
   reference.tail<Definitions::VELOCITY_DIM_>().head<3>() = defaultLinear_;
   reference.tail<Definitions::VELOCITY_DIM_>().tail<3>() = defaultAngular_;
 
-  std::cerr << "initial observation: "<<observation_.state().transpose() << std::endl;
-  // std::cerr << "initial reference pos: "<<getEndEffectorPoseInArmFr().getPosition().toImplementation().transpose() << std::endl;
+  std::cerr << "initial reference: "<<reference.transpose() << std::endl;
+  std::cerr << "initial reference pos: "<<getEndEffectorPoseInArmFr().getPosition().toImplementation().transpose() << std::endl;
   Eigen::AngleAxisd ax(getEndEffectorPoseInArmFr().getRotation().toImplementation());
 
   std::cerr << "initial reference rot: "<< (ax.axis()*ax.angle()).transpose() << std::endl;
@@ -752,7 +753,7 @@ kindr::HomTransformQuatD KinematicSimulation::getEndEffectorPose() {
     boost::shared_lock<boost::shared_mutex> lock(observationMutex_);
     Eigen::Matrix<double, 4, 4> endEffectorToWorldTransform;
     Eigen::VectorXd currentState = observation_.state();
-
+    // std::cerr << "currentState" << currentState.transpose() << std::endl;
     UR5Kinematics<double> kinematics(kinematicInterfaceConfig_);
     kinematics.computeState2EndeffectorTransform(endEffectorToWorldTransform, currentState);
     Eigen::Quaterniond eigenBaseRotation(endEffectorToWorldTransform.topLeftCorner<3, 3>());

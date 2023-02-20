@@ -80,6 +80,8 @@ add_library(${PROJECT_NAME}
   src/costs/FrontOrientationCost.cpp
   src/costs/ManipulabilityCost.cpp
   src/costs/FiestaCost.cpp
+  src/costs/StateCost.cpp
+
   src/OperatingPoint.cpp
   src/kinematics/KinematicsInterface.cpp
   src/kinematics/ur5/UR5Kinematics.cpp

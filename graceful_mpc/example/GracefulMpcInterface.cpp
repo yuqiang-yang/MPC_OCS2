@@ -32,7 +32,7 @@
 #include <graceful_mpc/costs/FiestaCost.h>
 #include <graceful_mpc/costs/FrontOrientationCost.h>
 #include <graceful_mpc/costs/ManipulabilityCost.h>
-
+#include <graceful_mpc/costs/StateCost.h>
 #include <graceful_mpc/kinematics/ur5/UR5Kinematics.hpp>
 
 #include <cmath>
@@ -151,8 +151,19 @@ void GracefulMpcInterface::loadSettings(const std::string& taskFile) {
     ocs2::loadData::loadCppDataType(taskFile, "manipulabilityCost.weight", config.weight);
     // std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
     std::shared_ptr<ManipulabilityCost> manipulabilityCost(new ManipulabilityCost(config));
-    manipulabilityCost->initialize("manipulability_cost",libraryFolder_, false);  //disable recompile this library
+    manipulabilityCost->initialize("manipulability_cost",libraryFolder_, modelSettings_.recompileLibraries_);  //disable recompile this library
     weightedCostFunctions.push_back(std::make_pair(1,manipulabilityCost));
+  } 
+
+  bool useStateCost = false;
+  ocs2::loadData::loadCppDataType(taskFile, "stateCost.activate", useStateCost);
+  if(useStateCost){
+    StateCostConfig config;
+    // std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
+    ocs2::loadData::loadEigenMatrix(taskFile, "ee_tracking_task.Q", config.Q);
+    ocs2::loadData::loadEigenMatrix(taskFile, "ee_tracking_task.QFinal", config.QFinal);
+    std::shared_ptr<StateCost> stateCost(new StateCost(config));
+    weightedCostFunctions.push_back(std::make_pair(1,stateCost));
   } 
 
   costPtr_.reset(new cost_linear_combination_t(weightedCostFunctions));
