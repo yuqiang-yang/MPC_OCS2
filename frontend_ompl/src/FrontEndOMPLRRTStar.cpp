@@ -1,5 +1,5 @@
 #include <FrontEndOMPLRRTStar.hpp>
-using namespace perceptive_mpc;
+using namespace graceful_mpc;
 
 
 FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)

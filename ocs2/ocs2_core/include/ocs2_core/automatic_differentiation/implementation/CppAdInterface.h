@@ -129,7 +129,7 @@ typename CppAdInterface<scalar_t>::dynamic_vector_t CppAdInterface<scalar_t>::ge
   xp << x, p;
 
   dynamic_vector_t functionValue(rangeDim_);
-
+  std::cerr << "modelName_" << modelName_ << "rangeDim_" << rangeDim_ << "variable" << variableDim_ << "parameter" << parameterDim_<< std::endl;
   model_->ForwardZero(xp, functionValue);
   assert(functionValue.allFinite());
   return functionValue;

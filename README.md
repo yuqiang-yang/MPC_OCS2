@@ -98,4 +98,5 @@
         + The queue in STL is not thread-safe. So we should first change to a thread-safe queue, which frequently lock the thread when push or pop from the queue. The lock will make the multi-thread slow because in most time the update procedure frequently pushes and pops element to the queue. The lock will make the multi-thread behave just like a single-thread.
         + If we don't lock the thread when push or pop from the queue, the program crash!!
         + After we add multi-thread, the time comsuption don't decrease in a satisfactory maner. Howerver, it will take more CPU resource.
-        
+### 2023.2.19
++ change graceful_mpc

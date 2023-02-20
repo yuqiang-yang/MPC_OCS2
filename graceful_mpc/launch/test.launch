@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+   <!-- run rviz-->
+    <arg name="rviz"                default="true" />
+    <!--     Name of the task file which defines the mpc problem settings-->
+    <arg name="mpc_task_file"       default="task.info"/>
+    <!-- Set rviz configuration -->
+    <arg name="rvizconfig"          default="$(find graceful_mpc)/config/demo.rviz"/>
+    <!-- Simulation/Experiment -->
+    <arg name="isPureSimulation" value="true"/>
+    <!-- Connect RTDE or not -->
+    <arg name="ur_control_activate" value="false"/>
+    <!-- Enable the camera and ESDF -->
+    <arg name="realsenseActivate" value="false"/>
+
+
+    <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
+    <!-- <group ns="current_robot"> -->
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro'"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    <!-- </group> -->
+    <group ns="mid">
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro' tf_prefix:=mid"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    </group>
+    <group ns="final">
+        <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find mue_description)/urdf/mue.urdf.xacro' tf_prefix:=final"/>
+        <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="100"/>
+        </node>
+    </group>
+    <!-- remove a warning about the realsense time  -->
+    <rosparam>
+        /camera/motion_module/global_time_enabled: true
+        /camera/l500_depth_sensor/global_time_enabled: true
+        /camera/rgb_camera/global_time_enabled: true
+    </rosparam>
+    <node name="interactive_pose_node" pkg="graceful_mpc" type="interactive_marker.py" output="screen"/>
+
+    <node name="mue_receive_and_control" pkg="wholebody_control" type="mue_receive_and_control.py" output="screen" if ="$(eval arg('isPureSimulation') == false)">
+        <param name="ur_ip"           value="192.168.100.2"/>
+        <param name="ur_control_activate"   value="$(arg ur_control_activate)"/>
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" if="$(arg rviz)"/>
+
+    <node pkg="graceful_mpc" name="kinematic_simulation" type="graceful_mpc_kinematic_simulation" output="screen"> 
+        <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
+        <rosparam file="$(find graceful_mpc)/config/kinematic_simulation_parameters.yaml"/>
+        <param name="info_rate" value="1.0" />
+      
+        <param name="world_frame" value="odom" />
+        <param name="verbose" value="true" />
+
+        <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
+        <param name="realsenseActivate" value ="$(arg realsenseActivate)"/>
+
+        <param name="ur_control_activate" value ="$(arg ur_control_activate)"/>
+        <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
+        <!-- fiesta parameter -->
+
+        <param name="resolution" value="0.05"/>
+        <param name="update_esdf_every_n_sec" value="0.05"/>
+
+        <!--Hash Table only-->
+        <param name="reserved_size" value="1000000"/>
+
+        <!--Array only-->
+        <param name="lx" value="-2.5"/>
+        <param name="ly" value="-2.5"/>
+        <param name="lz" value="-0.5"/>
+        <param name="rx" value="+3.5"/>
+        <param name="ry" value="+2.5"/>
+        <param name="rz" value="+2"/>
+        <!-- raycasting parameters -->
+        <param name="min_ray_length" value="0.5"/>
+        <param name="max_ray_length" value="3.0"/>
+        <!--If hash table is used, make sure the value is 0. In array implementation, 0 means no other thread.-->
+        <param name="ray_cast_num_thread" value="0"/>
+
+        <!-- probabilistic grid map -->
+        <param name="p_hit" value="0.75"/>
+        <param name="p_miss" value="0.2"/>
+        <param name="p_min" value="0.12"/>
+        <param name="p_max" value="0.92"/>
+        <param name="p_occ" value="0.72"/>
+
+        <!-- global / local -->
+        <param name="global_map" value="true"/>
+        <param name="global_update" value="true"/>
+        <param name="global_vis" value="true"/>
+        <param name="radius_x" value="1.0"/>
+        <param name="radius_y" value="1.0"/>
+        <param name="radius_z" value="0.5"/>
+
+        <!--depth_filter only depth image-->
+        <param name="use_depth_filter" value="true"/>
+
+        <!-- visulization -->
+        <!--0 for no visulize-->
+        <param name="visualize_every_n_updates" value="5"/>
+        <param name="slice_vis_max_dist" value="3.0"/>
+        <!-- relative to the lz if array is used, relative to the origin if hash table is used -->
+        <param name="slice_vis_level" value="1"/>
+        <param name="vis_lower_bound" value="0"/>
+        <param name="vis_upper_bound" value="+10"/>
+
+        <!-- subsribe source -->
+        <remap from="~depth" to="/pointcloud_filter/pointcloud_filtered"/>
+        <remap from="~transform" to="/graceful_mpc/odomToCamera"/>
+    </node> 
+
+    
+    <group ns="pointcloud_filter">
+        <node pkg="nodelet" type="nodelet" name="pointcloud_filter_chain"  args="manager"/>
+        <node name="voxel_grid_filter" pkg="nodelet" type="nodelet" args="load pcl/VoxelGrid pointcloud_filter_chain">
+            <remap from="~input" to="/camera/depth/color/points" />
+            <remap from="~output" to="downsample_pointcloud" />
+            <rosparam subst_value="true">
+                filter_field_name: 'z'
+                filter_limit_min: 0.0
+                filter_limit_max: 2.0
+                leaf_size: 0.005
+            </rosparam>
+        </node>
+
+        <node name="statisticalOutlier_filter" pkg="nodelet" type="nodelet" args="load pcl/StatisticalOutlierRemoval pointcloud_filter_chain">
+            <remap from="~input" to="downsample_pointcloud" />
+            <remap from="~output" to="outlier_filtered_pointcloud" />
+            <rosparam>
+                mean_k: 20
+                stddev: 1.5
+            </rosparam>
+        </node>
+
+        <node name="robot_body_filter" pkg="nodelet" type="nodelet" args="load sensor_filters/pointcloud2_filter_chain pointcloud_filter_chain" output="log">
+            <rosparam file="$(find graceful_mpc)/config/tradr_realsense_l515.yaml"/>
+            <remap from="~input" to= "outlier_filtered_pointcloud" />
+            <remap from="~output" to="pointcloud_filtered" />            
+        </node>
+
+    </group>
+
+
+
+</launch>

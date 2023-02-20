@@ -39,7 +39,7 @@
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
-namespace perceptive_mpc{
+namespace graceful_mpc{
     struct FrontEndOMPLRRTStarConfig{
     public:
     double planning_time;
@@ -130,4 +130,4 @@ protected:
 
   
 
-}// namespace perceptive mpc
+}// namespace graceful mpc

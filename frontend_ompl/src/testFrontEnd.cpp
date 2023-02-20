@@ -1,5 +1,5 @@
 #include <FrontEndOMPLRRTStar.hpp>
-using namespace perceptive_mpc;
+using namespace graceful_mpc;
 int main(int argc, char** argv) {
     FrontEndOMPLRRTStarConfig config;
     config.planning_time = 2;

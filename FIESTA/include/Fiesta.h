@@ -23,7 +23,6 @@
 #include <visualization_msgs/Marker.h>
 #include <sensor_msgs/PointCloud.h>
 #include <unordered_set>
-
 #include "fiesta/filename.h"
 
 #include <functional> // std::plus
