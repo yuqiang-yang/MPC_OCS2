@@ -160,34 +160,33 @@ void GracefulMpcInterface::loadSettings(const std::string& taskFile) {
   if(useStateCost){
     StateCostConfig config;
     // std::cerr << "manipulability.weight:   "<< config.weight << std::endl;
-    ocs2::loadData::loadEigenMatrix(taskFile, "ee_tracking_task.Q", config.Q);
-    ocs2::loadData::loadEigenMatrix(taskFile, "ee_tracking_task.QFinal", config.QFinal);
+    ocs2::loadData::loadEigenMatrix(taskFile, "stateCost.Q", config.Q);
+    ocs2::loadData::loadEigenMatrix(taskFile, "stateCost.QFinal", config.QFinal);
+    // std::cerr << config.Q << std::endl;
+    // std::cerr << config.QFinal << std::endl;
+
     std::shared_ptr<StateCost> stateCost(new StateCost(config));
     weightedCostFunctions.push_back(std::make_pair(1,stateCost));
   } 
 
   costPtr_.reset(new cost_linear_combination_t(weightedCostFunctions));
 
-  Eigen::VectorXd lowerLimits((int)Definitions::ARM_STATE_DIM_);
+  Eigen::VectorXd lowerLimits((int)Definitions::STATE_DIM_);
   ocs2::loadData::loadEigenMatrix(taskFile, "limits.lower", lowerLimits);
-  Eigen::VectorXd upperLimits((int)Definitions::ARM_STATE_DIM_);
+  Eigen::VectorXd upperLimits((int)Definitions::STATE_DIM_);
   ocs2::loadData::loadEigenMatrix(taskFile, "limits.upper", upperLimits);
-  Eigen::VectorXd velocityLimits((int)Definitions::INPUT_DIM_);
-  ocs2::loadData::loadEigenMatrix(taskFile, "limits.velocity", velocityLimits);
-  // std::cerr << "lowerLimits:       \n" << lowerLimits.transpose() << std::endl;
-  // std::cerr << "upperLimits:       \n" << upperLimits.transpose() << std::endl;
-  // std::cerr << "velocityLimits:    \n" << velocityLimits.transpose() << std::endl;
+  Eigen::VectorXd accLimits((int)Definitions::INPUT_DIM_);
+  ocs2::loadData::loadEigenMatrix(taskFile, "limits.acc", accLimits);
+  std::cerr << "lowerLimits:       \n" << lowerLimits.transpose() << std::endl;
+  std::cerr << "upperLimits:       \n" << upperLimits.transpose() << std::endl;
+  std::cerr << "accLimits:    \n" << accLimits.transpose() << std::endl;
 
   bool useJointSpaceConstraints = false;
   ocs2::loadData::loadCppDataType(taskFile, "limits.enforce_limits", useJointSpaceConstraints);
   std::cerr << "useJointSpaceConstraints:       \n" << useJointSpaceConstraints << std::endl;
   if (useJointSpaceConstraints) {
-    double positionMpcMarginDeg = 0;
-    ocs2::loadData::loadCppDataType(taskFile, "limits.position_mpc_margin_deg", positionMpcMarginDeg);
-    // std::cerr << "positionMpcMarginDeg:       \n" << positionMpcMarginDeg << std::endl;
-    double positionMpcMarginRad = positionMpcMarginDeg / 180 * M_PI;
 
-    setupConstraints(lowerLimits, upperLimits, velocityLimits, positionMpcMarginRad);
+    setupConstraints(lowerLimits, upperLimits, accLimits);
   } else {
     constraintPtr_.reset(new constraint_t());
   }
@@ -208,13 +207,13 @@ void GracefulMpcInterface::loadSettings(const std::string& taskFile) {
   ocs2::loadData::loadPartitioningTimes(taskFile, timeHorizon, numPartitions_, partitioningTimes_, true);
 }
 void GracefulMpcInterface::setupConstraints(const Eigen::VectorXd& lowerLimits, const Eigen::VectorXd& upperLimits,
-                                              const Eigen::VectorXd& velocityLimits, double positionMpcMarginRad) {
+                                              const Eigen::VectorXd& accLimits) {
   std::unique_ptr<linear_constraint_t> linearConstraintPtr(new linear_constraint_t());
 
-  linearConstraintPtr->numInequalityConstraint_ = 2 * Definitions::ARM_STATE_DIM_ + 2 * Definitions::INPUT_DIM_;
+  linearConstraintPtr->numInequalityConstraint_ =  Definitions::STATE_DIM_*2 +  Definitions::INPUT_DIM_*2 ; 
   Eigen::VectorXd h0Eigen(linearConstraintPtr->numInequalityConstraint_);
-  h0Eigen << -1 * (lowerLimits + Eigen::VectorXd::Ones(Definitions::ARM_STATE_DIM_) * positionMpcMarginRad),
-      1 * (upperLimits - Eigen::VectorXd::Ones(Definitions::ARM_STATE_DIM_) * positionMpcMarginRad), velocityLimits, velocityLimits;
+  h0Eigen << -1 * (lowerLimits),
+      1 * (upperLimits), accLimits, accLimits;
   linearConstraintPtr->h0_.resize(linearConstraintPtr->numInequalityConstraint_);
   for (int i = 0; i < linearConstraintPtr->numInequalityConstraint_; i++) {
     linearConstraintPtr->h0_[i] = h0Eigen[i];
@@ -223,16 +222,16 @@ void GracefulMpcInterface::setupConstraints(const Eigen::VectorXd& lowerLimits, 
   linearConstraintPtr->dhdx_.resize(linearConstraintPtr->numInequalityConstraint_, linear_constraint_t::state_vector_t::Zero());
   const int armStateOffset = STATE_DIM_ - ARM_STATE_DIM_;
 
-  for (int i = 0; i < ARM_STATE_DIM_; i++) {
-    linearConstraintPtr->dhdx_[i][armStateOffset + i] = 1;
-    linearConstraintPtr->dhdx_[i + ARM_STATE_DIM_][armStateOffset + i] = -1;
+  for (int i = 0; i < STATE_DIM_; i++) {
+    linearConstraintPtr->dhdx_[i][i] = 1;
+    linearConstraintPtr->dhdx_[i + STATE_DIM_][i] = -1;
   }
 
   linearConstraintPtr->dhdu_.resize(linearConstraintPtr->numInequalityConstraint_, linear_constraint_t::input_vector_t::Zero());
-  const int velocityConstraintOffset = 2 * ARM_STATE_DIM_;
+  const int accConstraintOffset = 2 * STATE_DIM_;
   for (int i = 0; i < INPUT_DIM_; i++) {
-    linearConstraintPtr->dhdu_[velocityConstraintOffset + i][i] = 1;
-    linearConstraintPtr->dhdu_[velocityConstraintOffset + INPUT_DIM_ + i][i] = -1;
+    linearConstraintPtr->dhdu_[accConstraintOffset + i][i] = 1;
+    linearConstraintPtr->dhdu_[accConstraintOffset + INPUT_DIM_ + i][i] = -1;
   }
 
   linearConstraintPtr->ddhdxdx_.resize(linearConstraintPtr->numInequalityConstraint_, linear_constraint_t::state_matrix_t::Zero());
@@ -240,8 +239,8 @@ void GracefulMpcInterface::setupConstraints(const Eigen::VectorXd& lowerLimits, 
   linearConstraintPtr->ddhdudx_.resize(linearConstraintPtr->numInequalityConstraint_, linear_constraint_t::input_state_matrix_t::Zero());
 
   for (int i = 0; i < linearConstraintPtr->numInequalityConstraint_; i++) {
-    // std::cerr << "Constraint " << i << ": " << linearConstraintPtr->h0_[i] << " + [" << linearConstraintPtr->dhdx_[i].transpose()
-    //           << "] * x + [" << linearConstraintPtr->dhdu_[i].transpose() << "] * u >= 0" << std::endl;
+    std::cerr << "Constraint " << i << ": " << linearConstraintPtr->h0_[i] << " + [" << linearConstraintPtr->dhdx_[i].transpose()
+              << "] * x + [" << linearConstraintPtr->dhdu_[i].transpose() << "] * u >= 0" << std::endl;
   }
 
   constraintPtr_ = move(linearConstraintPtr);

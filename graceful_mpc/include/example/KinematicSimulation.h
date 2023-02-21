@@ -104,6 +104,8 @@ class KinematicSimulation {
   Observation observation_;
   MpcInterface::state_vector_t MidObservation_;
   MpcInterface::state_vector_t FinalObservation_;
+  MpcInterface::input_vector_t input_;
+
   Observation observationBuffer_;
   KinematicInterfaceConfig kinematicInterfaceConfig_;
 

@@ -12,8 +12,8 @@ import numpy as np
 car_sub_record = []
 ur_sub_record = []
 is_new_control_msg = False
-base_desired_vel = np.zeros(2)
-arm_desired_vel = np.zeros(6)
+base_desired_acc = np.zeros(2)
+arm_desired_acc = np.zeros(6)
 control_time = 0.2
 
 #car state subsciber callback function
@@ -28,12 +28,12 @@ def car_sub_callback(odom:Odometry):
 
 def wholebodycontrolcallback(msg:Float64MultiArray):
     global is_new_control_msg
-    global arm_desired_vel
-    global base_desired_vel
+    global arm_desired_acc
+    global base_desired_acc
     is_new_control_msg = True
     control_time = 0.2
-    base_desired_vel = msg.data[:2]
-    arm_desired_vel = msg.data[2:]
+    base_desired_acc = msg.data[:2]
+    arm_desired_acc = msg.data[2:]
     # print(base_desired_vel,arm_desired_vel)
     pass
 class WBController():
@@ -41,8 +41,8 @@ class WBController():
         self.base_pub = base_pub
         self.rtde_c = rtde_c
         self.dt = 0.01
-        self.current_arm_vel = np.zeros(6)
-        self.current_car_vel = np.zeros(2)
+        self.current_arm_acc = np.zeros(6)
+        self.current_car_acc = np.zeros(2)
         if config:
             self.car_linear_acc = config['car_linear_acc']
             self.car_angular_acc = config['car_angular_acc']
@@ -55,30 +55,34 @@ class WBController():
             print("the limits are not set. It's unsafe!!!")
             sys.exit()
 
-    def control(self,base_vel:np.array,joint_vel:np.array):
+    def control(self,base_acc:np.array,joint_acc:np.array):
+
         current_arm_vel = self.current_arm_vel
         current_car_vel = self.current_car_vel
-        arm_state = rtde_r.getActualQ()
+        # current_arm_vel = rtde_r.getActualQd()
+        # current_car_vel = car_sub_record[3:]
+        # arm_state = rtde_r.getActualQ()
         vel = Twist()
-        vel.linear.x = base_vel[0]
-        vel.angular.z = base_vel[1]
+        vel.linear.x = current_car_vel[0]
+        vel.angular.z = current_car_vel[1]
         dt = self.dt
-        joint_vel = np.array(joint_vel)
+        joint_vel = np.array(current_arm_vel)
         for i in range(6):
-            if abs(joint_vel[i] - current_arm_vel[i]) > self.arm_max_acc*dt:    #acc
-                joint_vel[i] = current_arm_vel[i] + self.arm_max_acc*dt*np.sign(joint_vel[i]-current_arm_vel[i])
+            if abs(joint_acc[i]) > self.arm_max_acc:
+                joint_acc[i] = np.sign(joint_acc[i]) * self.arm_max_acc
+            joint_vel[i] += joint_acc[i] * self.dt
             if abs(joint_vel[i]) > self.arm_max_vel:
                 joint_vel[i] = self.arm_max_vel*np.sign(joint_vel[i])
         # joint_vel[5] = 0
         # print('current',current_arm_vel,'desired',joint_vel)
-        if abs(current_car_vel[0]-vel.linear.x) > self.car_linear_acc*dt:
-            vel.linear.x = current_car_vel[0] + np.sign(vel.linear.x-current_car_vel[0])*self.car_linear_acc*dt
-        if abs(current_car_vel[1]-vel.angular.z) > self.car_angular_acc*dt:
-            vel.angular.z = current_car_vel[1] + np.sign(vel.angular.z-current_car_vel[1])*self.car_angular_acc*dt
+
+        if abs(base_acc[0]) > self.car_linear_acc:
+            base_acc[0] = np.sign(base_acc[0]) * self.car_linear_acc
+        if abs(base_acc[1]) > self.car_angular_acc:
+            base_acc[1] = np.sign(base_acc[1]) * self.car_angular_acc         
 
         if abs(vel.linear.x) > self.car_linear_vel:
             vel.linear.x = self.car_linear_vel*np.sign(vel.linear.x)
-            # print('the linear vel is too large')
         if abs(vel.angular.z) > self.car_angular_vel:
             vel.angular.z = self.car_angular_vel*np.sign(vel.angular.z)
             # print('the angular vel is too large')
@@ -88,7 +92,6 @@ class WBController():
         # self.rtde_c.servoJ(np.array(arm_state) + joint_vel*dt,0,0,0.05,0.15,1000)
         t1 = time.time()
         self.rtde_c.speedJ(joint_vel,time=dt)
-
 if __name__ == '__main__':
     rospy.init_node('mue_interface_node', anonymous=True)
     ur_ip = rospy.get_param('~ur_ip','192.168.100.3')
@@ -101,9 +104,9 @@ if __name__ == '__main__':
     if velocity_and_acc_limit:
         WBControllerConfig = dict()
         WBControllerConfig['car_linear_acc'] = rospy.get_param('car_linear_acc',0.5)
-        WBControllerConfig['car_angular_acc'] = rospy.get_param('car_angular_acc',0.2)
+        WBControllerConfig['car_angular_acc'] = rospy.get_param('car_angular_acc',0.4)
         WBControllerConfig['car_linear_vel'] = rospy.get_param('car_linear_vel',0.5)
-        WBControllerConfig['car_angular_vel'] = rospy.get_param('car_angular_vel',0.2)
+        WBControllerConfig['car_angular_vel'] = rospy.get_param('car_angular_vel',0.4)
         WBControllerConfig['arm_max_acc'] = rospy.get_param('arm_max_acc',0.5)
         WBControllerConfig['arm_max_vel'] = rospy.get_param('arm_max_vel',0.5)
     else:
@@ -144,7 +147,7 @@ if __name__ == '__main__':
         #     control_time -= 0.01
         #     is_new_control_msg = False
         if ur_control_activate and rtde_c.isProgramRunning():
-            wbc.control(base_desired_vel,arm_desired_vel)
+            wbc.control(base_desired_acc,arm_desired_acc)
             # print('control msg received!!')
             
         car_state = np.array(car_sub_record[:3])

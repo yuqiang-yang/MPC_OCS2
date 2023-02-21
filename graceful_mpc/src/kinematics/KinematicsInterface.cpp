@@ -48,7 +48,10 @@ void KinematicsInterface<SCALAR_T>::computeState2EndeffectorTransform(Eigen::Mat
   Eigen::Matrix<SCALAR_T,13,1> transformState;
   Eigen::AngleAxis<SCALAR_T> ax(state.template head<Definitions::BASE_STATE_DIM_>()[2],Eigen::Matrix<SCALAR_T,3,1>::UnitZ());
   Eigen::Quaternion<SCALAR_T> quat(ax); 
-  
+  transformState[0] = quat.x();
+  transformState[1] = quat.y();
+  transformState[2] = quat.z();
+  transformState[3] = quat.w();
   transformState.template head<6>().template tail<2>() = state.template head<2>();
   transformState[6] = (SCALAR_T)0;
   transformState.template tail<Definitions::ARM_STATE_DIM_>() = state.template head<Definitions::POSITION_STATE_DIM_>().template tail<Definitions::ARM_STATE_DIM_>();

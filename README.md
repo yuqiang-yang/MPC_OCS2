@@ -100,3 +100,6 @@
         + After we add multi-thread, the time comsuption don't decrease in a satisfactory maner. Howerver, it will take more CPU resource.
 ### 2023.2.19
 + change graceful_mpc
+
+### 2023.2.20
++ the mobile base will shift with a low velocity.

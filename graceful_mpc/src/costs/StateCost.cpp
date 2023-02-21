@@ -10,11 +10,11 @@ void StateCost::getIntermediateCost(StateCost::scalar_t& L) {
 }
 void StateCost::getIntermediateCostDerivativeState(StateCost::state_vector_t& dLdx) {
   
-  dLdx =  x_.unaryExpr([this](const auto& x) { return x * 2; });
+  dLdx = Q_ * x_ * 2.0;
 }
 
 void StateCost::getIntermediateCostSecondDerivativeState(StateCost::state_matrix_t& dLdxx) {
-  dLdxx = StateCost::state_matrix_t::Zero();
+  dLdxx = Q_ * 2.0;
 }
 void StateCost::getIntermediateCostDerivativeInput(StateCost::input_vector_t& dLdu) {
   dLdu = input_vector_t::Zero();
@@ -29,10 +29,10 @@ void StateCost::getTerminalCost(StateCost::scalar_t& Phi) {
   Phi = x_.transpose() * QFinal_ * x_;
 }
 void StateCost::getTerminalCostDerivativeState(StateCost::state_vector_t& dPhidx) {
-  dPhidx =  x_.unaryExpr([this](const auto& x) { return x * 2; });
+  dPhidx = QFinal_ * x_ * 2.0;
 }
 void StateCost::getTerminalCostSecondDerivativeState(StateCost::state_matrix_t& dPhidxx) {
-  dPhidxx = state_matrix_t ::Zero();
+  dPhidxx = QFinal_ * 2.0;
 }
 void StateCost::getIntermediateCostDerivativeTime(CostFunctionBase::scalar_t& dLdt) {
   dLdt = 0;

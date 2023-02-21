@@ -244,7 +244,9 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       {
         boost::unique_lock<boost::shared_mutex> lockGuard(observationMutex_);
         // observation_.state() = observationBuffer_.state();
+        if(input_.norm() > 5e-3){
         observation_.state() = optimalState_;
+        }
         observation_.time() = ros::Time::now().toSec();
         observation = observation_;
         // std::cerr << "observation_" << observation_.state().transpose() << std::endl;        
@@ -273,6 +275,7 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
         mpcInterface_->evaluatePolicy(observation.time() + horizon_+1, observation.state(), FinalObservation_, controlInput, subsystem);
         // mpcInterface_->getPolicyFinalState(finalTime,FinalObservation_,finalInput,subsystem);
         mpcInterface_->evaluatePolicy(observation.time(), observation.state(), optimalState, controlInput, subsystem);
+        input_ = controlInput;
         // TODO: for integration on hardware, send the computed control inputs to the motor controllers
       } catch (const std::runtime_error& ex) {
         ROS_ERROR_STREAM("runtime_error occured11!");

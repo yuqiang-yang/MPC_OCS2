@@ -181,10 +181,10 @@ ee_tracking_task
 }
 stateCost
 {
-  activate 0
+  activate 1
   Q
   {
-    scaling 1e+1
+    scaling 1e+0
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -194,8 +194,8 @@ stateCost
     (6,6)   0.0  
     (7,7)   0.0  
     (8,8)   0.0  
-    (9,9)   1.0  
-    (10,10) 1.0  
+    (9,9)   2.0  
+    (10,10) 2.0  
     (11,11) 1.0      
     (12,12) 1.0  
     (13,13) 1.0  
@@ -206,7 +206,7 @@ stateCost
   }
 Q_final
   {
-    scaling 0e+1
+    scaling 1e+0
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -216,8 +216,8 @@ Q_final
     (6,6)   0.0  
     (7,7)   0.0  
     (8,8)   0.0  
-    (9,9)   1.0  
-    (10,10) 1.0  
+    (9,9)   2.0  
+    (10,10) 2.0  
     (11,11) 1.0      
     (12,12) 1.0  
     (13,13) 1.0  
@@ -250,35 +250,58 @@ manipulabilityCost
 limits
 {
   enforce_limits     1
-  position_mpc_margin_deg 5
   lower
   {
-    (0,0)  -6.28     ; arm_1
-    (1,0)  -6.28     ; arm_2
-    (2,0)  -6.28     ; arm_3
-    (3,0)  -6.28     ; arm_4
-    (4,0)  -6.28     ; arm_5
-    (5,0)  -4     ; arm_6
+    (0,0)  -99999 ; base x    
+    (1,0)  -99999 ; base y
+    (2,0)  -99999 ; base theta    
+    (3,0)  -6.28  ; arm 1 position   
+    (4,0)  -6.28  ; arm 2 position  
+    (5,0)  -6.28  ; arm 3 position
+    (6,0)  -6.28  ; arm 4 position
+    (7,0)  -6.28  ; arm 5 position
+    (8,0)  -4     ; arm 6 position
+    (9,0)  -1     ; base x dot
+    (10,0) -1.5   ; base y dot
+    (11,0) -2.2   ; base theta
+    (12,0) -2.4   ; arm 1
+    (13,0) -2.4   ; arm 2
+    (14,0) -2.4   ; arm 3
+    (15,0) -2.4   ; arm 4
+    (16,0) -2.4   ; arm 5
+    (17,0) -2.4   ; arm 6
   }
   upper
   {
-    (0,0)  6.28     ; arm_1
-    (1,0)  6.28         ; arm_2
-    (2,0)  6.28     ; arm_3
-    (3,0)  6.28     ; arm_4
-    (4,0)  6.28     ; arm_5
-    (5,0)  0     ; arm_6
+    (0,0)  99999 ; base x    
+    (1,0)  99999 ; base y
+    (2,0)  99999 ; base theta    
+    (3,0)  6.28  ; arm 1 position   
+    (4,0)  6.28  ; arm 2 position  
+    (5,0)  6.28  ; arm 3 position
+    (6,0)  6.28  ; arm 4 position
+    (7,0)  6.28  ; arm 5 position
+    (8,0)  4     ; arm 6 position
+    (9,0)  1.0    ; base x dot
+    (10,0) 1.5   ; base y dot
+    (11,0) 2.2   ; base theta
+    (12,0) 2.4   ; arm 1
+    (13,0) 2.4   ; arm 2
+    (14,0) 2.4   ; arm 3
+    (15,0) 2.4   ; arm 4
+    (16,0) 2.4   ; arm 5
+    (17,0) 2.4   ; arm 6
   }
-  velocity
+  acc
   {
-    (0,0)  1.0     ; base_linear [m/s]
-    (1,0)  1.5     ; base_rot [rad/s]
-    (2,0)  2.2     ; arm_1 [rad/s]
-    (3,0)  2.2     ; arm_2 [rad/s]
-    (4,0)  2.4     ; arm_3 [rad/s]
-    (5,0)  2.4     ; arm_4 [rad/s]
-    (6,0)  2.7     ; arm_5 [rad/s]
-    (7,0)  2.7     ; arm_6 [rad/s]
+    (0,0)  1.0     ; base_linear [m/s^2]
+    (1,0)  1.0     ; base_rot [rad/s^2]
+    (2,0)  2.2     ; arm_1 [rad/s^2]
+    (3,0)  2.2     ; arm_2 [rad/s^2]
+    (4,0)  2.4     ; arm_3 [rad/s^2]
+    (5,0)  2.4     ; arm_4 [rad/s^2]
+    (6,0)  2.7     ; arm_5 [rad/s^2]
+    (7,0)  2.7     ; arm_6 [rad/s^2]
   }
 }
 frontEndOMPLRRTStar

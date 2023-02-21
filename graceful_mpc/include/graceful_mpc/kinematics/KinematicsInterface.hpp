@@ -39,8 +39,6 @@ namespace graceful_mpc {
 struct KinematicInterfaceConfig {
   Eigen::Matrix4d transformBase_X_ArmMount;
   Eigen::Matrix4d transformToolMount_X_Endeffector;
-  double baseMass;
-  Eigen::Vector3d baseCOM;
 };
 
 template <typename SCALAR_T>
@@ -83,6 +81,7 @@ class KinematicsInterface {
 
   virtual Eigen::Matrix<SCALAR_T, 3, 1> getArmCOM(const Eigen::Matrix<SCALAR_T, 6, 1>& armState) const = 0;
   KinematicInterfaceConfig config_;  
+
 };
 
 using KinematicsInterfaceD = KinematicsInterface<double>;

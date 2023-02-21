@@ -136,8 +136,7 @@ class GracefulMpcInterface : public ocs2::RobotInterface<graceful_mpc::STATE_DIM
    */
   void loadSettings(const std::string& taskFile);
 
-  void setupConstraints(const Eigen::VectorXd& lowerLimits, const Eigen::VectorXd& upperLimits, const Eigen::VectorXd& velocityLimits,
-                        double positionMpcMarginRad);
+  void setupConstraints(const Eigen::VectorXd& lowerLimits, const Eigen::VectorXd& upperLimits, const Eigen::VectorXd& accLimits);
 
  protected:
   std::string taskFile_;

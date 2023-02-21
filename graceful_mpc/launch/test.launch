@@ -7,9 +7,9 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find graceful_mpc)/config/demo.rviz"/>
     <!-- Simulation/Experiment -->
-    <arg name="isPureSimulation" value="true"/>
+    <arg name="isPureSimulation" value="false"/>
     <!-- Connect RTDE or not -->
-    <arg name="ur_control_activate" value="false"/>
+    <arg name="ur_control_activate" value="true"/>
     <!-- Enable the camera and ESDF -->
     <arg name="realsenseActivate" value="false"/>
 
