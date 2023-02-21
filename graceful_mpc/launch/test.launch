@@ -7,9 +7,9 @@
     <!-- Set rviz configuration -->
     <arg name="rvizconfig"          default="$(find graceful_mpc)/config/demo.rviz"/>
     <!-- Simulation/Experiment -->
-    <arg name="isPureSimulation" value="false"/>
+    <arg name="isPureSimulation" value="true"/>
     <!-- Connect RTDE or not -->
-    <arg name="ur_control_activate" value="true"/>
+    <arg name="ur_control_activate" value="false"/>
     <!-- Enable the camera and ESDF -->
     <arg name="realsenseActivate" value="false"/>
 
@@ -51,7 +51,7 @@
     <node pkg="graceful_mpc" name="kinematic_simulation" type="graceful_mpc_kinematic_simulation" output="screen"> 
         <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
         <rosparam file="$(find graceful_mpc)/config/kinematic_simulation_parameters.yaml"/>
-        <param name="info_rate" value="1.0" />
+        <param name="info_rate" value="100.0" />
       
         <param name="world_frame" value="odom" />
         <param name="verbose" value="true" />

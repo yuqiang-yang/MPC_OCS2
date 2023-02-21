@@ -244,9 +244,9 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
       {
         boost::unique_lock<boost::shared_mutex> lockGuard(observationMutex_);
         // observation_.state() = observationBuffer_.state();
-        if(input_.norm() > 5e-3){
+        // if(input_.norm() > 5e-3){
         observation_.state() = optimalState_;
-        }
+        // }
         observation_.time() = ros::Time::now().toSec();
         observation = observation_;
         // std::cerr << "observation_" << observation_.state().transpose() << std::endl;        

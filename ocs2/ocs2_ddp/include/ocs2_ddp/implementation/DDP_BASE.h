@@ -1953,7 +1953,7 @@ void DDP_BASE<STATE_DIM, INPUT_DIM>::runImpl(scalar_t initTime, const state_vect
     isConstraint1Satisfied = performanceIndex_.stateInputEqConstraintISE <= ddpSettings_.minAbsConstraint1ISE_ ||
                              relConstraint1ISE <= ddpSettings_.minRelConstraint1ISE_;
     isLearningRateStarZero = learningRateStar_ == 0 && !isInitInternalControllerEmpty;
-    isCostFunctionConverged = relCost <= ddpSettings_.minRelCost_ || isLearningRateStarZero;
+    isCostFunctionConverged = (relCost <= ddpSettings_.minRelCost_ && performanceIndex_.merit - meritCached < 0)|| isLearningRateStarZero;
     isOptimizationConverged = isCostFunctionConverged && isConstraint1Satisfied;
     isInitInternalControllerEmpty = false;
 

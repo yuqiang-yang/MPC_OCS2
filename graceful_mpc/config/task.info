@@ -37,20 +37,20 @@ slq
 
   ddp
   {
-      maxNumIterations             10      ; 50
-      minLearningRate              1.0     ; 0.1
+      maxNumIterations             10      ; 50 not used
+      minLearningRate              1.0     ; 0.1 not used the value is determined by mpc setting
       maxLearningRate              1.0
-      minRelCost                   0.1     ; 0.01
+      minRelCost                   0.01     ; 0.01
       stateConstraintPenaltyCoeff  100.0
       stateConstraintPenaltyBase   1.1
       meritFunctionRho             50.0
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
-      displayShortSummary          0
+      displayShortSummary          1
       debugPrintRollout            0
 
-      AbsTolODE                      1e-5	;1e-6
-      RelTolODE                      1e-3	;1e-4
+      AbsTolODE                      1e-6	;1e-6
+      RelTolODE                      1e-4	;1e-4
       minTimeStep                    1e-3
       maxNumStepsPerSecond           20000
       simulationIsConstrained        0
@@ -83,7 +83,7 @@ slq
 ; MPC settings
 mpc
 {
-  runtimeMaxNumIterations        4
+  runtimeMaxNumIterations        10
   initMaxNumIterations           50
 
   runtimeMinLearningRate	     1e-4
@@ -93,16 +93,13 @@ mpc
 
 
   debugPrint                     0
-  coldStart                      0
+  coldStart                      1
   recedingHorizon                1      ; use receding horizon MPC
 
   useParallelRiccatiSolver       1      ; use disjoint riccati solver in MP case and recedingHorizon fashion
 
   useFeedbackPolicy              1
-  forwardSimulationTime          28     ; [ms] MRT time
-
-  rosMsgTimeWindow               200    ; [ms]
-  adaptiveRosMsgTimeWindow       0
+  forwardSimulationTime          28penalty
 
   mpcDesiredFrequency            20      ; [Hz]
   mrtDesiredFrequency            100     ; [Hz]
@@ -261,15 +258,15 @@ limits
     (6,0)  -6.28  ; arm 4 position
     (7,0)  -6.28  ; arm 5 position
     (8,0)  -4     ; arm 6 position
-    (9,0)  -1     ; base x dot
-    (10,0) -1.5   ; base y dot
-    (11,0) -2.2   ; base theta
-    (12,0) -2.4   ; arm 1
-    (13,0) -2.4   ; arm 2
-    (14,0) -2.4   ; arm 3
-    (15,0) -2.4   ; arm 4
-    (16,0) -2.4   ; arm 5
-    (17,0) -2.4   ; arm 6
+    (9,0)  -0.5   ; base x dot
+    (10,0) -0.5   ; base y dot
+    (11,0) -0.5   ; base theta
+    (12,0) -1.0   ; arm 1
+    (13,0) -1.0   ; arm 2
+    (14,0) -1.0   ; arm 3
+    (15,0) -1.0   ; arm 4
+    (16,0) -1.0   ; arm 5
+    (17,0) -1.0   ; arm 6
   }
   upper
   {
@@ -281,27 +278,27 @@ limits
     (5,0)  6.28  ; arm 3 position
     (6,0)  6.28  ; arm 4 position
     (7,0)  6.28  ; arm 5 position
-    (8,0)  4     ; arm 6 position
-    (9,0)  1.0    ; base x dot
-    (10,0) 1.5   ; base y dot
-    (11,0) 2.2   ; base theta
-    (12,0) 2.4   ; arm 1
-    (13,0) 2.4   ; arm 2
-    (14,0) 2.4   ; arm 3
-    (15,0) 2.4   ; arm 4
-    (16,0) 2.4   ; arm 5
-    (17,0) 2.4   ; arm 6
+    (8,0)  0     ; arm 6 position
+    (9,0)  0.5    ; base x dot
+    (10,0) 0.5   ; base y dot
+    (11,0) 1.0   ; base theta
+    (12,0) 1.0   ; arm 1
+    (13,0) 1.0   ; arm 2
+    (14,0) 1.0   ; arm 3
+    (15,0) 1.0   ; arm 4
+    (16,0) 1.0   ; arm 5
+    (17,0) 1.0   ; arm 6
   }
   acc
   {
-    (0,0)  1.0     ; base_linear [m/s^2]
-    (1,0)  1.0     ; base_rot [rad/s^2]
-    (2,0)  2.2     ; arm_1 [rad/s^2]
-    (3,0)  2.2     ; arm_2 [rad/s^2]
-    (4,0)  2.4     ; arm_3 [rad/s^2]
-    (5,0)  2.4     ; arm_4 [rad/s^2]
-    (6,0)  2.7     ; arm_5 [rad/s^2]
-    (7,0)  2.7     ; arm_6 [rad/s^2]
+    (0,0)  0.3     ; base_linear [m/s^2]
+    (1,0)  0.3     ; base_rot [rad/s^2]
+    (2,0)  0.8     ; arm_1 [rad/s^2]
+    (3,0)  0.8     ; arm_2 [rad/s^2]
+    (4,0)  0.8     ; arm_3 [rad/s^2]
+    (5,0)  0.8     ; arm_4 [rad/s^2]
+    (6,0)  0.8     ; arm_5 [rad/s^2]
+    (7,0)  0.8     ; arm_6 [rad/s^2]
   }
 }
 frontEndOMPLRRTStar
