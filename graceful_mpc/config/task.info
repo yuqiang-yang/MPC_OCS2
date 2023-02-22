@@ -46,7 +46,7 @@ slq
       meritFunctionRho             50.0
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
-      displayShortSummary          1
+      displayShortSummary          0
       debugPrintRollout            0
 
       AbsTolODE                      1e-6	;1e-6
@@ -72,9 +72,9 @@ slq
 
   rollout
   {
-      AbsTolODE                      1e-5	;1e-6
-      RelTolODE                      1e-3	;1e-4
-      minTimeStep                    1e-3
+      AbsTolODE                      1e-6	;1e-6
+      RelTolODE                      1e-4	;1e-4
+      minTimeStep                    1e-4
       maxNumStepsPerSecond           20000
       checkNumericalStability        0
   }
@@ -178,7 +178,7 @@ ee_tracking_task
 }
 stateCost
 {
-  activate 1
+  activate 0
   Q
   {
     scaling 1e+0
@@ -226,27 +226,27 @@ Q_final
 }
 fiesta_cost
 {
-    activate        1
+    activate        0
     mu              1e-3
     delta           1e-3
     max_distance    3.0
 }
 orientationCost
 {
-  activate          1
+  activate          0
   weight            0.2
 }
 
 manipulabilityCost
 {
-  activate          1
+  activate          0
   weight            1
 }
 
 ; joint limits
 limits
 {
-  enforce_limits     1
+  enforce_limits     0
   lower
   {
     (0,0)  -99999 ; base x    

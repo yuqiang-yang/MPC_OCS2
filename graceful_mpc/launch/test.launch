@@ -51,7 +51,7 @@
     <node pkg="graceful_mpc" name="kinematic_simulation" type="graceful_mpc_kinematic_simulation" output="screen"> 
         <param name="mpc_task_file"           value="$(arg mpc_task_file)"/>
         <rosparam file="$(find graceful_mpc)/config/kinematic_simulation_parameters.yaml"/>
-        <param name="info_rate" value="100.0" />
+        <param name="info_rate" value="1.0" />
       
         <param name="world_frame" value="odom" />
         <param name="verbose" value="true" />
@@ -103,7 +103,7 @@
         <!-- visulization -->
         <!--0 for no visulize-->
         <param name="visualize_every_n_updates" value="5"/>
-        <param name="slice_vis_max_dist" value="3.0"/>
+        <param name="slice_vis_max_dist" value="2.0"/>
         <!-- relative to the lz if array is used, relative to the origin if hash table is used -->
         <param name="slice_vis_level" value="1"/>
         <param name="vis_lower_bound" value="0"/>

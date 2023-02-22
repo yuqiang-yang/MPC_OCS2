@@ -102,4 +102,13 @@
 + change graceful_mpc
 
 ### 2023.2.20
-+ the mobile base will shift with a low velocity.
++ the mobile base will shift with a low velocity. And it's easy to oscillate.
++ If we change the system dynamics, it will be unstable. The problem remain in the CppAD sqrt.
++ with x^dot = x_b_dot, the non-ho.. constraint will not be satisfied. i.e. the y_dot/x_dot not equal to the tan(theta).
+
+### 2023.2.21
++ Reading the papers about the replanning of the mobile manipulator
+    + They need an initial trajectory in the configuration spaces. But it's quite difficult for the mobile manipulator with non-holonomic constraints to generate trajectory in realtime.
+    + Why the condition i handle is difficult?
+        + For many applications, the mobile manipulator only need to keep far away from the obs. But if you want to conduct specific tasks such as picking, you must approach the obs., which makes some costs have conflict with each other.
+        + In the case of making the obstacles avoidance a hard constraint, the method is like a hiretical controller. We should ensure the safety first. But how to guide the manipulator out of the obs. ?

@@ -26,7 +26,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: filteredPointcloud
+    SyncSource: occupyVoxel
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -253,13 +253,13 @@ Visualization Manager:
       Update Topic: /target_pose/update
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /graceful_mpc/collision_points
       Name: Collision Checkpoints
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -328,7 +328,7 @@ Visualization Manager:
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 1.975000023841858
-        Min Value: 0.5249999761581421
+        Min Value: -0.4749999940395355
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -353,13 +353,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /graceful_mpc/front_end_trajectory
@@ -718,25 +718,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.5540969371795654
+      Distance: 2.622162342071533
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.6221129298210144
-        Y: 0.43624386191368103
-        Z: 0.7702941298484802
+        X: 0.6825364232063293
+        Y: 0.9711411595344543
+        Z: 0.6021286249160767
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.619799017906189
+      Pitch: 0.4197961390018463
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.941680908203125
+      Yaw: 2.5416877269744873
     Saved: ~
 Window Geometry:
   Displays:
