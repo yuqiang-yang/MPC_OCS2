@@ -4,14 +4,16 @@ using namespace graceful_mpc;
 
 void FrontOrientationCost::intermediateCostFunction(ad_scalar_t time, const ad_dynamic_vector_t& state, const ad_dynamic_vector_t& input,
                                 const ad_dynamic_vector_t& parameters, ad_scalar_t& costValue) const{
-    costValue = kinematics_->getEEOrientationAtan(state.head<Definitions::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>());
+    costValue = kinematics_->getEEOrientationAtan(state);
     costValue = costValue * costValue * static_cast<ad_scalar_t>(weight_);
-    // std::cerr << "(debugging) FrontOrientationCost" << costValue << std::endl;
 
 }
 
 void FrontOrientationCost::terminalCostFunction(ad_scalar_t time, const ad_dynamic_vector_t& state, const ad_dynamic_vector_t& parameters,
                             ad_scalar_t& costValue) const{
-    costValue = 0;
-}
+    costValue = kinematics_->getEEOrientationAtan(state);
+    costValue = costValue * costValue * static_cast<ad_scalar_t>(weight_);
+    
+    
+    }
 

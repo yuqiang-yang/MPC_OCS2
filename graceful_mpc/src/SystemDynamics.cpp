@@ -29,22 +29,19 @@
 #include <graceful_mpc/SystemDynamics.h>
 
 using namespace graceful_mpc;
-// state X_b Y_b Theta_b Theta_arm ... velocity 
+// state X_b Y_b Theta_b Theta_arm ... v w theta_dot_arm 
 void SystemDynamics::systemFlowMap(ad_scalar_t time, const ad_dynamic_vector_t& state, const ad_dynamic_vector_t& input,
                                    ad_dynamic_vector_t& stateDerivative) const {
   // ad_scalar_t linearAcc = input.head<Definitions::BASE_INPUT_DIM_>()[0];
   // ad_scalar_t angularAcc = input.head<Definitions::BASE_INPUT_DIM_>()[1];
   // ad_scalar_t theta = state.head<Definitions::BASE_STATE_DIM_>()[2];
-  ad_scalar_t v =CppAD::sqrt(CppAD::pow(state.tail<Definitions ::VELOCITY_STATE_DIM_>()[0],2) + CppAD::pow(state.tail<Definitions ::VELOCITY_STATE_DIM_>()[1],2));
-  ad_scalar_t sign =CppAD::GreaterThanZero(state.tail<Definitions::VELOCITY_DIM_>()[0] * CppAD::cos(state[2]))  ? ad_scalar_t(1):ad_scalar_t(-1);
-  stateDerivative[0] = sign *  v * CppAD::cos(state[2]); 
-  stateDerivative[1] = sign *  v * CppAD::sin(state[2]); 
-  stateDerivative.head<Definitions ::BASE_STATE_DIM_>()[2] =  state.tail<Definitions ::VELOCITY_STATE_DIM_>()[2];
+  stateDerivative[0] =   state.tail<Definitions::VELOCITY_DIM_>()[0] * CppAD::cos(state[2]); 
+  stateDerivative[1] =   state.tail<Definitions::VELOCITY_DIM_>()[0] * CppAD::sin(state[2]); 
+  stateDerivative.head<Definitions ::BASE_STATE_DIM_>()[2] =  state.tail<Definitions ::VELOCITY_STATE_DIM_>()[1];
   // stateDerivative.head<Definitions ::BASE_STATE_DIM_>() = state.tail<Definitions::VELOCITY_STATE_DIM_>().head<Definitions ::BASE_STATE_DIM_>();
   stateDerivative.head<Definitions ::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = state.tail<Definitions::VELOCITY_STATE_DIM_>().tail<Definitions ::ARM_STATE_DIM_>();
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[0] = input[0] * CppAD::cos(state[2]);
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[1] = input[0] * CppAD::sin(state[2]);
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[2] = input[1];
+  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[0] = input[0];
+  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[1] = input[1];
   stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = input.tail<Definitions::ARM_INPUT_DIM_>();
 
 }

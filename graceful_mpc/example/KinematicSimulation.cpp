@@ -290,14 +290,14 @@ bool KinematicSimulation::trackerLoop(ros::Rate rate) {
                                         << "    time:          " << observation.time() - initialTime_ << std::endl
                                         // << "    finalTime:     " << finalTime - initialTime_ << std::endl
                                         << "    current_state: " << observation.state().transpose() << std::endl
-                                        // << "    mid_state:     " << MidObservation_.transpose() << std::endl
+                                        // << "    mid_state:     " << MidObservation_.transpo`se() << std::endl
                                         // << "    final_state:   " << FinalObservation_.transpose() << std::endl
                                         << "    optimalState:  " << optimalState.transpose() << std::endl
                                         << "    controlInput:  " << controlInput.transpose() << std::endl
                                         // << "    finalInput:    " << finalInput.transpose() << std::endl
                                         << "    actual pos:   "  << currentPosition.transpose() << std::endl
                                         << "    desired pos:  " << desiredPose.head<Definitions::POSE_DIM>().tail<3>().transpose() << std::endl
-                                        
+                                        << "    atan          " << getEEAtan() << std::endl
                                         << "  manipulability:  "<< getManipulability()<< std::endl
                                         << timing::Timing::Print()  
                                         << std::endl);
@@ -768,7 +768,7 @@ kindr::HomTransformQuatD KinematicSimulation::getEndEffectorPose() {
 double KinematicSimulation::getEEAtan(){
   {
     boost::shared_lock<boost::shared_mutex> lock(observationMutex_);
-    Eigen::VectorXd currentState = observation_.state().head<POSITION_STATE_DIM_>().tail<6>();
+    Eigen::VectorXd currentState = observation_.state();
     UR5Kinematics<double> kinematics(kinematicInterfaceConfig_);
     double EEOrientation =  kinematics.getEEOrientationAtan(currentState);
     
@@ -858,14 +858,14 @@ void KinematicSimulation::wholebodyStateCb(const std_msgs::Float64MultiArray& ms
 {
 
   std::vector<double> msg_in = msg.data;
-  Eigen::VectorXd pf = Eigen::Map<Eigen::Matrix<double,19,1>>(msg_in.data(), msg_in.size());
+  Eigen::VectorXd pf = Eigen::Map<Eigen::Matrix<double,18,1>>(msg_in.data(), msg_in.size());
 
   kindr::EulerAnglesRpyD rpy(0,0,pf.coeff(2));
   
-  observationBuffer_.state() = pf.head<18>();
-  observationBuffer_.time() = pf(18);
+  observationBuffer_.state() = pf.head<17>();
+  observationBuffer_.time() = pf(17);
 
-  latestObservationTime_ = ros::Time(pf(18));
+  latestObservationTime_ = ros::Time(pf(17));
   // std::cerr << "observationBuff state" << observationBuffer_.state().transpose()  << std::endl;
   // std::cerr << "observationBuff time" << observationBuffer_.time() << " " << latestObservationTime_ << std::endl;
   observationBuffer_.time() = latestObservationTime_.toSec();

@@ -56,7 +56,7 @@ class KinematicsInterface {
                                                                     const std::vector<std::vector<double>>& points) const;
 
   //added by yq
-  SCALAR_T getEEOrientationAtan(const Eigen::Matrix<SCALAR_T, 6, 1>& armState)const;
+  SCALAR_T getEEOrientationAtan(const Eigen::Matrix<SCALAR_T, -1, 1>& state)const;
   //add by yq
   Eigen::Matrix<SCALAR_T, 6, 6> getArmJacobian(const Eigen::Matrix<SCALAR_T, 6, 1>& armState)const;
 

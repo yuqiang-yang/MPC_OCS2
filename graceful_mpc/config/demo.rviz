@@ -26,7 +26,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: occupyVoxel
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -253,13 +253,13 @@ Visualization Manager:
       Update Topic: /target_pose/update
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /graceful_mpc/collision_points
       Name: Collision Checkpoints
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -357,7 +357,7 @@ Visualization Manager:
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -365,7 +365,7 @@ Visualization Manager:
       Marker Topic: /graceful_mpc/front_end_trajectory
       Name: frontEndPath
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 0.5
@@ -718,7 +718,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.622162342071533
+      Distance: 2.936821937561035
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -733,10 +733,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4197961390018463
+      Pitch: 0.7947961688041687
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.5416877269744873
+      Yaw: 3.3366894721984863
     Saved: ~
 Window Geometry:
   Displays:

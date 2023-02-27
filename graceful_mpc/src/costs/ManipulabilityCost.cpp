@@ -18,11 +18,11 @@ ad_scalar_t bruteforce_det4_helper(const Eigen::Matrix<ad_scalar_t,4,4>& matrix,
 
 void ManipulabilityCost::intermediateCostFunction(ad_scalar_t time, const ad_dynamic_vector_t& state, const ad_dynamic_vector_t& input,
                                 const ad_dynamic_vector_t& parameters, ad_scalar_t& costValue) const{
-    // Eigen::Matrix<ad_scalar_t,6,6> baseToWrist3Jacobian = kinematics_->getArmJacobian(state.head<Definitions::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>());
+    Eigen::Matrix<ad_scalar_t,6,6> baseToWrist3Jacobian = kinematics_->getArmJacobian(state.head<Definitions::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>());
 
-    // baseToWrist3Jacobian = baseToWrist3Jacobian.transpose()*baseToWrist3Jacobian;
-    // costValue = calculateDeterminant(baseToWrist3Jacobian);
-    // costValue = static_cast<ad_scalar_t>(-weight_)*CppAD::sqrt(costValue);
+    baseToWrist3Jacobian = baseToWrist3Jacobian.transpose()*baseToWrist3Jacobian;
+    costValue = calculateDeterminant(baseToWrist3Jacobian);
+    costValue = static_cast<ad_scalar_t>(-weight_)*CppAD::sqrt(costValue);
 
     // std::cerr << "(debugging) Manipulability cost:" << costValue << std::endl;
 

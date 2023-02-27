@@ -2,7 +2,7 @@
 mpcTimeHorizon
 {
   timehorizon      3.0
-  numPartitions    5
+  numPartitions    10
 }
 
 ; Mode sequence
@@ -40,17 +40,17 @@ slq
       maxNumIterations             10      ; 50 not used
       minLearningRate              1.0     ; 0.1 not used the value is determined by mpc setting
       maxLearningRate              1.0
-      minRelCost                   0.01     ; 0.01
+      minRelCost                   0.001     ; 0.01
       stateConstraintPenaltyCoeff  100.0
       stateConstraintPenaltyBase   1.1
       meritFunctionRho             50.0
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
-      displayShortSummary          0
+      displayShortSummary          1
       debugPrintRollout            0
 
-      AbsTolODE                      1e-6	;1e-6
-      RelTolODE                      1e-4	;1e-4
+      AbsTolODE                      1e-5	;1e-6
+      RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-3
       maxNumStepsPerSecond           20000
       simulationIsConstrained        0
@@ -72,8 +72,8 @@ slq
 
   rollout
   {
-      AbsTolODE                      1e-6	;1e-6
-      RelTolODE                      1e-4	;1e-4
+      AbsTolODE                      1e-5	;1e-6
+      RelTolODE                      1e-3	;1e-4
       minTimeStep                    1e-4
       maxNumStepsPerSecond           20000
       checkNumericalStability        0
@@ -93,7 +93,7 @@ mpc
 
 
   debugPrint                     0
-  coldStart                      1
+  coldStart                      0
   recedingHorizon                1      ; use receding horizon MPC
 
   useParallelRiccatiSolver       1      ; use disjoint riccati solver in MP case and recedingHorizon fashion
@@ -123,7 +123,7 @@ initialState
   (6,0)  -1.571   ; arm4
   (7,0)  -1.571   ; arm5
   (8,0)  -2.61    ; arm6
-  (9,0)  0.1      ; velocity
+  (9,0)  0.0      ; velocity
   (10,0) 0.0      ; velocity
   (11,0) 0.0      ; velocity
   (12,0) 0.0      ; velocity
@@ -131,7 +131,6 @@ initialState
   (14,0) 0.0
   (15,0) 0.0
   (16,0) 0.0
-  (17,0) 0.0
 }
 
 ee_tracking_task
@@ -152,10 +151,10 @@ ee_tracking_task
   ; control weight matrix
   R
   {
-    scaling 1e0
+    scaling 2e0
 
     (0,0) 1.0  ; base_drive
-    (1,1) 1.0  ; base_turn
+    (1,1) 0.2  ; base_turn
     (2,2) 1.0  ; arm_1
     (3,3) 1.0  ; arm_2
     (4,4) 1.0  ; arm_3
@@ -167,7 +166,7 @@ ee_tracking_task
   ; final state weight matrix
   Q_final
   {
-    scaling 3e1
+    scaling 1e1
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
     (2,2) 1.0  ; z
@@ -181,7 +180,7 @@ stateCost
   activate 1
   Q
   {
-    scaling 1e+1
+    scaling 1e+0
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -192,18 +191,17 @@ stateCost
     (7,7)   0.0  
     (8,8)   0.0  
     (9,9)   2.0  
-    (10,10) 2.0  
-    (11,11) 1.0      
+    (10,10) 1.0
+    (11,11) 2.0      
     (12,12) 1.0  
     (13,13) 1.0  
     (14,14) 1.0  
     (15,15) 1.0  
     (16,16) 1.0  
-    (17,17) 1.0  
   }
 Q_final
   {
-    scaling 1e+1
+    scaling 2e+0
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -214,19 +212,18 @@ Q_final
     (7,7)   0.0  
     (8,8)   0.0  
     (9,9)   2.0  
-    (10,10) 2.0  
-    (11,11) 1.0      
+    (10,10) 1.0
+    (11,11) 2.0      
     (12,12) 1.0  
     (13,13) 1.0  
     (14,14) 1.0  
     (15,15) 1.0  
     (16,16) 1.0  
-    (17,17) 1.0  
   }
 }
 fiesta_cost
 {
-    activate        1
+    activate        0
     mu              1e-3
     delta           1e-3
     max_distance    3.0
@@ -234,7 +231,7 @@ fiesta_cost
 orientationCost
 {
   activate          1
-  weight            0.2
+  weight            1
 }
 
 manipulabilityCost
@@ -260,13 +257,12 @@ limits
     (8,0)  -4     ; arm 6 position
     (9,0)  -0.5   ; base x dot
     (10,0) -0.5   ; base y dot
-    (11,0) -0.5   ; base theta
+    (11,0) -1.0   ; 
     (12,0) -1.0   ; arm 1
     (13,0) -1.0   ; arm 2
     (14,0) -1.0   ; arm 3
     (15,0) -1.0   ; arm 4
     (16,0) -1.0   ; arm 5
-    (17,0) -1.0   ; arm 6
   }
   upper
   {
@@ -281,18 +277,17 @@ limits
     (8,0)  0     ; arm 6 position
     (9,0)  0.5    ; base x dot
     (10,0) 0.5   ; base y dot
-    (11,0) 1.0   ; base theta
+    (11,0) 1.0   ;
     (12,0) 1.0   ; arm 1
     (13,0) 1.0   ; arm 2
     (14,0) 1.0   ; arm 3
     (15,0) 1.0   ; arm 4
     (16,0) 1.0   ; arm 5
-    (17,0) 1.0   ; arm 6
   }
   acc
   {
-    (0,0)  0.3     ; base_linear [m/s^2]
-    (1,0)  0.3     ; base_rot [rad/s^2]
+    (0,0)  1.0     ; base_linear [m/s^2]
+    (1,0)  1.0     ; base_rot [rad/s^2]
     (2,0)  0.8     ; arm_1 [rad/s^2]
     (3,0)  0.8     ; arm_2 [rad/s^2]
     (4,0)  0.8     ; arm_3 [rad/s^2]

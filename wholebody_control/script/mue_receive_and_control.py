@@ -151,12 +151,10 @@ if __name__ == '__main__':
             # print('control msg received!!')
             
         car_state = np.array(car_sub_record[:3])
-        x_dot = car_sub_record[3] * cos(car_sub_record[2])
-        y_dot = car_sub_record[3] * sin(car_sub_record[2])
         theta_dot = car_sub_record[4]
         
         wb_state = Float64MultiArray()
-        wb_state.data = np.concatenate((car_state,arm_state,[x_dot,y_dot,theta_dot],arm_velocity,[rospy.Time().now().to_time()]),axis=0)
+        wb_state.data = np.concatenate((car_state,arm_state,[car_sub_record[3],theta_dot],arm_velocity,[rospy.Time().now().to_time()]),axis=0)
         wb_state_pub.publish(wb_state)
         time.sleep(0.01)
     rtde_c.speedStop();

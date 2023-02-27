@@ -81,7 +81,6 @@ visualization_msgs::MarkerArray PointsOnRobot::getVisualization(const Eigen::Vec
   markerArray.markers.resize(radii_.size());
 
   Eigen::VectorXd points = getPoints(state);
-
   for (int i = 0; i < markerArray.markers.size(); i++) {
     auto& marker = markerArray.markers[i];
     marker.type = visualization_msgs::Marker::Type::SPHERE;
