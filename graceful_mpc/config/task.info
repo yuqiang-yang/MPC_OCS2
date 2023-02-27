@@ -123,7 +123,7 @@ initialState
   (6,0)  -1.571   ; arm4
   (7,0)  -1.571   ; arm5
   (8,0)  -2.61    ; arm6
-  (9,0)  0.0      ; velocity
+  (9,0)  0.1      ; velocity
   (10,0) 0.0      ; velocity
   (11,0) 0.0      ; velocity
   (12,0) 0.0      ; velocity
@@ -178,10 +178,10 @@ ee_tracking_task
 }
 stateCost
 {
-  activate 0
+  activate 1
   Q
   {
-    scaling 1e+0
+    scaling 1e+1
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -203,7 +203,7 @@ stateCost
   }
 Q_final
   {
-    scaling 1e+0
+    scaling 1e+1
     (0,0)   0.0  
     (1,1)   0.0  
     (2,2)   0.0  
@@ -226,20 +226,20 @@ Q_final
 }
 fiesta_cost
 {
-    activate        0
+    activate        1
     mu              1e-3
     delta           1e-3
     max_distance    3.0
 }
 orientationCost
 {
-  activate          0
+  activate          1
   weight            0.2
 }
 
 manipulabilityCost
 {
-  activate          0
+  activate          1
   weight            1
 }
 

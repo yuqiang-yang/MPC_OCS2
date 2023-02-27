@@ -112,3 +112,8 @@
     + Why the condition i handle is difficult?
         + For many applications, the mobile manipulator only need to keep far away from the obs. But if you want to conduct specific tasks such as picking, you must approach the obs., which makes some costs have conflict with each other.
         + In the case of making the obstacles avoidance a hard constraint, the method is like a hiretical controller. We should ensure the safety first. But how to guide the manipulator out of the obs. ?
+### 2023.2.22->26
++ learing MINCO 
+
+### 2023.2.27
++ The incorrect initial value make the system become unstalble not the sqrt operate. Just make the x_dot a small value can make it work. But the system dynamics about x_dd = a_v cos y_dd = a_v sin don't have a phsical meaning. So i would change to the x y theta v w to be the state.
