@@ -2,7 +2,7 @@
 #include <geometry_msgs/TransformStamped.h>
 
 #include <example/KinematicSimulation.h>
-
+#include "graceful_mpc/minco.hpp"
 #include <graceful_mpc/kinematics/ur5/UR5Kinematics.hpp>
 #include <tf/transform_broadcaster.h>
 
