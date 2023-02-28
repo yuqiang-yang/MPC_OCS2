@@ -138,7 +138,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 5e0
+    scaling 1e1
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -183,7 +183,7 @@ stateCost
     scaling 1e+0
     (0,0)   0.0  
     (1,1)   0.0  
-    (2,2)   0.0  
+    (2,2)   1.0  
     (3,3)   0.0  
     (4,4)   0.0  
     (5,5)   0.0  

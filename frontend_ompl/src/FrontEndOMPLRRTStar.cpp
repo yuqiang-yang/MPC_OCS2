@@ -8,7 +8,7 @@ FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
 
 }
 //the head 4 value is quaternion. the tail 3 value is position
-bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& smooth_trajectory,Eigen::VectorXd& time_trajectory)
+bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& position_trajectory,Eigen::VectorXd& time_trajectory,Eigen::Matrix<double,Eigen::Dynamic,3>& velocity_trajectory)
 {
     const int VISUALIZE_CNT = 100;
     ob::RealVectorBounds bound(3);
@@ -100,7 +100,8 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     // pdef_->getSolutionPath()->print(std::cout);
     std::size_t count = 0;
     Eigen::Matrix<double,Eigen::Dynamic,7> desired_trajectory;
-    smooth_trajectory.resize(VISUALIZE_CNT,7);
+    position_trajectory.resize(VISUALIZE_CNT,7);
+    velocity_trajectory.resize(VISUALIZE_CNT,3);
     desired_trajectory.resize(rows,7);
     time_trajectory.resize(VISUALIZE_CNT);
 
@@ -130,18 +131,10 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     Eigen::VectorXd times;
     times.resize(count-1);
     for(int i = 0; i < count-2;i++){
-        points.col(i) = desired_trajectory.row(i+1).tail<3>();
-        double maxTime = -999;
-        for(int j = 0; j < 3;j++){
-            maxTime = std::max(std::abs((desired_trajectory.row(i+1).tail<3>()[j] - desired_trajectory.row(i).tail<3>()[j])/maxVel_*1.732), maxTime);
-        }  
-        times[i] = maxTime;
+        points.col(i) = desired_trajectory.row(i+1).tail<3>();        
+        times[i] = (desired_trajectory.row(i+1).tail<3>() - desired_trajectory.row(i).tail<3>()).norm()/maxVel_;
     }
-    double maxTime = -999;
-    for(int j = 0; j < 3;j++){
-        maxTime = std::max(std::abs((desired_trajectory.row(count-1).tail<3>()[j] - desired_trajectory.row(count-2).tail<3>()[j])/maxVel_*1.732), maxTime);
-    } 
-    times[count-2] = maxTime;
+    times[count-2] = (desired_trajectory.row(count-1).tail<3>() - desired_trajectory.row(count-2).tail<3>()).norm()/maxVel_;
 
     // std::cerr << "rows" << std::endl << rows<<std::endl;
     // std::cerr << "desired_trajectory" << std::endl << desired_trajectory<<std::endl;
@@ -156,7 +149,10 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     int tmp = 0; 
 
     for(double t = 0; t <traj.getTotalDuration() && tmp < VISUALIZE_CNT;t+=resolution){
-        smooth_trajectory.row(tmp).tail<3>()=traj.getPos(t);
+        position_trajectory.row(tmp).tail<3>()=traj.getPos(t);
+        velocity_trajectory.row(tmp).tail<3>()=traj.getVel(t);
+       
+        time_trajectory(tmp) = t;
         tmp++;
     }
     std::cerr << std::endl;
@@ -170,10 +166,10 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
     for(int i = 0;i < VISUALIZE_CNT;i++){
         interpolate_t[i] = 1.0/(VISUALIZE_CNT-1) * i;
         Eigen::Quaterniond tmp = start_quat.slerp(interpolate_t[i],goal_quat);
-        smooth_trajectory(i,0) =  tmp.coeffs()(0);
-        smooth_trajectory(i,1) =  tmp.coeffs()(1);
-        smooth_trajectory(i,2) =  tmp.coeffs()(2);
-        smooth_trajectory(i,3) =  tmp.coeffs()(3);
+        position_trajectory(i,0) =  tmp.coeffs()(0);
+        position_trajectory(i,1) =  tmp.coeffs()(1);
+        position_trajectory(i,2) =  tmp.coeffs()(2);
+        position_trajectory(i,3) =  tmp.coeffs()(3);
     }
 
     return solved;

@@ -51,12 +51,15 @@ class StateCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Definit
   void getTerminalCostSecondDerivativeState(state_matrix_t& dPhidxx) override;
   void getIntermediateCostDerivativeTime(scalar_t& dLdt) override;
   void getTerminalCostDerivativeTime(scalar_t& dPhidt) override;
-
+  
   void getIntermediateCostDerivativeStateVerbose(state_vector_t& dLdx);
+  //
+  void setCurrentStateAndControl(const scalar_t& t, const state_vector_t& x, const input_vector_t& u) override;
 
  private:
   const state_matrix_t Q_;
   const state_matrix_t QFinal_;
+  state_vector_t x_des_;
 };
 
 }  // namespace graceful_mpc

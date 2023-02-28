@@ -78,7 +78,7 @@ namespace graceful_mpc{
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config);
-            bool Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory,Eigen::VectorXd& time_trajectory);
+            bool Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_position,Eigen::VectorXd& time_trajectory,Eigen::Matrix<double,Eigen::Dynamic,3>& desired_velocity);
         protected:
             ob::OptimizationObjectivePtr getPathLengthObjective(const ob::SpaceInformationPtr& si);
             

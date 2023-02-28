@@ -15,8 +15,10 @@ int main(int argc, char** argv) {
     Eigen::Matrix<double,7,1> end;
     end << 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0;
     Eigen::Matrix<double,Eigen::Dynamic,7> desired_trajectory; 
+    Eigen::Matrix<double,Eigen::Dynamic,3> velocity_trajectory; 
+
     Eigen::VectorXd time_traj;
-    frontEndOMPLRRTStar.Plan(start,end,desired_trajectory,time_traj);
+    frontEndOMPLRRTStar.Plan(start,end,desired_trajectory,time_traj,velocity_trajectory);
     // std::cerr << desired_trajectory << std::endl;
     // std::cerr << time_traj << std::endl;
 

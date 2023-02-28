@@ -123,3 +123,4 @@
 ### 2023.2.28
 + If the limits are enforced, the mobile manipulator will shake. I think the reason is that the velocity or accelation are beyond the range so the optimazer will pull them back!.
 + There always exist a contraction bettween the hard constraints and the soft constraints of the obstacle avoidance.
++ The mix between Matrix3Xd and MatrixX3d stuck me.

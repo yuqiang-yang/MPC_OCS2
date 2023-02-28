@@ -478,13 +478,15 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   end << msgPtr->pose.orientation.x,msgPtr->pose.orientation.y,msgPtr->pose.orientation.z,msgPtr->pose.orientation.w,
   msgPtr->pose.position.x,msgPtr->pose.position.y,msgPtr->pose.position.z;
   Eigen::Matrix<double,Eigen::Dynamic,7> desired_trajectory; 
-  
+  Eigen::Matrix<double,Eigen::Dynamic,3> velocity_trajectory; 
+
   // std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
   // std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
+  Eigen::VectorXd time_traj;
+
   try{
-    Eigen::VectorXd time_traj;
-    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory,time_traj);
+    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory,time_traj,velocity_trajectory);
     // std::cerr << "desired_trajectory" << std::endl<<desired_trajectory<< std::endl;
     if(!is_success)
     {
@@ -537,10 +539,12 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   tmpPose.position.x = desired_trajectory(i,4);
   tmpPose.position.y = desired_trajectory(i,5);
   tmpPose.position.z = desired_trajectory(i,6);
+  
+  poseVelocityTrajectory.posesVelocity[i].header.stamp = ros::Time(poseVelocityTrajectory.header.stamp.toSec() + time_traj(i));
 
-  poseVelocityTrajectory.posesVelocity[i].header.stamp = poseVelocityTrajectory.header.stamp;
   poseVelocityTrajectory.posesVelocity[i].pose = tmpPose;
-  tf2::toMsg(defaultLinear_, poseVelocityTrajectory.posesVelocity[i].velocity.force);     //linear part
+  poseVelocityTrajectory.posesVelocity[i].velocity.force.x = std::atan2(velocity_trajectory(i,1),velocity_trajectory(i,0));
+  // tf2::toMsg(defaultLinear_, poseVelocityTrajectory.posesVelocity[i].velocity.force);     //linear part
   tf2::toMsg(defaultAngular_, poseVelocityTrajectory.posesVelocity[i].velocity.torque);  //angular part
   
   }
@@ -571,24 +575,24 @@ void KinematicSimulation::desiredPoseVelocityTrajectoryCb(const graceful_mpc::Po
     costDesiredTrajectories_.desiredStateTrajectory()[i] = reference;
 
     costDesiredTrajectories_.desiredInputTrajectory()[i] = MpcInterface::input_vector_t::Zero();
+    costDesiredTrajectories_.desiredTimeTrajectory()[i] = poseVelocityTrajectory.posesVelocity[i].header.stamp.toSec();
+    // if (i == 0) {
+    //   costDesiredTrajectories_.desiredTimeTrajectory()[i] = ros::Time::now().toSec();
+    // } else {
+    //   auto minTimeLinear = (desiredPose.getPosition() - lastPose.getPosition()).norm() / maxLinearVelocity_;
+    //   auto minTimeAngular = std::abs(desiredPose.getRotation().getDisparityAngle(lastPose.getRotation())) / maxAngularVelocity_;
 
-    if (i == 0) {
-      costDesiredTrajectories_.desiredTimeTrajectory()[i] = ros::Time::now().toSec();
-    } else {
-      auto minTimeLinear = (desiredPose.getPosition() - lastPose.getPosition()).norm() / maxLinearVelocity_;
-      auto minTimeAngular = std::abs(desiredPose.getRotation().getDisparityAngle(lastPose.getRotation())) / maxAngularVelocity_;
+    //   auto lastOriginalTimeStamp = ros::Time(poseVelocityTrajectory.posesVelocity[i - 1].header.stamp).toSec();
+    //   auto currentOriginalTimeStamp = ros::Time(poseVelocityTrajectory.posesVelocity[i].header.stamp).toSec();
+    //   double originalTimingDiff = currentOriginalTimeStamp - lastOriginalTimeStamp;
+    //   double segmentDuration = std::max(originalTimingDiff, std::max(minTimeLinear, minTimeAngular));
 
-      auto lastOriginalTimeStamp = ros::Time(poseVelocityTrajectory.posesVelocity[i - 1].header.stamp).toSec();
-      auto currentOriginalTimeStamp = ros::Time(poseVelocityTrajectory.posesVelocity[i].header.stamp).toSec();
-      double originalTimingDiff = currentOriginalTimeStamp - lastOriginalTimeStamp;
-      double segmentDuration = std::max(originalTimingDiff, std::max(minTimeLinear, minTimeAngular));
-
-      costDesiredTrajectories_.desiredTimeTrajectory()[i] = costDesiredTrajectories_.desiredTimeTrajectory()[i - 1] + segmentDuration;
-    }
+    //   costDesiredTrajectories_.desiredTimeTrajectory()[i] = costDesiredTrajectories_.desiredTimeTrajectory()[i - 1] + segmentDuration;
+    // }
 
     lastPose = desiredPose;
   }
-  // costDesiredTrajectories_.display();
+  costDesiredTrajectories_.display();
   ROS_INFO_STREAM("current time");
 }
 
