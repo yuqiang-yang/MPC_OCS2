@@ -2,7 +2,7 @@
 mpcTimeHorizon
 {
   timehorizon      3.0
-  numPartitions    10
+  numPartitions    5
 }
 
 ; Mode sequence
@@ -46,7 +46,7 @@ slq
       meritFunctionRho             50.0
       constraintStepSize           1.0     ; 1.0
       displayInfo                  0
-      displayShortSummary          1
+      displayShortSummary          0
       debugPrintRollout            0
 
       AbsTolODE                      1e-5	;1e-6
@@ -138,7 +138,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 1e1
+    scaling 5e0
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -154,7 +154,7 @@ ee_tracking_task
     scaling 2e0
 
     (0,0) 1.0  ; base_drive
-    (1,1) 0.2  ; base_turn
+    (1,1) 0.4  ; base_turn
     (2,2) 1.0  ; arm_1
     (3,3) 1.0  ; arm_2
     (4,4) 1.0  ; arm_3
@@ -166,7 +166,7 @@ ee_tracking_task
   ; final state weight matrix
   Q_final
   {
-    scaling 1e1
+    scaling 2e1
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
     (2,2) 1.0  ; z
@@ -192,7 +192,7 @@ stateCost
     (8,8)   0.0  
     (9,9)   2.0  
     (10,10) 1.0
-    (11,11) 2.0      
+    (11,11) 1.0      
     (12,12) 1.0  
     (13,13) 1.0  
     (14,14) 1.0  
@@ -213,7 +213,7 @@ Q_final
     (8,8)   0.0  
     (9,9)   2.0  
     (10,10) 1.0
-    (11,11) 2.0      
+    (11,11) 1.0      
     (12,12) 1.0  
     (13,13) 1.0  
     (14,14) 1.0  
@@ -223,14 +223,14 @@ Q_final
 }
 fiesta_cost
 {
-    activate        0
+    activate        1
     mu              1e-3
     delta           1e-3
     max_distance    3.0
 }
 orientationCost
 {
-  activate          1
+  activate          0
   weight            1
 }
 
@@ -243,7 +243,7 @@ manipulabilityCost
 ; joint limits
 limits
 {
-  enforce_limits     0
+  enforce_limits     1
   lower
   {
     (0,0)  -99999 ; base x    
@@ -254,15 +254,15 @@ limits
     (5,0)  -6.28  ; arm 3 position
     (6,0)  -6.28  ; arm 4 position
     (7,0)  -6.28  ; arm 5 position
-    (8,0)  -4     ; arm 6 position
-    (9,0)  -0.5   ; base x dot
-    (10,0) -0.5   ; base y dot
-    (11,0) -1.0   ; 
-    (12,0) -1.0   ; arm 1
-    (13,0) -1.0   ; arm 2
-    (14,0) -1.0   ; arm 3
-    (15,0) -1.0   ; arm 4
-    (16,0) -1.0   ; arm 5
+    (8,0)  -10     ; arm 6 position
+    (9,0)  -15   ; base x dot
+    (10,0) -15   ; base y dot
+    (11,0) -20   ; 
+    (12,0) -20   ; arm 1
+    (13,0) -20   ; arm 2
+    (14,0) -20   ; arm 3
+    (15,0) -20   ; arm 4
+    (16,0) -20   ; arm 5
   }
   upper
   {
@@ -274,26 +274,26 @@ limits
     (5,0)  6.28  ; arm 3 position
     (6,0)  6.28  ; arm 4 position
     (7,0)  6.28  ; arm 5 position
-    (8,0)  0     ; arm 6 position
-    (9,0)  0.5    ; base x dot
-    (10,0) 0.5   ; base y dot
-    (11,0) 1.0   ;
-    (12,0) 1.0   ; arm 1
-    (13,0) 1.0   ; arm 2
-    (14,0) 1.0   ; arm 3
-    (15,0) 1.0   ; arm 4
-    (16,0) 1.0   ; arm 5
+    (8,0)  5     ; arm 6 position
+    (9,0)  15    ; base x dot
+    (10,0) 15   ; base y dot
+    (11,0) 20   ;
+    (12,0) 20   ; arm 1
+    (13,0) 20   ; arm 2
+    (14,0) 20   ; arm 3
+    (15,0) 20   ; arm 4
+    (16,0) 20   ; arm 5
   }
   acc
   {
-    (0,0)  1.0     ; base_linear [m/s^2]
-    (1,0)  1.0     ; base_rot [rad/s^2]
-    (2,0)  0.8     ; arm_1 [rad/s^2]
-    (3,0)  0.8     ; arm_2 [rad/s^2]
-    (4,0)  0.8     ; arm_3 [rad/s^2]
-    (5,0)  0.8     ; arm_4 [rad/s^2]
-    (6,0)  0.8     ; arm_5 [rad/s^2]
-    (7,0)  0.8     ; arm_6 [rad/s^2]
+    (0,0)  20     ; base_linear [m/s^2]
+    (1,0)  20     ; base_rot [rad/s^2]
+    (2,0)  28     ; arm_1 [rad/s^2]
+    (3,0)  28     ; arm_2 [rad/s^2]
+    (4,0)  28     ; arm_3 [rad/s^2]
+    (5,0)  28     ; arm_4 [rad/s^2]
+    (6,0)  28     ; arm_5 [rad/s^2]
+    (7,0)  28     ; arm_6 [rad/s^2]
   }
 }
 frontEndOMPLRRTStar
@@ -302,7 +302,7 @@ frontEndOMPLRRTStar
   margin_y                    0.5
   margin_z                    0.5
   obstacle_margin             0.07
-  planning_time               2
+  planning_time               0.4
   collisionCheckerResolution  0.02
   distance_gain               5.0
 }

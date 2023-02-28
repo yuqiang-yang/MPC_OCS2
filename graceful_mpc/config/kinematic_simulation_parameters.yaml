@@ -1,7 +1,7 @@
 mpc_update_frequency: 50
 tf_update_frequency: 60
-max_linear_velocity: 0.4
-max_angular_velocity: 0.4
+max_linear_velocity: 0.2
+max_angular_velocity: 0.2
 control_loop_frequency: 100
 default_linear_velocity: [0.0, 0.0, 0.0]
 default_angular_velocity: [0.0, 0.0, 0.0]

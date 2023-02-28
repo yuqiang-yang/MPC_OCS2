@@ -16,8 +16,8 @@ t = np.linspace(-1,2,50)
 v = np.zeros(50)
 g = np.zeros(50)
 for i in range(50):
-    v[i] = value(t[i],1e-3,1e-2)
-    g[i] = gradient(t[i],1e-3,1e-2)
+    v[i] = value(t[i],1e-3,1e-3)
+    g[i] = gradient(t[i],1e-3,1e-3)
 
 plt.title('value')
 plt.plot(t,v)

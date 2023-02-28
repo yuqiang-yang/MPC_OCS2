@@ -26,7 +26,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: occupyVoxel
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -353,19 +353,19 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /graceful_mpc/front_end_trajectory
       Name: frontEndPath
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 0.5
@@ -718,25 +718,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.936821937561035
+      Distance: 2.2742748260498047
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.6825364232063293
-        Y: 0.9711411595344543
-        Z: 0.6021286249160767
+        X: 0.49933308362960815
+        Y: 0.8821612000465393
+        Z: 0.9257519245147705
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7947961688041687
+      Pitch: 0.38979628682136536
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.3366894721984863
+      Yaw: 1.3116899728775024
     Saved: ~
 Window Geometry:
   Displays:

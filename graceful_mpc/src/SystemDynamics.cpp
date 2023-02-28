@@ -35,15 +35,15 @@ void SystemDynamics::systemFlowMap(ad_scalar_t time, const ad_dynamic_vector_t& 
   // ad_scalar_t linearAcc = input.head<Definitions::BASE_INPUT_DIM_>()[0];
   // ad_scalar_t angularAcc = input.head<Definitions::BASE_INPUT_DIM_>()[1];
   // ad_scalar_t theta = state.head<Definitions::BASE_STATE_DIM_>()[2];
-  stateDerivative[0] =   state.tail<Definitions::VELOCITY_DIM_>()[0] * CppAD::cos(state[2]); 
-  stateDerivative[1] =   state.tail<Definitions::VELOCITY_DIM_>()[0] * CppAD::sin(state[2]); 
+  stateDerivative[0] =   state.tail<Definitions::VELOCITY_STATE_DIM_>()[0] * CppAD::cos(state[2]); 
+  stateDerivative[1] =   state.tail<Definitions::VELOCITY_STATE_DIM_>()[0] * CppAD::sin(state[2]); 
   stateDerivative.head<Definitions ::BASE_STATE_DIM_>()[2] =  state.tail<Definitions ::VELOCITY_STATE_DIM_>()[1];
   // stateDerivative.head<Definitions ::BASE_STATE_DIM_>() = state.tail<Definitions::VELOCITY_STATE_DIM_>().head<Definitions ::BASE_STATE_DIM_>();
-  stateDerivative.head<Definitions ::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = state.tail<Definitions::VELOCITY_STATE_DIM_>().tail<Definitions ::ARM_STATE_DIM_>();
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[0] = input[0];
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>()[1] = input[1];
-  stateDerivative.tail<Definitions ::VELOCITY_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = input.tail<Definitions::ARM_INPUT_DIM_>();
-
+  stateDerivative.head<Definitions::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = state.tail<Definitions::VELOCITY_STATE_DIM_>().tail<Definitions ::ARM_STATE_DIM_>();
+  stateDerivative.tail<Definitions::VELOCITY_STATE_DIM_>()[0] = input[0];
+  stateDerivative.tail<Definitions::VELOCITY_STATE_DIM_>()[1] = input[1];
+  stateDerivative.tail<Definitions::VELOCITY_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>() = input.tail<Definitions::ARM_INPUT_DIM_>();
+  // std::cerr << "state_dim:" << state.rows() <<"input_dim" << input.rows() << std::endl;
 }
 
 SystemDynamics* SystemDynamics::clone() const { return new SystemDynamics(*this); }

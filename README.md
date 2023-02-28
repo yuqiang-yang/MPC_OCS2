@@ -119,3 +119,7 @@
 + The incorrect initial value make the system become unstalble not the sqrt operate. Just make the x_dot a small value can make it work. But the system dynamics about x_dd = a_v cos y_dd = a_v sin don't have a phsical meaning. So i would change to the x y theta v w to be the state.
 + The FrontOrientation cost is not set correctly. Because i just use the UR state to get the cost, so when the mpc optimize the problem, it can only get the gradient of the UR state. So it would not make the orientation keep front in a wholebody-manner.
 + The planner cannot stop and the front orientation doesnot work.
+
+### 2023.2.28
++ If the limits are enforced, the mobile manipulator will shake. I think the reason is that the velocity or accelation are beyond the range so the optimazer will pull them back!.
++ There always exist a contraction bettween the hard constraints and the soft constraints of the obstacle avoidance.
