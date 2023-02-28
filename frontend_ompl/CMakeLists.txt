@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(ompl REQUIRED)
 
 
-
+include_directories("/home/vision/yq_ws/my_mpc/src/graceful_mpc/include")
 ###################################
 ## catkin specific configuration ##
 ###################################

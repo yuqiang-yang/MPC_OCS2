@@ -2,7 +2,6 @@
 #include <geometry_msgs/TransformStamped.h>
 
 #include <example/KinematicSimulation.h>
-#include "graceful_mpc/minco.hpp"
 #include <graceful_mpc/kinematics/ur5/UR5Kinematics.hpp>
 #include <tf/transform_broadcaster.h>
 
@@ -211,6 +210,8 @@ void KinematicSimulation::parseParameters() {
 
   ocs2::loadData::loadEigenMatrix(packagePath + "/config/" +mpcTaskFile_, "initialState", initialState_);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "mpcTimeHorizon.timehorizon", horizon_);
+  
+  frontEndOMPLRRTStarConfig_.maxVel = maxLinearVelocity_;
   std::cerr << "horizon_" << horizon_ <<std::endl;
   
 }
@@ -482,7 +483,9 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   // std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
   frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
   try{
-    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory);
+    Eigen::VectorXd time_traj;
+    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory,time_traj);
+    // std::cerr << "desired_trajectory" << std::endl<<desired_trajectory<< std::endl;
     if(!is_success)
     {
       ROS_ERROR("Found no frontEnd solution");
@@ -492,10 +495,6 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   catch(const std::exception ex){
     std::cerr << "frontend raise an error:" << ex.what() << std::endl;
   }
-
-
-  // std::cerr << "debugging traj" << desired_trajectory << std::endl;
-
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
@@ -550,6 +549,7 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
 
 void KinematicSimulation::desiredPoseVelocityTrajectoryCb(const graceful_mpc::PoseVelocityTrajectory& poseVelocityTrajectory) {
   boost::unique_lock<boost::shared_mutex> costDesiredTrajectoryLock(costDesiredTrajectoryMutex_);
+  
   costDesiredTrajectories_.clear();
   int N = poseVelocityTrajectory.posesVelocity.size();
   costDesiredTrajectories_.desiredStateTrajectory().resize(N);

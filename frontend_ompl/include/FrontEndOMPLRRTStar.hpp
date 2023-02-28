@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <Eigen/Core>
+#include "graceful_mpc/minco.hpp"
 
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
@@ -46,6 +47,7 @@ namespace graceful_mpc{
     double margin_x;
     double margin_y;
     double margin_z;
+    double maxVel;
     double collisionCheckerResolution;
     double obstacle_margin;
     double distance_gain;
@@ -76,9 +78,10 @@ namespace graceful_mpc{
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config);
-            bool Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory);
+            bool Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory,Eigen::VectorXd& time_trajectory);
         protected:
             ob::OptimizationObjectivePtr getPathLengthObjective(const ob::SpaceInformationPtr& si);
+            
             ob::OptimizationObjectivePtr getBalancedObjective(const ob::SpaceInformationPtr& si)
             {
                 auto lengthObj(std::make_shared<ob::PathLengthOptimizationObjective>(si));
@@ -104,6 +107,7 @@ namespace graceful_mpc{
             double margin_x_;
             double margin_y_;
             double margin_z_;
+            double maxVel_;
             double distance_gain_;
             double planning_time_;
             double obstacle_margin_;
