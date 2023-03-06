@@ -57,10 +57,17 @@ target_link_libraries(${PROJECT_NAME}_test
   ${OMPL_LIBRARIES}
 )
 
+add_executable(${PROJECT_NAME}_testsst
+  src/testSST.cpp)
+target_link_libraries(${PROJECT_NAME}_testsst
+  ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
+)
 add_executable(${PROJECT_NAME}_demo
 
   src/demoFrontEnd.cpp
 )
+
 target_link_libraries(${PROJECT_NAME}_demo
   ${catkin_LIBRARIES}
   ${OMPL_LIBRARIES}

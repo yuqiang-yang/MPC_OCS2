@@ -192,6 +192,7 @@ class KinematicSimulation {
   double infoRate_;
   bool isFirstObservationReceived_;
   bool isPureSimulation_;
+  double filter_coeff_;
   MpcInterface::state_vector_t initialState_;
 };
 }  // namespace graceful_mpc

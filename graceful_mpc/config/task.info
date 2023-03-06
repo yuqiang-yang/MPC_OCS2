@@ -138,7 +138,7 @@ ee_tracking_task
   ; state weight matrix
   Q
   {
-    scaling 1e1
+    scaling 4e1
 
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
@@ -166,7 +166,7 @@ ee_tracking_task
   ; final state weight matrix
   Q_final
   {
-    scaling 2e1
+    scaling 4e1
     (0,0) 1.0  ; x
     (1,1) 1.0  ; y
     (2,2) 1.0  ; z
@@ -183,7 +183,7 @@ stateCost
     scaling 1e+0
     (0,0)   0.0  
     (1,1)   0.0  
-    (2,2)   1.0  
+    (2,2)   0.0  
     (3,3)   0.0  
     (4,4)   0.0  
     (5,5)   0.0  
@@ -204,7 +204,7 @@ Q_final
     scaling 2e+0
     (0,0)   0.0  
     (1,1)   0.0  
-    (2,2)   1.0  
+    (2,2)   0.0  
     (3,3)   0.0  
     (4,4)   0.0  
     (5,5)   0.0  
@@ -227,23 +227,25 @@ fiesta_cost
     mu              1e-3
     delta           1e-3
     max_distance    3.0
+    weight          300
+    d_threshold     0.02
 }
 orientationCost
 {
   activate          0
-  weight            1
+  weight            10
 }
 
 manipulabilityCost
 {
   activate          1
-  weight            1
+  weight            3
 }
 
 ; joint limits
 limits
 {
-  enforce_limits     1
+  enforce_limits     0
   lower
   {
     (0,0)  -99999 ; base x    
@@ -300,9 +302,9 @@ frontEndOMPLRRTStar
 {
   margin_x                    0.5
   margin_y                    0.5
-  margin_z                    0.5
-  obstacle_margin             0.07
-  planning_time               0.4
+  margin_z                    0.3
+  obstacle_margin             0.13
+  planning_time               0.6
   collisionCheckerResolution  0.02
   distance_gain               5.0
 }

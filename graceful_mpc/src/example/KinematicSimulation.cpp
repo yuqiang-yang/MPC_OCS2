@@ -179,7 +179,7 @@ void KinematicSimulation::parseParameters() {
   maxLinearVelocity_ = pNh.param<double>("max_linear_velocity", 1.0);
   maxAngularVelocity_ = pNh.param<double>("max_angular_velocity", 1.0);
   controlLoopFrequency_ = pNh.param<double>("control_loop_frequency", 200);
-
+  filter_coeff_ = pNh.param<double>("filter_coeff", 0.1);
   infoRate_ = pNh.param<double>("info_rate", 3.0);
 
   isPureSimulation_ = pNh.param<bool>("isPureSimulation", true);
@@ -471,7 +471,11 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   auto currentPose = getEndEffectorPose();
   Eigen::Vector3d currentPosition = currentPose.getPosition().toImplementation();
   Eigen::Quaterniond currentRotation = currentPose.getRotation().getUnique().toImplementation();
-
+  Observation currentObservation;
+  {
+    boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
+    currentObservation = observation_;
+  }
 
   start << currentRotation.coeffs(),currentPosition;
   Eigen::Matrix<double,7,1> end;
@@ -511,7 +515,7 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
     marker.pose.orientation.x = 0;
     marker.pose.orientation.y = 0;
     marker.pose.orientation.z = 0;
-    marker.scale.x = 0.03;
+    marker.scale.x = 0.005;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
   for(int i = 0; i < desired_trajectory.rows(); i++){
@@ -540,11 +544,13 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   tmpPose.position.y = desired_trajectory(i,5);
   tmpPose.position.z = desired_trajectory(i,6);
   
-  poseVelocityTrajectory.posesVelocity[i].header.stamp = ros::Time(poseVelocityTrajectory.header.stamp.toSec() + time_traj(i));
+  poseVelocityTrajectory.posesVelocity[i].header.stamp = ros::Time(poseVelocityTrajectory.header.stamp.toSec() + time_traj(i)/2.0);
 
   poseVelocityTrajectory.posesVelocity[i].pose = tmpPose;
-  poseVelocityTrajectory.posesVelocity[i].velocity.force.x = std::atan2(velocity_trajectory(i,1),velocity_trajectory(i,0));
-  // tf2::toMsg(defaultLinear_, poseVelocityTrajectory.posesVelocity[i].velocity.force);     //linear part
+  if(i == 0){
+      poseVelocityTrajectory.posesVelocity[i].velocity.force.x = currentObservation.state()[2];
+  }
+  poseVelocityTrajectory.posesVelocity[i].velocity.force.x =(1-filter_coeff_) * poseVelocityTrajectory.posesVelocity[i-1].velocity.force.x + filter_coeff_* std::atan2(velocity_trajectory(i,1),velocity_trajectory(i,0));
   tf2::toMsg(defaultAngular_, poseVelocityTrajectory.posesVelocity[i].velocity.torque);  //angular part
   
   }

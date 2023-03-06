@@ -125,6 +125,12 @@ void GracefulMpcInterface::loadSettings(const std::string& taskFile) {
     // std::cerr << "fiesta_cost.delta:       \n" << fiestaConfig_->delta << std::endl;
     ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.max_distance", fiestaConfig_->maxDistance);
     // std::cerr << "fiesta_cost.max_distance:       \n" << fiestaConfig_->maxDistance << std::endl;
+    ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.weight", fiestaConfig_->weight);
+    std::cerr << "fiesta_cost.weight:       \n" << fiestaConfig_->weight << std::endl;
+
+    ocs2::loadData::loadCppDataType(taskFile, "fiesta_cost.d_threshold", fiestaConfig_->d_threshold);
+    std::cerr << "fiesta_cost.d_threshold:       \n" << fiestaConfig_->d_threshold << std::endl;
+
     std::shared_ptr<FiestaCost> fiestaCost(new FiestaCost(*fiestaConfig_));
     weightedCostFunctions.push_back(std::make_pair(1, fiestaCost));
   }

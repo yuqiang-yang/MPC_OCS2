@@ -124,3 +124,6 @@
 + If the limits are enforced, the mobile manipulator will shake. I think the reason is that the velocity or accelation are beyond the range so the optimazer will pull them back!.
 + There always exist a contraction bettween the hard constraints and the soft constraints of the obstacle avoidance.
 + The mix between Matrix3Xd and MatrixX3d stuck me.
+
+### 2023.3.1
++ The intial trajectory of TEB-Planner is from the PRM. It use PRM to connect the start and goal, generating N way point. The h-signature is used to check if a holologous path already exist in the database. At each iteration, it will reuse the PRM node by deleting some unuseful point( The edge should point from the start to the goal. And they must stay in the rectangle surrounded by the start and goal. The main problem is how to reuse the PRM map and the honologous path.

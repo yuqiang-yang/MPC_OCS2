@@ -43,6 +43,8 @@ struct FiestaCostConfig {
   double mu = 1;
   double delta = 1e-3;
   double maxDistance = 2.0;
+  double d_threshold; 
+  double weight;
   std::shared_ptr<const PointsOnRobot> pointsOnRobot;
   std::shared_ptr<fiesta::ESDFMap> esdfMap;
 };
@@ -62,6 +64,8 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
         esdfMap_(config.esdfMap),
         maxDistance_(config.maxDistance),
         mu_(config.mu),
+        weight_(config.weight),
+        d_threshold_(config.d_threshold),
         delta_(config.delta),
         pointsOnRobot_(config.pointsOnRobot),
         distances_(pointsOnRobot_->numOfPoints()),
@@ -75,6 +79,8 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
         maxDistance_(rhs.maxDistance_),
         mu_(rhs.mu_),
         delta_(rhs.delta_),
+        weight_(rhs.weight_),
+        d_threshold_(rhs.d_threshold_),        
         pointsOnRobot_(new PointsOnRobot(*rhs.pointsOnRobot_)),
         distances_(rhs.distances_),
         gradientsFiesta_(rhs.gradientsFiesta_),
@@ -107,6 +113,8 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
   scalar_t mu_;
   scalar_t delta_;
   scalar_t maxDistance_;
+  scalar_t d_threshold_;
+  scalar_t weight_;
 
   std::shared_ptr<const PointsOnRobot> pointsOnRobot_;
   std::shared_ptr<fiesta::ESDFMap> esdfMap_;
@@ -114,40 +122,41 @@ class FiestaCost : public ocs2::CostFunctionBase<Definitions::STATE_DIM_, Defini
   Eigen::Matrix<scalar_t, -1, 1> distances_;
   Eigen::MatrixXd gradientsFiesta_;
   Eigen::Matrix<scalar_t, -1, Definitions::STATE_DIM_> gradients_;
-
-  scalar_t getPenaltyFunctionValue(scalar_t h) const {
-    if (h > delta_) {
-      return -mu_ * log(h);
-    } else {
-      return mu_ * (-log(delta_) + scalar_t(0.5) * pow((h - 2.0 * delta_) / delta_, 2.0) - scalar_t(0.5));
-    };
-  };
-
-  scalar_t getPenaltyFunctionDerivative(scalar_t h) const {
-    if (h > delta_) {
-      return -mu_ / h;
-    } else {
-      return mu_ * ((h - 2.0 * delta_) / (delta_ * delta_));
-    };
-  };
-
-  scalar_t getPenaltyFunctionSecondDerivative(scalar_t h) const {
-    if (h > delta_) {
-      return mu_ / (h * h);
-    } else {
-      return mu_ / (delta_ * delta_) ;
-    };
-  };
+  
   // scalar_t getPenaltyFunctionValue(scalar_t h) const {
-  //   return 1.0/h/h;
+  //   if (h > delta_) {
+  //     return -mu_ * log(h);
+  //   } else {
+  //     return mu_ * (-log(delta_) + scalar_t(0.5) * pow((h - 2.0 * delta_) / delta_, 2.0) - scalar_t(0.5));
+  //   };
   // };
 
   // scalar_t getPenaltyFunctionDerivative(scalar_t h) const {
-  //   return -2.0/h/h/h;
+  //   if (h > delta_) {
+  //     return -mu_ / h;
+  //   } else {
+  //     return mu_ * ((h - 2.0 * delta_) / (delta_ * delta_));
+  //   };
   // };
 
   // scalar_t getPenaltyFunctionSecondDerivative(scalar_t h) const {
-  //   return 6.0/h/h/h/h;
+  //   if (h > delta_) {
+  //     return mu_ / (h * h);
+  //   } else {
+  //     return mu_ / (delta_ * delta_) ;
+  //   };
   // };
+  scalar_t getPenaltyFunctionValue(scalar_t h) const {
+    return h > d_threshold_ ? 0: weight_*(h-d_threshold_)*(h-d_threshold_);
+  };
+
+  scalar_t getPenaltyFunctionDerivative(scalar_t h) const {
+    return h > d_threshold_ ? 0: weight_*2*(h-d_threshold_);
+
+  };
+
+  scalar_t getPenaltyFunctionSecondDerivative(scalar_t h) const {
+    return h > d_threshold_ ? 0: weight_*2;
+  };
 };
 }  // namespace graceful_mpc

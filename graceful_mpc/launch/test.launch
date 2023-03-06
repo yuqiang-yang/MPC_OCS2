@@ -55,10 +55,11 @@
       
         <param name="world_frame" value="odom" />
         <param name="verbose" value="true" />
+        <param name="filter_coeff" value ="0.05"/>
 
         <param name="isPureSimulation" value ="$(arg isPureSimulation)"/>
         <param name="realsenseActivate" value ="$(arg realsenseActivate)"/>
-
+        
         <param name="ur_control_activate" value ="$(arg ur_control_activate)"/>
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->

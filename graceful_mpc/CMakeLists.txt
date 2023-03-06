@@ -102,7 +102,7 @@ target_link_libraries(${PROJECT_NAME}
 
 
 add_library(${PROJECT_NAME}_example
-        example/GracefulMpcInterface.cpp
+        src/example/GracefulMpcInterface.cpp
         )
 
 add_dependencies(${PROJECT_NAME}_example
@@ -118,8 +118,8 @@ target_link_libraries(${PROJECT_NAME}_example
         )
 
 add_executable(${PROJECT_NAME}_kinematic_simulation
-        example/kinematic_simulation_node.cpp
-        example/KinematicSimulation.cpp)
+        src/example/kinematic_simulation_node.cpp
+        src/example/KinematicSimulation.cpp)
 
 add_dependencies(${PROJECT_NAME}_kinematic_simulation
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
