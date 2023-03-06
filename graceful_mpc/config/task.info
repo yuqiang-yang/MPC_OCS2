@@ -242,6 +242,11 @@ manipulabilityCost
   weight            3
 }
 
+CurveCost
+{
+  activate           0
+  weight             0.1
+}
 ; joint limits
 limits
 {

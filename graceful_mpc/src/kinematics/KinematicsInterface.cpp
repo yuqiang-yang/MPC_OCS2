@@ -124,35 +124,8 @@ Eigen::Matrix<SCALAR_T, 3, -1> KinematicsInterface<SCALAR_T>::computeState2Multi
 
 template <typename SCALAR_T>
 SCALAR_T KinematicsInterface<SCALAR_T>::getEEOrientationAtan(const Eigen::Matrix<SCALAR_T, -1, 1>& state)const{
-  
-  // Eigen::Matrix<SCALAR_T,13,1> transformState;
-  // Eigen::AngleAxis<SCALAR_T> ax(state.template head<Definitions::BASE_STATE_DIM_>()[2],Eigen::Matrix<SCALAR_T,3,1>::UnitZ());
-  // Eigen::Quaternion<SCALAR_T> quat(ax); 
-  // transformState[0] = quat.x();
-  // transformState[1] = quat.y();
-  // transformState[2] = quat.z();
-  // transformState[3] = quat.w();
-  // transformState.template head<6>().template tail<2>() = state.template head<2>();
-  // transformState[6] = (SCALAR_T)0;
-  // transformState.template tail<Definitions::ARM_STATE_DIM_>() = state.template head<Definitions::POSITION_STATE_DIM_>().template tail<Definitions::ARM_STATE_DIM_>();
 
-  // Eigen::Quaternion<SCALAR_T> baseOrientation;
-  // baseOrientation.coeffs() = transformState.template head<7>().template head<4>();
-  // const Eigen::Matrix<SCALAR_T, 3, 1>& basePosition = transformState.template head<7>().template tail<3>();
-  // const Eigen::Matrix<SCALAR_T, 6, 1>& armState = transformState.template tail<6>();
-
-  // // homogeneous transform world -> base
-  // Eigen::Matrix<SCALAR_T, 4, 4> homWorld2Base = Eigen::Matrix<SCALAR_T, 4, 4>::Identity();
-  // homWorld2Base.template topLeftCorner<3, 3>() = baseOrientation.toRotationMatrix();
-  // homWorld2Base.template topRightCorner<3, 1>() = basePosition;
-
-  // auto armBaseTransform = homWorld2Base * config_.transformBase_X_ArmMount.template cast<SCALAR_T>();
-  // Eigen::Matrix<SCALAR_T, 4, 4> homWorld2End;
-  // computeState2EndeffectorTransform(homWorld2End,state);
-
-
-  // return CppAD::atan((homWorld2End(1,3) - armBaseTransform(1,3))/(homWorld2End(0,3) - armBaseTransform(0,3)));
-  const Eigen::Matrix<SCALAR_T, 4, 4> armBaseToWrist2Transform = computeArmMountToToolMountTransform(state.head<Definitions::POSITION_STATE_DIM_>().tail<Definitions::ARM_STATE_DIM_>());
+  const Eigen::Matrix<SCALAR_T, 4, 4> armBaseToWrist2Transform = computeArmMountToToolMountTransform(state.template head<Definitions::POSITION_STATE_DIM_>().template tail<Definitions::ARM_STATE_DIM_>());
   return CppAD::atan(armBaseToWrist2Transform(0,3)/-armBaseToWrist2Transform(1,3));
 }
 template <typename SCALAR_T>

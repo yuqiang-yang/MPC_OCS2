@@ -81,6 +81,7 @@ add_library(${PROJECT_NAME}
   src/costs/ManipulabilityCost.cpp
   src/costs/FiestaCost.cpp
   src/costs/StateCost.cpp
+  src/costs/CurveCost.cpp
 
   src/OperatingPoint.cpp
   src/kinematics/KinematicsInterface.cpp

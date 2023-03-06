@@ -33,6 +33,8 @@
 #include <graceful_mpc/costs/FrontOrientationCost.h>
 #include <graceful_mpc/costs/ManipulabilityCost.h>
 #include <graceful_mpc/costs/StateCost.h>
+#include <graceful_mpc/costs/CurveCost.h>
+
 #include <graceful_mpc/kinematics/ur5/UR5Kinematics.hpp>
 
 #include <cmath>
@@ -175,6 +177,15 @@ void GracefulMpcInterface::loadSettings(const std::string& taskFile) {
     weightedCostFunctions.push_back(std::make_pair(1,stateCost));
   } 
 
+  bool useCurveCost = false;
+  ocs2::loadData::loadCppDataType(taskFile, "CurveCost.activate", useCurveCost);
+  if(useCurveCost){
+    CurveCostConfig config;
+    ocs2::loadData::loadCppDataType(taskFile, "CurveCost.weight", config.weight);
+
+    std::shared_ptr<CurveCost> curveCost(new CurveCost(config));
+    weightedCostFunctions.push_back(std::make_pair(1,curveCost));
+  } 
   costPtr_.reset(new cost_linear_combination_t(weightedCostFunctions));
 
   Eigen::VectorXd lowerLimits((int)Definitions::STATE_DIM_);
