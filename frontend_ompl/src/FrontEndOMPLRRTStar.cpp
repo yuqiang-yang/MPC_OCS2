@@ -46,6 +46,7 @@ bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eige
 
 
     ob::ScopedState<> plan_start(space_);
+    
     plan_start->as<ob::RealVectorStateSpace::StateType>()->values[0] = start.coeff(4);
     plan_start->as<ob::RealVectorStateSpace::StateType>()->values[1] = start.coeff(5);
     plan_start->as<ob::RealVectorStateSpace::StateType>()->values[2] = start.coeff(6);

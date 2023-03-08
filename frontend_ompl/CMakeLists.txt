@@ -12,6 +12,8 @@ find_package(ompl REQUIRED)
 
 
 include_directories("/home/vision/yq_ws/my_mpc/src/graceful_mpc/include")
+include_directories("/home/vision/yq_ws/my_mpc/src/ocs2/ocs2_thirdparty/include/")
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -23,7 +25,7 @@ include_directories("/home/vision/yq_ws/my_mpc/src/graceful_mpc/include")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
    INCLUDE_DIRS include ${OMPL_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS}
-   LIBRARIES ${PROJECT_NAME}
+   LIBRARIES ${PROJECT_NAME}_joint
    CATKIN_DEPENDS
       roscpp
       roslib
@@ -48,7 +50,13 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OMPL_LIBRARIES}
 )
-
+add_library(${PROJECT_NAME}_joint
+  src/JointSpaceRRT.cpp
+  )
+target_link_libraries(${PROJECT_NAME}_joint
+  ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
+)
 add_executable(${PROJECT_NAME}_test
   src/testFrontEnd.cpp
   src/FrontEndOMPLRRTStar.cpp)
@@ -63,8 +71,13 @@ target_link_libraries(${PROJECT_NAME}_testsst
   ${catkin_LIBRARIES}
   ${OMPL_LIBRARIES}
 )
+add_executable(${PROJECT_NAME}_testdubins
+  src/testDubins.cpp)
+target_link_libraries(${PROJECT_NAME}_testdubins
+  ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
+)
 add_executable(${PROJECT_NAME}_demo
-
   src/demoFrontEnd.cpp
 )
 

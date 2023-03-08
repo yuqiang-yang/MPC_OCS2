@@ -1,170 +1,82 @@
-#include <FrontEndOMPLRRTStar.hpp>
+#include <JointSpaceRRT.hpp>
 using namespace graceful_mpc;
 
 
-FrontEndOMPLRRTStar::FrontEndOMPLRRTStar(FrontEndOMPLRRTStarConfig& config)
-:config_(config),esdf_map_(config.esdf_map),margin_x_(config.margin_x),margin_y_(config.margin_y),margin_z_(config.margin_z),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin),distance_gain_(config.distance_gain)
+JointSpaceRRT::JointSpaceRRT(JointSpaceRRTConfig& config)
+:config_(config),esdf_map_(config.esdf_map),planning_time_(config.planning_time),obstacle_margin_(config.obstacle_margin),distance_gain_(config.distance_gain)
 {
-    space_.reset(new ob::RealVectorStateSpace(3));
-    space_->as<ob::RealVectorStateSpace>()->setBounds(0.0,1.0); 
-    si_.reset(new ob::SpaceInformation(space_));
-    si_->setStateValidityChecker(ob::StateValidityCheckerPtr(new ValidityChecker(si_,esdf_map_,obstacle_margin_)));
+    max_distance_ = config.max_distance;   
+}
+
+bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eigen::Matrix<double,9,1>& goalVector,Eigen::Matrix<double,Eigen::Dynamic,9>& desired_trajectory)
+{
+    // Define the state space
+    space_ = std::make_shared<MobileManipulatorStateSpace>();
+    space_->setBounds(-999.0, 999.0, -999.0, 999.0, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI,
+    -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI);
+    // Define the space information
+    si_ = std::make_shared<base::SpaceInformation>(space_);
+    stateValidateCheckerConfig config;
+    config.esdfMap = config_.esdf_map;
+    config.pointsOnRobot = config_.pointsOnRobot;
+    config.max_distance = config_.max_distance;
+    config.obstacle_margin = config_.obstacle_margin;
+    si_->setStateValidityChecker(std::make_shared<MobileManipulatorStateValidityChecker>(si_,config));
     si_->setup();
-    pdef_.reset(new ob::ProblemDefinition(si_));
-    // pdef_->setOptimizationObjective(getPathLengthObjective(si_));
-    pdef_->setOptimizationObjective(getBalancedObjective(si_));
 
-    // optimizingPlanner_.reset(new og::RRTstar(si_));
-    // optimizingPlanner_.reset(new og::RRTConnect(si_));
-    optimizingPlanner_.reset(new og::RRT(si_));
+    // Define the problem definition
+    auto pdef = std::make_shared<geometric::SimpleSetup>(si_);
 
-    optimizingPlanner_->setRange(config.edgeLength);
-    // optimizingPlanner_->printSettings(std::cout);
+    // Define the start state
+    ompl::base::ScopedState<MobileManipulatorStateSpace> start = base::ScopedState<MobileManipulatorStateSpace>(si_);
+    start->as<base::DubinsStateSpace::StateType>(0)->setXY(startVector[0], startVector[1]);
+    start->as<base::DubinsStateSpace::StateType>(0)->setYaw(startVector[2]);
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[0] = startVector[3];
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[1] = startVector[4];
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[2] = startVector[5];
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[3] = startVector[6];
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[4] = startVector[7];
+    start->as<base::RealVectorStateSpace::StateType>(1)->values[5] = startVector[8];
+    pdef->setStartState(start);
+    // Define the goal state
+    ompl::base::ScopedState<MobileManipulatorStateSpace> goal = base::ScopedState<MobileManipulatorStateSpace>(si_);
+    goal->as<base::DubinsStateSpace::StateType>(0)->setXY(goalVector[0], goalVector[1]);
+    goal->as<base::DubinsStateSpace::StateType>(0)->setYaw(goalVector[2]);
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[0] = goalVector[3];
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[1] = goalVector[4];
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[2] = goalVector[5];
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[3] = goalVector[6];
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[4] = goalVector[7];
+    goal->as<base::RealVectorStateSpace::StateType>(1)->values[5] = goalVector[8];
+    pdef->setGoalState(goal);
 
-}
-//the head 4 value is quaternion. the tail 3 value is position
-bool FrontEndOMPLRRTStar::Plan(const Eigen::Matrix<double,7,1>& start,const Eigen::Matrix<double,7,1>& goal,Eigen::Matrix<double,Eigen::Dynamic,7>& desired_trajectory)
-{
-    ob::ScopedState<> plan_start(space_);
-    ob::PlannerData pData(si_);
-    ob::RealVectorBounds bound(3);
-    // double min_x = start.coeff(4) < goal.coeff(4)?start.coeff(4):goal.coeff(4);
-    // double max_x = start.coeff(4) > goal.coeff(4)?start.coeff(4):goal.coeff(4);
-    // bound.setLow(0,min_x-config_.margin_x);
-    // bound.setHigh(0,max_x+config_.margin_x);
-
-    // double min_y = start.coeff(5) < goal.coeff(5)?start.coeff(5):goal.coeff(5);
-    // double max_y = start.coeff(5) > goal.coeff(5)?start.coeff(5):goal.coeff(5);
-    // bound.setLow(1,min_y-config_.margin_y);
-    // bound.setHigh(1,max_y+config_.margin_y);
-
-    // double min_z = start.coeff(6) < goal.coeff(6)?start.coeff(6):goal.coeff(6);
-    // double max_z = start.coeff(6) > goal.coeff(6)?start.coeff(6):goal.coeff(6);
-    // bound.setLow(2,min_z-config_.margin_z);
-    // bound.setHigh(2,max_z+config_.margin_z);
-    bound.setLow(0,-2.5);
-    bound.setHigh(0,3.5);
-    bound.setLow(1,-2.5);
-    bound.setHigh(1,2.5);    
-    bound.setLow(2,-0.5);
-    bound.setHigh(2,2);
-
-    space_->as<ob::RealVectorStateSpace>()->setBounds(bound); 
-
-    plan_start->as<ob::RealVectorStateSpace::StateType>()->values[0] = start.coeff(4);
-    plan_start->as<ob::RealVectorStateSpace::StateType>()->values[1] = start.coeff(5);
-    plan_start->as<ob::RealVectorStateSpace::StateType>()->values[2] = start.coeff(6);
-    ob::ScopedState<> plan_end(space_);
-    plan_end->as<ob::RealVectorStateSpace::StateType>()->values[0] = goal.coeff(4);
-    plan_end->as<ob::RealVectorStateSpace::StateType>()->values[1] = goal.coeff(5);
-    plan_end->as<ob::RealVectorStateSpace::StateType>()->values[2] = goal.coeff(6);
-
-    pdef_->setStartAndGoalStates(plan_start, plan_end);
-
-    // std::cerr << "plan_start " << start.transpose() <<std::endl<< "plan end" << goal.transpose() << std::endl;
-    // std::cerr << "planning_time_" << planning_time_ << std::endl;
-
+    // Define the planner
+    auto planner = std::make_shared<geometric::RRT>(si_);
+    planner->setIntermediateStates(true);
+    pdef->setPlanner(planner);
     
-    if(!si_->getStateValidityChecker()->isValid(plan_end->as<ob::RealVectorStateSpace::StateType>()))
+    // Solve the problem
+    pdef->solve(planning_time_);
+
+    // Get the solution path
+    auto path = pdef->getSolutionPath();
+    // Print the solution path
+    std::cout << "Solution path: ";
+    desired_trajectory.resize(path.getStateCount(),9);
+    path.print(std::cout);
+    for (std::size_t i = 0; i < path.getStateCount(); ++i)
     {
-        std::cerr << "invalid goal state!!!!!!!"  << si_->getStateValidityChecker()->clearance(plan_end->as<ob::RealVectorStateSpace::StateType>())<< std::endl;
-        return false;
+        const MobileManipulatorStateSpace::StateType* state = static_cast<const MobileManipulatorStateSpace::StateType *>(path.getState(i));
+        auto car_state = state->as<base::ReedsSheppStateSpace::StateType>(0);
+        auto arm_state = state->as<base::RealVectorStateSpace::StateType>(1);
+
+
+        desired_trajectory.row(i) << car_state->getX(),car_state->getY(), car_state->getYaw(), arm_state->values[0], arm_state->values[1],arm_state->values[2], arm_state->values[3], arm_state->values[4],arm_state->values[5];
     }
-    else
-    {
-        std::cerr << "valid goal with clearance" << si_->getStateValidityChecker()->clearance(plan_end->as<ob::RealVectorStateSpace::StateType>()) << std::endl;
-    }
-
-    timing::Timer collision_checker("plan");
-    optimizingPlanner_->setProblemDefinition(pdef_);
-    optimizingPlanner_->setup();
-    ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
-    collision_checker.Stop();
-    timing::Timing::Print(std::cout);
-
-    int cnt = 0;
-    while(solved != ob::PlannerStatus::EXACT_SOLUTION) //solved means the OMPL find an exact result
-    {   
-        if(cnt == 5) return false;
-        cnt++;
-        optimizingPlanner_->getPlannerData(pData);
-        // std::cerr << "Cannot find solution: " << "with vertices " << pData.numVertices() << "   iterations:" << optimizingPlanner_->numIterations() << std::endl;
-        ob::PlannerStatus solved = optimizingPlanner_->ob::Planner::solve(planning_time_);
-    }
-        // std::cerr << "find solution successfully : " << "with vertices " << pData.numVertices() << "   iterations:" << optimizingPlanner_->numIterations() << std::endl;
-
-    // ob::exactSolnPlannerTerminationCondition
-    //position path is solve by RRT*
-    std::vector<ob::State *> states = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStates();
-    size_t rows = std::static_pointer_cast<og::PathGeometric>(pdef_->getSolutionPath())->getStateCount();
-
-    std::size_t count = 0;
-    desired_trajectory.resize(rows,7);
-
-    for(ob::State* state: states){
-    const ob::RealVectorStateSpace::StateType* state3D =
-        state->as<ob::RealVectorStateSpace::StateType>();
-        desired_trajectory(count,4) = state3D->values[0]; 
-        desired_trajectory(count,5) = state3D->values[1]; 
-        desired_trajectory(count,6) = state3D->values[2]; 
-
-        count++;
-    }
-
-    //rotation path is solved by interpolation
-
-    //the rotation state in this project is (x y z w)
-    Eigen::Quaterniond start_quat(start.coeff(3),start.coeff(0),start.coeff(1),start.coeff(2));  //w x y z
-    Eigen::Quaterniond goal_quat(goal.coeff(3),goal.coeff(0),goal.coeff(1),goal.coeff(2));  //w x y z
-    std::vector<double> interpolate_t(count);
-    for(int i = 0;i < count;i++){
-        interpolate_t[i] = 1.0/(count-1) * i;
-        Eigen::Quaterniond tmp = start_quat.slerp(interpolate_t[i],goal_quat);
-        desired_trajectory(i,0) =  tmp.coeffs()(0);
-        desired_trajectory(i,1) =  tmp.coeffs()(1);
-        desired_trajectory(i,2) =  tmp.coeffs()(2);
-        desired_trajectory(i,3) =  tmp.coeffs()(3);
-    }
-    return solved;
-
+    return true;
+    
 }
-ob::OptimizationObjectivePtr FrontEndOMPLRRTStar::getPathLengthObjective(const ob::SpaceInformationPtr& si)
+ob::OptimizationObjectivePtr JointSpaceRRT::getPathLengthObjective(const ob::SpaceInformationPtr& si)
 {
     return ob::OptimizationObjectivePtr(new ob::PathLengthOptimizationObjective(si));
 }
-
-
-bool ValidityChecker::isValid(const ob::State* state) const
-{
-    // return true;
-    return clearance(state) > obstacle_margin_;
-}
-
-double ValidityChecker::clearance(const ob::State* state) const{
-    const ob::RealVectorStateSpace::StateType* state3D =
-    state->as<ob::RealVectorStateSpace::StateType>();
-  
-    Eigen::Vector3d position;
-    position[0] = state3D->values[0];
-    position[1] = state3D->values[1];
-    position[2] = state3D->values[2];
-
-    Eigen::Vector3d gradientFiesta ;
-    gradientFiesta << 0.0, 0.0, 0.0;
-    double distance = esdf_map_->GetDistWithGradTrilinear(position,gradientFiesta);
-    if (distance != -1) {
-        // std::cerr << "the query point distance is " << distance << std::endl;
-        // std::cerr << "the query point gradient is " << gradientVoxblox.transpose() << std::endl;
-        return distance;
-    }
-    else
-    {
-        std::cerr << "esdf_map misses the point"  <<position.transpose() << std::endl;
-        return 3.0;
-    }
-
-}
-
-
-
-

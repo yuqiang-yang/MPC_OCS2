@@ -55,9 +55,11 @@
 #include <kindr/Core>
 
 #include "ocs2_core/Dimensions.h"
-#include "FrontEndOMPLRRTStar.hpp"
+// #include "FrontEndOMPLRRTStar.hpp"
 #include "graceful_mpc/PoseVelocityTrajectory.h"
 #include "timing.h"
+#include "JointSpaceRRT.hpp"
+
 
 namespace graceful_mpc {
 
@@ -78,7 +80,7 @@ class KinematicSimulation {
   std::unique_ptr<graceful_mpc::GracefulMpcInterface> ocs2Interface_;
   std::shared_ptr<MpcInterface> mpcInterface_;
   std::shared_ptr<PointsOnRobot> pointsOnRobot_;
-  std::shared_ptr<graceful_mpc::FrontEndOMPLRRTStar> frontEndOMPLRRTStar_;
+  std::shared_ptr<graceful_mpc::JointSpaceRRT> jointSpaceRRT_;
   // TODO: uncomment for admittance control on hardware:
   // AdmittanceReferenceModule admittanceReferenceModule;
 
@@ -111,7 +113,7 @@ class KinematicSimulation {
 
   boost::shared_mutex costDesiredTrajectoryMutex_;
   ocs2::CostDesiredTrajectories costDesiredTrajectories_;
-  FrontEndOMPLRRTStarConfig frontEndOMPLRRTStarConfig_;
+  JointSpaceRRTConfig jointSpaceRRTConfig_;
 
   ros::Time latestObservationTime_;
 

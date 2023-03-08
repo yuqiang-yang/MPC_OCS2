@@ -1,18 +1,15 @@
-#include <iostream>
-#include <ompl/base/StateSpace.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/spaces/SE2StateSpace.h>
-#include <ompl/control/SpaceInformation.h>
-#include <ompl/control/spaces/RealVectorControlSpace.h>
-#include <ompl/control/SimpleSetup.h>
-#include <ompl/control/planners/rrt/RRT.h>
-#include <ompl/control/planners/sst/SST.h>
-#include <ompl/control/StatePropagator.h>
-#include <ompl/control/ControlSpace.h>
+#include <ompl/base/StateSpace.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
+#include <ompl/geometric/SimpleSetup.h>
 #include <fstream>
+#include <ompl/base/spaces/DubinsStateSpace.h>
 
-namespace ob = ompl::base;
-namespace oc = ompl::control;
+
+
 using namespace ompl;
+
 // Define the compound state space
 class MobileManipulatorStateSpace : public base::CompoundStateSpace
 {
@@ -24,7 +21,7 @@ public:
     };
     MobileManipulatorStateSpace() : base::CompoundStateSpace()
     {
-        addSubspace(std::make_shared<base::SE2StateSpace>(), 1.0);
+        addSubspace(std::make_shared<base::DubinsStateSpace>(), 1.0);
         addSubspace(std::make_shared<base::RealVectorStateSpace>(6), 1.0);
     }
 
@@ -35,7 +32,7 @@ public:
                    double j4_min, double j4_max, double j5_min, double j5_max,
                    double j6_min, double j6_max)
     {
-        auto se2_space = std::static_pointer_cast<base::SE2StateSpace>(getSubspace(0));
+        auto se2_space = std::static_pointer_cast<base::DubinsStateSpace>(getSubspace(0));
         base::RealVectorBounds base_bound(2);
         base::RealVectorBounds arm_bound(6);
         base_bound.setLow(-100);
@@ -44,37 +41,6 @@ public:
         arm_bound.setHigh(6.28);
         se2_space->setBounds(base_bound);
         auto real_vector_space = std::static_pointer_cast<base::RealVectorStateSpace>(getSubspace(1));
-        real_vector_space->setBounds(arm_bound);
-    }
-};
-
-// Define the control space
-class MobileManipulatorControlSpace : public control::CompoundControlSpace
-{
-public:
-    class ControlType : public control::CompoundControlSpace::ControlType
-    {
-    public:   
-        ControlType() = default;
-    };
-    MobileManipulatorControlSpace(const base::StateSpacePtr &stateSpace) : control::CompoundControlSpace(stateSpace)
-    {
-        addSubspace(std::make_shared<control::RealVectorControlSpace>(stateSpace,2));
-        addSubspace(std::make_shared<control::RealVectorControlSpace>(stateSpace,6));
-    }
-
-    // Set the bounds for the state space
-    void setBounds()
-    {
-        auto se2_space = std::static_pointer_cast<control::RealVectorControlSpace>(getSubspace(0));
-        base::RealVectorBounds base_bound(2);
-        base::RealVectorBounds arm_bound(6);
-        base_bound.setLow(-2);
-        base_bound.setHigh(2);
-        arm_bound.setLow(-1);
-        arm_bound.setHigh(1);
-        se2_space->setBounds(base_bound);
-        auto real_vector_space = std::static_pointer_cast<control::RealVectorControlSpace>(getSubspace(1));
         real_vector_space->setBounds(arm_bound);
     }
 };
@@ -91,7 +57,7 @@ public:
     bool isValid(const base::State* state) const override
     {
         // Extract the SE2 component of the state
-        auto se2_state = state->as<base::CompoundState>()->as<base::SE2StateSpace::StateType>(0);
+        auto se2_state = state->as<base::CompoundState>()->as<base::DubinsStateSpace::StateType>(0);
         double x = se2_state->getX();
         double y = se2_state->getY();
         double yaw = se2_state->getYaw();
@@ -117,43 +83,8 @@ public:
     // If the state is valid, return true
     return true;
 }};
-class MobileManipulatorPropagator : public oc::StatePropagator
-{
-public:
-    MobileManipulatorPropagator(const oc::SpaceInformationPtr& si) : oc::StatePropagator(si)
-    {
-        si_ = si;
-    }
 
-    void propagate(const ob::State* state, const oc::Control* control, const double duration, ob::State* result) const override
-    {
-        auto carState = state->as<ob::CompoundState>()->as<ob::SE2StateSpace::StateType>(0);
-        auto manipulatorState = state->as<ob::CompoundState>()->as<ob::RealVectorStateSpace::StateType>(1);
-    
-        const auto carControl = control->as<oc::CompoundControl>()->as<oc::RealVectorControlSpace::ControlType>(0)->values;
-        const auto manipulatorControl = control->as<oc::CompoundControl>()->as<oc::RealVectorControlSpace::ControlType>(1)->values;
-
-        auto carResult = result->as<ob::CompoundState>()->as<ob::SE2StateSpace::StateType>(0);
-        auto manipulatorResult = result->as<ob::CompoundState>()->as<ob::RealVectorStateSpace::StateType>(1);
-
-        // Propagate the car state
-        carResult->setX(carState->getX() + duration * carControl[0] * cos(carState->getYaw()));
-        carResult->setY(carState->getY() + duration * carControl[0] * sin(carState->getYaw()));
-
-        carResult->setYaw(carState->getYaw() + duration * carControl[1]);
-        // Propagate the remaining DOFs using Euler integration
-        for (unsigned int i = 1; i < 6; ++i)
-        {
-            manipulatorResult->values[i] = manipulatorState->values[i] + duration * manipulatorControl[i-1];
-        }
-        si_->getStateSpace()->enforceBounds(result);
-
-}
-private:
-    oc::SpaceInformationPtr si_;
-};
-
-void writePathToFile(const std::string& filename, const ompl::control::PathControl& path)
+void writePathToFile(const std::string& filename, const ompl::geometric::PathGeometric& path)
 {
     std::ofstream outFile(filename);
     if (outFile.is_open())
@@ -161,7 +92,7 @@ void writePathToFile(const std::string& filename, const ompl::control::PathContr
         for (std::size_t i = 0; i < path.getStateCount(); ++i)
         {
             const MobileManipulatorStateSpace::StateType* state = static_cast<const MobileManipulatorStateSpace::StateType *>(path.getState(i));
-            auto car_state = state->as<base::SE2StateSpace::StateType>(0);
+            auto car_state = state->as<base::DubinsStateSpace::StateType>(0);
             auto arm_state = state->as<base::RealVectorStateSpace::StateType>(1);
 
 
@@ -180,25 +111,20 @@ int main()
 {
     // Define the state space
     auto space = std::make_shared<MobileManipulatorStateSpace>();
-    auto spaceC = std::make_shared<MobileManipulatorControlSpace>(space);
-    space->setBounds(-9999.0, 9999.0, -9999.0, 9999.0, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI,
+    space->setBounds(-999.0, 999.0, -999.0, 999.0, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI,
     -M_PI, M_PI, -M_PI, M_PI, -M_PI, M_PI);
-    spaceC->setBounds();
     // Define the space information
-    auto si = std::make_shared<control::SpaceInformation>(space,spaceC);
-
+    auto si = std::make_shared<base::SpaceInformation>(space);
     si->setStateValidityChecker(std::make_shared<MobileManipulatorStateValidityChecker>(si));
-    si->setStatePropagator(std::make_shared<MobileManipulatorPropagator>(si));
-    
     si->setup();
 
     // Define the problem definition
-    auto pdef = std::make_shared<control::SimpleSetup>(si);
+    auto pdef = std::make_shared<geometric::SimpleSetup>(si);
 
     // Define the start state
     ompl::base::ScopedState<MobileManipulatorStateSpace> start = base::ScopedState<MobileManipulatorStateSpace>(si);
-    start->as<base::SE2StateSpace::StateType>(0)->setXY(0.0, 0.0);
-    start->as<base::SE2StateSpace::StateType>(0)->setYaw(0.0);
+    start->as<base::DubinsStateSpace::StateType>(0)->setXY(0.0, 0.0);
+    start->as<base::DubinsStateSpace::StateType>(0)->setYaw(0.0);
     start->as<base::RealVectorStateSpace::StateType>(1)->values[0] = 0.0;
     start->as<base::RealVectorStateSpace::StateType>(1)->values[1] = 0.0;
     start->as<base::RealVectorStateSpace::StateType>(1)->values[2] = 0.0;
@@ -208,8 +134,8 @@ int main()
     pdef->setStartState(start);
     // Define the goal state
     ompl::base::ScopedState<MobileManipulatorStateSpace> goal = base::ScopedState<MobileManipulatorStateSpace>(si);
-    goal->as<base::SE2StateSpace::StateType>(0)->setXY(1.0, 1.0);
-    goal->as<base::SE2StateSpace::StateType>(0)->setYaw(M_PI / 2.0);
+    goal->as<base::DubinsStateSpace::StateType>(0)->setXY(1.0, 1.0);
+    goal->as<base::DubinsStateSpace::StateType>(0)->setYaw(M_PI / 2.0);
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[0] = 1.0;
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[1] = 1.0;
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[2] = 1.0;
@@ -219,24 +145,18 @@ int main()
     pdef->setGoalState(goal);
 
     // Define the planner
-    auto planner = std::make_shared<control::SST>(si);
+    auto planner = std::make_shared<geometric::RRT>(si);
+    planner->setIntermediateStates(true);
     pdef->setPlanner(planner);
 
     // Solve the problem
-    auto result = pdef->solve(60);
-    if(result)
-    {
-        // Get the solution path
-        auto path = pdef->getSolutionPath();
-        
-        // Print the solution path
-        std::cout << "Solution path: ";
-        path.print(std::cout);
-        writePathToFile("path.txt",path);
-    }
-    else
-    {
-        std::cout << "no solution found" << std::endl;
-    }
+    pdef->solve();
+
+    // Get the solution path
+    auto path = pdef->getSolutionPath();
+    // Print the solution path
+    std::cout << "Solution path: ";
+    path.print(std::cout);
+    writePathToFile("path.txt",path);
     return 0;
 }

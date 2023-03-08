@@ -38,8 +38,8 @@ bool KinematicSimulation::run() {
   if(config.fiestaConfig) //not nullptr
   {
     config.fiestaConfig->esdfMap.reset(esdf.esdf_map_); //set the esdf map
-    frontEndOMPLRRTStarConfig_.esdf_map.reset(esdf.esdf_map_);  //set the FrontEnd
-    frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_));
+    jointSpaceRRTConfig_.esdf_map.reset(esdf.esdf_map_);  //set the 
+    jointSpaceRRT_.reset(new JointSpaceRRT(jointSpaceRRTConfig_));
   }
   //set the ovservation to the tf 
   observation_.time() = ros::Time::now().toSec();
@@ -200,18 +200,14 @@ void KinematicSimulation::parseParameters() {
 
   std::string packagePath = ros::package::getPath("graceful_mpc");
 
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.planning_time", frontEndOMPLRRTStarConfig_.planning_time);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_x", frontEndOMPLRRTStarConfig_.margin_x);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_y", frontEndOMPLRRTStarConfig_.margin_y);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.margin_z", frontEndOMPLRRTStarConfig_.margin_z);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.obstacle_margin", frontEndOMPLRRTStarConfig_.obstacle_margin);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.collisionCheckerResolution", frontEndOMPLRRTStarConfig_.collisionCheckerResolution);
-  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "frontEndOMPLRRTStar.distance_gain", frontEndOMPLRRTStarConfig_.distance_gain);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "jointSpaceRRT.planning_time", jointSpaceRRTConfig_.planning_time);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "jointSpaceRRT.obstacle_margin", jointSpaceRRTConfig_.obstacle_margin);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "jointSpaceRRT.collisionCheckerResolution", jointSpaceRRTConfig_.collisionCheckerResolution);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "jointSpaceRRT.distance_gain", jointSpaceRRTConfig_.distance_gain);
+  ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "jointSpaceRRT.max_distance", jointSpaceRRTConfig_.max_distance);
 
   ocs2::loadData::loadEigenMatrix(packagePath + "/config/" +mpcTaskFile_, "initialState", initialState_);
   ocs2::loadData::loadCppDataType(packagePath + "/config/" +mpcTaskFile_, "mpcTimeHorizon.timehorizon", horizon_);
-  
-  frontEndOMPLRRTStarConfig_.maxVel = maxLinearVelocity_;
   std::cerr << "horizon_" << horizon_ <<std::endl;
   
 }
@@ -466,31 +462,25 @@ void KinematicSimulation::initializeCostDesiredTrajectory() {
 
 void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStampedConstPtr& msgPtr) {
 
-  //add by yq(frontEnd)
-  Eigen::Matrix<double,7,1> start;
+  Eigen::Matrix<double,9,1> start;
   auto currentPose = getEndEffectorPose();
-  Eigen::Vector3d currentPosition = currentPose.getPosition().toImplementation();
-  Eigen::Quaterniond currentRotation = currentPose.getRotation().getUnique().toImplementation();
   Observation currentObservation;
   {
     boost::shared_lock<boost::shared_mutex> lockGuard(observationMutex_);
     currentObservation = observation_;
   }
 
-  start << currentRotation.coeffs(),currentPosition;
-  Eigen::Matrix<double,7,1> end;
-  end << msgPtr->pose.orientation.x,msgPtr->pose.orientation.y,msgPtr->pose.orientation.z,msgPtr->pose.orientation.w,
-  msgPtr->pose.position.x,msgPtr->pose.position.y,msgPtr->pose.position.z;
-  Eigen::Matrix<double,Eigen::Dynamic,7> desired_trajectory; 
-  Eigen::Matrix<double,Eigen::Dynamic,3> velocity_trajectory; 
+  start << currentObservation.state().head<9>();
+  Eigen::Matrix<double,9,1> end;
+  end << msgPtr->pose.position.x,msgPtr->pose.position.y,0,currentObservation.state().head<9>().tail<6>();
+  Eigen::Matrix<double,Eigen::Dynamic,9> desired_trajectory; 
 
   // std::cerr << "(debugging start)" <<  start.transpose() << std::endl;
   // std::cerr << "(debugging end)" <<  end.transpose() << std::endl;
-  frontEndOMPLRRTStar_.reset(new FrontEndOMPLRRTStar(frontEndOMPLRRTStarConfig_)); //debugging
-  Eigen::VectorXd time_traj;
+  jointSpaceRRT_.reset(new JointSpaceRRT(jointSpaceRRTConfig_)); 
 
   try{
-    bool is_success = frontEndOMPLRRTStar_->Plan(start,end,desired_trajectory,time_traj,velocity_trajectory);
+    bool is_success = jointSpaceRRT_->Plan(start,end,desired_trajectory);
     // std::cerr << "desired_trajectory" << std::endl<<desired_trajectory<< std::endl;
     if(!is_success)
     {
@@ -521,40 +511,41 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   for(int i = 0; i < desired_trajectory.rows(); i++){
     geometry_msgs::Point pt;
 
-    pt.x = desired_trajectory(i,4);    
-    pt.y = desired_trajectory(i,5); 
-    pt.z = desired_trajectory(i,6); 
+    pt.x = desired_trajectory(i,0);    
+    pt.y = desired_trajectory(i,1); 
+    pt.z = 0.0;
     marker.points.push_back(pt);
   }
 
   // std::cerr << "publish marker array" << std::endl;
   frontEndVisualizePublisher_.publish(marker);
 
-  graceful_mpc::PoseVelocityTrajectory poseVelocityTrajectory;
-  poseVelocityTrajectory.header.stamp = ros::Time::now();
-  poseVelocityTrajectory.posesVelocity.resize(desired_trajectory.rows());
+  return;
+  // graceful_mpc::PoseVelocityTrajectory poseVelocityTrajectory;
+  // poseVelocityTrajectory.header.stamp = ros::Time::now();
+  // poseVelocityTrajectory.posesVelocity.resize(desired_trajectory.rows());
 
-  for(int i = 0; i < desired_trajectory.rows(); i++){
-  geometry_msgs::Pose tmpPose;
-  tmpPose.orientation.x = desired_trajectory(i,0);
-  tmpPose.orientation.y = desired_trajectory(i,1);
-  tmpPose.orientation.z = desired_trajectory(i,2);
-  tmpPose.orientation.w = desired_trajectory(i,3);
-  tmpPose.position.x = desired_trajectory(i,4);
-  tmpPose.position.y = desired_trajectory(i,5);
-  tmpPose.position.z = desired_trajectory(i,6);
+  // for(int i = 0; i < desired_trajectory.rows(); i++){
+  // geometry_msgs::Pose tmpPose;
+  // tmpPose.orientation.x = desired_trajectory(i,0);
+  // tmpPose.orientation.y = desired_trajectory(i,1);
+  // tmpPose.orientation.z = desired_trajectory(i,2);
+  // tmpPose.orientation.w = desired_trajectory(i,3);
+  // tmpPose.position.x = desired_trajectory(i,4);
+  // tmpPose.position.y = desired_trajectory(i,5);
+  // tmpPose.position.z = desired_trajectory(i,6);
   
-  poseVelocityTrajectory.posesVelocity[i].header.stamp = ros::Time(poseVelocityTrajectory.header.stamp.toSec() + time_traj(i)/2.0);
+  // poseVelocityTrajectory.posesVelocity[i].header.stamp = ros::Time(poseVelocityTrajectory.header.stamp.toSec() + time_traj(i)/2.0);
 
-  poseVelocityTrajectory.posesVelocity[i].pose = tmpPose;
-  if(i == 0){
-      poseVelocityTrajectory.posesVelocity[i].velocity.force.x = currentObservation.state()[2];
-  }
-  poseVelocityTrajectory.posesVelocity[i].velocity.force.x =(1-filter_coeff_) * poseVelocityTrajectory.posesVelocity[i-1].velocity.force.x + filter_coeff_* std::atan2(velocity_trajectory(i,1),velocity_trajectory(i,0));
-  tf2::toMsg(defaultAngular_, poseVelocityTrajectory.posesVelocity[i].velocity.torque);  //angular part
+  // poseVelocityTrajectory.posesVelocity[i].pose = tmpPose;
+  // if(i == 0){
+  //     poseVelocityTrajectory.posesVelocity[i].velocity.force.x = currentObservation.state()[2];
+  // }
+  // poseVelocityTrajectory.posesVelocity[i].velocity.force.x =(1-filter_coeff_) * poseVelocityTrajectory.posesVelocity[i-1].velocity.force.x + filter_coeff_* std::atan2(velocity_trajectory(i,1),velocity_trajectory(i,0));
+  // tf2::toMsg(defaultAngular_, poseVelocityTrajectory.posesVelocity[i].velocity.torque);  //angular part
   
-  }
-  desiredPoseVelocityTrajectoryCb(poseVelocityTrajectory);
+  // }
+  // desiredPoseVelocityTrajectoryCb(poseVelocityTrajectory);
 }
 
 void KinematicSimulation::desiredPoseVelocityTrajectoryCb(const graceful_mpc::PoseVelocityTrajectory& poseVelocityTrajectory) {
@@ -855,6 +846,7 @@ std::shared_ptr<FiestaCostConfig> KinematicSimulation::configureCollisionAvoidan
     if (pointsOnRobot_->numOfPoints() > 0) {
       fiestaCostConfig.reset(new FiestaCostConfig());
       fiestaCostConfig->pointsOnRobot = pointsOnRobot_;
+      jointSpaceRRTConfig_.pointsOnRobot = pointsOnRobot_;
       pointsOnRobot_->initialize("points_on_robot");
     } else {
       // if there are no points defined for collision checking, set this pointer to null to disable the visualization

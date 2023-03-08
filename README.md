@@ -129,3 +129,8 @@
 + The intial trajectory of TEB-Planner is from the PRM. It use PRM to connect the start and goal, generating N way point. The h-signature is used to check if a holologous path already exist in the database. At each iteration, it will reuse the PRM node by deleting some unuseful point( The edge should point from the start to the goal. And they must stay in the rectangle surrounded by the start and goal. The main problem is how to reuse the PRM map and the honologous path.
 ### 2023.3.6
 + I want to add the curveCost to penalize the high curtivature when turning( If the mobile manipulator turn in place, the curtivature will be infinite). But it's a cost related to the w^2/v^2. It's easy to be unstable beacause of the division to a small value when starting and ending.
+### 2023.3.7
++ The dubin state space is a SE2 space. StateSpace <- compoundStateSpace <- SE2StateSpace <- dubins/reedSharp statespace. The stateSpace class of OMPL don't have the concept of steering function. It only need to define the distance function beween two states.(The distance in a compoundStateSpace is weighted by a cofficient. when we call the add compounent function we give the weight. And the final distance is calculated via the weighted sum of the distance in seperate stateSpace.)
+### 2023.3.8
++ writing the code for the wholebody plan using geometric RRT. The state are compounded by ReedSheep and R(6).
++ writing the code for the wholebody plan using control SST. The state are compounded by SE2 and R(6);
