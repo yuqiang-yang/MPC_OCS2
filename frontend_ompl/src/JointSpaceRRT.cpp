@@ -21,7 +21,8 @@ bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eige
     config.pointsOnRobot = config_.pointsOnRobot;
     config.max_distance = config_.max_distance;
     config.obstacle_margin = config_.obstacle_margin;
-    si_->setStateValidityChecker(std::make_shared<MobileManipulatorStateValidityChecker>(si_,config));
+    auto validCheckcer = std::make_shared<MobileManipulatorStateValidityChecker>(si_,config);
+    si_->setStateValidityChecker(validCheckcer);
     si_->setup();
 
     // Define the problem definition
@@ -29,8 +30,8 @@ bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eige
 
     // Define the start state
     ompl::base::ScopedState<MobileManipulatorStateSpace> start = base::ScopedState<MobileManipulatorStateSpace>(si_);
-    start->as<base::DubinsStateSpace::StateType>(0)->setXY(startVector[0], startVector[1]);
-    start->as<base::DubinsStateSpace::StateType>(0)->setYaw(startVector[2]);
+    start->as<base::ReedsSheppStateSpace::StateType>(0)->setXY(startVector[0], startVector[1]);
+    start->as<base::ReedsSheppStateSpace::StateType>(0)->setYaw(startVector[2]);
     start->as<base::RealVectorStateSpace::StateType>(1)->values[0] = startVector[3];
     start->as<base::RealVectorStateSpace::StateType>(1)->values[1] = startVector[4];
     start->as<base::RealVectorStateSpace::StateType>(1)->values[2] = startVector[5];
@@ -40,8 +41,8 @@ bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eige
     pdef->setStartState(start);
     // Define the goal state
     ompl::base::ScopedState<MobileManipulatorStateSpace> goal = base::ScopedState<MobileManipulatorStateSpace>(si_);
-    goal->as<base::DubinsStateSpace::StateType>(0)->setXY(goalVector[0], goalVector[1]);
-    goal->as<base::DubinsStateSpace::StateType>(0)->setYaw(goalVector[2]);
+    goal->as<base::ReedsSheppStateSpace::StateType>(0)->setXY(goalVector[0], goalVector[1]);
+    goal->as<base::ReedsSheppStateSpace::StateType>(0)->setYaw(goalVector[2]);
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[0] = goalVector[3];
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[1] = goalVector[4];
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[2] = goalVector[5];
@@ -49,10 +50,19 @@ bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eige
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[4] = goalVector[7];
     goal->as<base::RealVectorStateSpace::StateType>(1)->values[5] = goalVector[8];
     pdef->setGoalState(goal);
+    if(!validCheckcer->isValid(start.get())){
+        std::cerr << "frontEnd invalid start" <<  std::endl;
+        return false;
+    }
+    if(!validCheckcer->isValid(goal.get())){
+        std::cerr << "frontEnd invalid end" <<  std::endl;
+        return false;
 
+    }
     // Define the planner
     auto planner = std::make_shared<geometric::RRT>(si_);
     planner->setIntermediateStates(true);
+    planner->printSettings(std::cerr);
     pdef->setPlanner(planner);
     
     // Solve the problem
@@ -61,7 +71,7 @@ bool JointSpaceRRT::Plan(const Eigen::Matrix<double,9,1>& startVector,const Eige
     // Get the solution path
     auto path = pdef->getSolutionPath();
     // Print the solution path
-    std::cout << "Solution path: ";
+    // std::cout << "Solution path: ";
     desired_trajectory.resize(path.getStateCount(),9);
     path.print(std::cout);
     for (std::size_t i = 0; i < path.getStateCount(); ++i)

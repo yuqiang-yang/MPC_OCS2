@@ -317,8 +317,8 @@ frontEndOMPLRRTStar
 jointSpaceRRT
 {
   max_distance                3.0
-  obstacle_margin             0.0
-  planning_time               6.0
+  obstacle_margin             -0.02
+  planning_time               10.0
   collisionCheckerResolution  0.02
   distance_gain               0.0
 }

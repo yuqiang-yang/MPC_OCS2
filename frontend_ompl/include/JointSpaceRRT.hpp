@@ -10,6 +10,8 @@
 #include <ompl/geometric/planners/rrt/RRTXstatic.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/rrt/RRT.h>
+#include <ompl/geometric/planners/sst/SST.h>
+
 // For boost program options
 #include <boost/program_options.hpp>
 // For string comparison (boost::iequals)

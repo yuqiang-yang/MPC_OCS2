@@ -5,7 +5,7 @@
 #include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <fstream>
-#include <ompl/base/spaces/DubinsStateSpace.h>
+#include <ompl/base/spaces/ReedsSheppStateSpace.h>
 #include <ompl/base/spaces/ReedsSheppStateSpace.h>
 
 
@@ -27,7 +27,7 @@ public:
     };
     MobileManipulatorStateSpace() : base::CompoundStateSpace()
     {
-        addSubspace(std::make_shared<base::DubinsStateSpace>(), 1.0);
+        addSubspace(std::make_shared<base::ReedsSheppStateSpace>(), 1.0);
         addSubspace(std::make_shared<base::RealVectorStateSpace>(6), 1.0);
     }
 
@@ -38,7 +38,7 @@ public:
                    double j4_min, double j4_max, double j5_min, double j5_max,
                    double j6_min, double j6_max)
     {
-        auto se2_space = std::static_pointer_cast<base::DubinsStateSpace>(getSubspace(0));
+        auto se2_space = std::static_pointer_cast<base::ReedsSheppStateSpace>(getSubspace(0));
         base::RealVectorBounds base_bound(2);
         base::RealVectorBounds arm_bound(6);
         base_bound.setLow(-10);
@@ -72,7 +72,7 @@ public:
     bool isValid(const base::State* state) const override
     {
         // Extract the SE2 component of the state
-        auto se2_state = state->as<base::CompoundState>()->as<base::DubinsStateSpace::StateType>(0);
+        auto se2_state = state->as<base::CompoundState>()->as<base::ReedsSheppStateSpace::StateType>(0);
         double x = se2_state->getX();
         double y = se2_state->getY();
         double yaw = se2_state->getYaw();
@@ -91,8 +91,10 @@ public:
         // Check if the 6-DoF manipulator component is within bounds
  if (j1 < -MY_2_PI || j1 > MY_2_PI || j2 < -MY_2_PI || j2 > MY_2_PI || j3 < -MY_2_PI || j3 > MY_2_PI ||
         j4 < -MY_2_PI || j4 > MY_2_PI || j5 < -MY_2_PI || j5 > MY_2_PI || j6 < -MY_2_PI || j6 > MY_2_PI)
+        {
+            std::cerr << "invalid manipulator bound" << std::endl;
         return false;
-
+        }
     // TODO: Perform collision checking between the mobile manipulator and obstacles
     Eigen::Matrix<double,17,1> xx;
     xx << x,y,yaw,j1,j2,j3,j4,j5,j6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
@@ -116,7 +118,7 @@ public:
     double clearance(const base::State* state)
     {
         // Extract the SE2 component of the state
-        auto se2_state = state->as<base::CompoundState>()->as<base::DubinsStateSpace::StateType>(0);
+        auto se2_state = state->as<base::CompoundState>()->as<base::ReedsSheppStateSpace::StateType>(0);
         double x = se2_state->getX();
         double y = se2_state->getY();
         double yaw = se2_state->getYaw();
