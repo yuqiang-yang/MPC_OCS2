@@ -134,3 +134,6 @@
 ### 2023.3.8
 + writing the code for the wholebody plan using geometric RRT. The state are compounded by ReedSheep and R(6).
 + writing the code for the wholebody plan using control SST. The state are compounded by SE2 and R(6);
+### 2023.3.9
++ test the reedshepp FrontEnd. But it's still hard for it too find a path in realtime. The reedshepp statespace can find a initial solution quckily for the 2 dof plaform in serveral ms.
+
