@@ -5,7 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Status1
+        - /Grid1
         - /RobotModel3
+        - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -26,7 +28,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: occupyVoxel
+    SyncSource: PointCloud2
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -49,7 +51,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 22
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -62,151 +64,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        back_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        back_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        back_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_link_ur5e:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        bl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        bl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        br_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        br_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        forearm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        fr_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        imu_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        led_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        left_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        right_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        shoulder_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        surface:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        upper_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        us_1_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        us_2_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wrist_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wrist_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -378,151 +235,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        midback_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midback_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midback_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midbase_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midbase_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midbase_link_ur5e:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midbl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midbl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midbr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midbr_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midforearm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfr_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfront_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midfront_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midfront_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midimu_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midimu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midled_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midleft_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midright_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midshoulder_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midsurface:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midupper_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midus_1_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midus_2_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        midwrist_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midwrist_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        midwrist_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: mid/robot_description
       TF Prefix: ""
@@ -539,157 +251,40 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        finalback_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalback_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalback_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalbase_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalbase_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalbase_link_ur5e:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalbl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalbl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalbr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalbr_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfl_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfl_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalforearm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfr_caster_rotation_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfr_caster_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfront_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalfront_camera_link_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalfront_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalimu_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalimu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalled_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalleft_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalright_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalshoulder_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalsurface:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalupper_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalus_1_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalus_2_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        finalwrist_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalwrist_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        finalwrist_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: final/robot_description
       TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 0.4749999940395355
+        Min Value: 0.02500000037252903
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.05000000074505806
+      Style: Spheres
+      Topic: /map_generator/global_pointcloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -718,25 +313,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.02510929107666
+      Distance: 2.5893731117248535
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.2554732859134674
-        Y: 0.7194249033927917
-        Z: 0.6908016204833984
+        X: 1.1843422651290894
+        Y: 3.9590139389038086
+        Z: 3.037853956222534
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4297962188720703
+      Pitch: 0.24479660391807556
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.1516900062561035
+      Yaw: 0.6735691428184509
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <arg name="rvizconfig"          default="$(find graceful_mpc)/config/demo.rviz"/>
+    <node pkg="cluttered_env_generator" type="cluttered_env_generator" name="map_generator" output="screen">
+        <param name="x_min" value="-10.0"/>
+        <param name="x_max" value="10.0"/>
+        <param name="y_min" value="-10.0"/>
+        <param name="y_max" value="10.0"/>
+        <param name="z_min" value="-0.5"/>
+        <param name="z_max" value="3.0"/>
+
+        <param name="clearance_at_origin" value="0.5"/>
+        <param name="resolution" value="0.03"/>
+
+        <param name="static_cylinder_num" value="20"/>
+        <param name="static_cylinder_min_r" value="0.1"/>
+        <param name="static_cylinder_max_r" value="0.5"/>
+        <param name="static_cylinder_min_h" value="0.3"/>
+        <param name="static_cylinder_max_h" value="1.5"/>
+
+        <param name="static_cuboid_num" value="20"/>
+        <param name="static_cuboid_min_edge_length" value="0.1"/>
+        <param name="static_cuboid_max_edge_length" value="0.5"/>
+        <param name="static_cuboid_min_h" value="0.3"/>
+        <param name="static_cuboid_max_h" value="1.5"/>
+
+        <param name="dynamic_sphere_num" value="30"/>
+        <param name="dynamic_sphere_min_r" value="0.2"/>
+        <param name="dynamic_sphere_max_r" value="0.5"/>
+        <param name="dynamic_sphere_min_z" value="0.9"/>
+        <param name="dynamic_sphere_max_z" value="2.0"/>
+        <param name="dynamic_sphere_min_motion" value="0.4"/>
+        <param name="dynamic_sphere_max_motion" value="2.0"/>
+        <param name="dynamic_sphere_peroid" value="5.0"/>
+
+        <param name="seed" value="5"/>
+
+
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" />
+</launch>
