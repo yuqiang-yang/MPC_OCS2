@@ -524,7 +524,7 @@ void KinematicSimulation::desiredEndEffectorPoseCb(const geometry_msgs::PoseStam
   // std::cerr << "publish marker array" << std::endl;
   frontEndVisualizePublisher_.publish(marker);
 
-  return;
+  // return;
   // graceful_mpc::PoseVelocityTrajectory poseVelocityTrajectory;
   // poseVelocityTrajectory.header.stamp = ros::Time::now();
   // poseVelocityTrajectory.posesVelocity.resize(desired_trajectory.rows());
