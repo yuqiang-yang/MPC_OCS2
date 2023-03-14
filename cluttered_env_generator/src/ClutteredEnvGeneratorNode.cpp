@@ -7,14 +7,17 @@ int main(int argc, char** argv) {
     // timing::Timer map("map_generate");
     auto envGen = ClutteredEnvGenerator(nh);
     envGen.generateStaticMap();
-    auto rate = ros::Rate(10);
+    auto rate = ros::Rate(8);
     // 70ms for 2cm resolution; 2ms for 5cm resolution; 12ms for 3cm;
     while(ros::ok()){
         // map.Start();
         envGen.updateDynamicMap();
         envGen.publishMap();
+        envGen.publishLocalMap();
         // map.Stop();
+        ros::spinOnce();
         rate.sleep();
+
         // timing::Timing::Print(std::cout);
     }
     ros::spin();

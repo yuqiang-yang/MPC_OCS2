@@ -11,6 +11,9 @@
 
         <param name="clearance_at_origin" value="0.5"/>
         <param name="resolution" value="0.03"/>
+        <param name="local_range" value="5.0"/>
+
+
 
         <param name="static_cylinder_num" value="20"/>
         <param name="static_cylinder_min_r" value="0.1"/>

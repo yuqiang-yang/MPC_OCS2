@@ -46,6 +46,9 @@ public:
     ESDFMap *signed_esdf_map_;
 #endif
     bool new_msg_ = false;
+    bool odom_received_ = false;
+     bool simulation_map_recieved_ = false;
+
     pcl::PointCloud<pcl::PointXYZ> cloud_;
 
     int esdfUpdateCnt_ = 0;
@@ -54,6 +57,10 @@ public:
 #endif
     ros::Publisher slice_pub_, occupancy_pub_, text_pub_;
     ros::Subscriber transform_sub_, depth_sub_;
+     // The following two is used to localally update the ESDF map in simulation 
+    ros::Subscriber odom_sub_;
+    ros::Subscriber simulation_poindcloud_sub_;
+
     ros::Timer update_mesh_timer_;
     ros::ServiceServer save_map_srv_;
     ros::ServiceServer load_map_srv_;
@@ -64,7 +71,7 @@ public:
     std::queue<std::tuple<ros::Time, Eigen::Vector3d, Eigen::Quaterniond>> transform_queue_;
     std::queue<DepthMsgType> depth_queue_;
     DepthMsgType sync_depth_;
-
+     nav_msgs::Odometry odom_;
     cv::Mat img_[2];
     Eigen::Matrix4d transform_, last_transform_;
     uint image_cnt_ = 0, esdf_cnt_ = 0, tot_ = 0;
@@ -96,6 +103,10 @@ public:
     void PoseCallback(const PoseMsgType &msg);
 
     void UpdateEsdfEvent(const ros::TimerEvent & /*event*/);
+
+    void odomCb(const nav_msgs::Odometry odom);
+     void simulationMapCb(sensor_msgs::PointCloud2);
+
     bool LoadMapCb(fiesta::filename::Request &req,fiesta::filename::Response &res) 
     {
          
@@ -165,6 +176,8 @@ Fiesta<DepthMsgType, PoseMsgType>::Fiesta(ros::NodeHandle node) {
     transform_sub_ = node.subscribe("transform", 10, &Fiesta::PoseCallback, this);
     depth_sub_ = node.subscribe("depth", 10, &Fiesta::DepthCallback, this);
 
+     odom_sub_ = node.subscribe("/graceful_mpc/odom", 10, &Fiesta::odomCb, this);
+     simulation_poindcloud_sub_ = node.subscribe("/map_generator/local_pointcloud", 1, &Fiesta::simulationMapCb, this);
      // add by yq
      save_map_srv_ = node.advertiseService(
           "fiesta_save_map", &Fiesta::SaveMapCb, this);
@@ -564,10 +577,47 @@ void Fiesta<DepthMsgType, PoseMsgType>::DepthCallback(const DepthMsgType &depth_
      depth_queue_.push(depth_map);
      SynchronizationAndProcess();
 }
+template<class DepthMsgType, class PoseMsgType>
+void Fiesta<DepthMsgType, PoseMsgType>::odomCb(const nav_msgs::Odometry odom){
+     odom_received_ = true;
+     odom_ = odom;
+
+}
+template<class DepthMsgType, class PoseMsgType>
+void Fiesta<DepthMsgType, PoseMsgType>::simulationMapCb(sensor_msgs::PointCloud2 pointcloud){
+     // std::cerr << "time lag" << ros::Time::now() -  pointcloud.header.stamp << std::endl;
+     simulation_map_recieved_ = true;
+     double local_range = parameters_.local_range_/1.2;   //local range is radius. For simplication, we use a rectangle to approximate it.
+     
+     // set all the voxels where the received pointcloud lie to occupied and set the others to free.
+     // 1. set all voxels in the range to be free
+     // 2. set the received voxels to be occupacied twice
+     if(!odom_received_) return;
+     auto x = odom_.pose.pose.position.x;
+     auto y = odom_.pose.pose.position.y;
+     Eigen::Vector3d pos;
+     for(double xx = x-local_range;xx <= x+local_range;xx+=esdf_map_->resolution_)
+          for(double yy = y-local_range;yy <= y+local_range;yy+=esdf_map_->resolution_)
+               for(double zz = esdf_map_->min_range_(2);zz < esdf_map_->max_range_(2);zz+=esdf_map_->resolution_/2){
+               pos << xx,yy,zz;
+               esdf_map_->SetOccupancy(pos,0);
+     }
+     pcl::fromROSMsg(pointcloud, cloud_);
+
+     for(auto p:cloud_.points){
+          pos << p.x,p.y,p.z;
+          esdf_map_->SetOccupancy(pos,1);
+          esdf_map_->SetOccupancy(pos,1);
+          esdf_map_->SetOccupancy(pos,1);
+
+     }
+
+     
+}
 
 template<class DepthMsgType, class PoseMsgType>
 void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & /*event*/) {
-     if (!new_msg_)
+     if (!new_msg_ && !odom_received_)
           return;
      new_msg_ = false;
      cur_pos_ = sync_pos_;
@@ -645,6 +695,8 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
 
 }
 }
+
+
 
 #endif //ESDF_TOOLS_INCLUDE_FIESTA_H_
 

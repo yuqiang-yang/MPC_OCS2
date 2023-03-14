@@ -4,6 +4,7 @@ using namespace graceful_mpc;
 ClutteredEnvGenerator::ClutteredEnvGenerator(ros::NodeHandle nh):nh_(nh){
     global_map_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("global_pointcloud", 1);
     local_map_publisher_ = nh_.advertise<sensor_msgs::PointCloud2>("local_pointcloud", 1);
+    odom_sub_ = nh_.subscribe("odometry", 50, &ClutteredEnvGenerator::odomReceiveCb,this);
     nh_.param("x_min", x_min_, -10.0);
     nh_.param("x_max", x_max_, 10.0);
     nh_.param("y_min", y_min_, -10.0);
@@ -13,7 +14,8 @@ ClutteredEnvGenerator::ClutteredEnvGenerator(ros::NodeHandle nh):nh_(nh){
 
     nh_.param("clearance_at_origin", clearance_at_origin_, 0.5);
     nh_.param("resolution", resolution_, 0.05);
-
+    nh_.param("local_range", local_range_, 2.0);
+    std::cerr << "local_range" << local_range_<<std::endl;
 
     nh_.param("static_cylinder_num", static_cylinder_num_, 10);
     nh_.param("static_cylinder_min_r", static_cylinder_min_r_, 0.1);
@@ -46,6 +48,7 @@ ClutteredEnvGenerator::ClutteredEnvGenerator(ros::NodeHandle nh):nh_(nh){
     dynamic_motion_length_.resize(dynamic_sphere_num_);
 
     t_start_ = ros::Time::now().toSec();
+    odom_received_ = false;
 }
 
 void ClutteredEnvGenerator::generateStaticMap(){
@@ -84,8 +87,8 @@ void ClutteredEnvGenerator::generateStaticMap(){
         for (int s = -rNum / 2.0; s < rNum / 2.0; s++) {
             int hNum = ceil(h / resolution_);
             for (int t = 0; t < hNum; t++) {
-            pt_random.x = x + (r + 0.5) * resolution_;
-            pt_random.y = y + (s + 0.5) * resolution_;
+            pt_random.x = x + (r + 0.0) * resolution_;
+            pt_random.y = y + (s + 0.0) * resolution_;
             pt_random.z = (t + 0.5) * resolution_;
             cloudMap_.points.push_back(pt_random);
             }
@@ -138,7 +141,7 @@ void ClutteredEnvGenerator::generateStaticMap(){
         x = floor(x / resolution_) * resolution_ + resolution_ / 2.0;
         y = floor(y / resolution_) * resolution_ + resolution_ / 2.0;
         r = floor(r / resolution_) * resolution_ + resolution_ / 2.0; 
-        h = floor(h / resolution_) * resolution_ + resolution_ / 2.0; //The h is also the z coordinate of the sphere
+        h = floor(h / resolution_) * resolution_;// + resolution_ / 2.0; //The h is also the z coordinate of the sphere
         std::vector<double> temp(3);
         temp[0] = x; temp[1] = y; temp[2] = h;
         dynamic_center_[i] = temp;
@@ -205,10 +208,51 @@ void ClutteredEnvGenerator::publishMap(){
     fullMap_.clear();
     fullMap_ = cloudMap_;
     fullMap_ += dynamicMap_;
-    pcl::toROSMsg(fullMap_, global_pcd);
-    global_pcd.header.frame_id = "odom";
-    global_pcd.header.stamp = ros::Time::now();
-    global_map_publisher_.publish(global_pcd);
+    // pcl::PointCloud<pcl::PointXYZ> temp;
+    if(odom_received_){
+        pcl::ExtractIndices<pcl::PointXYZ> extract;
+        extract.setInputCloud(fullMap_.makeShared());
+        boost::shared_ptr<std::vector<int>> index_ptr = boost::make_shared<std::vector<int>>(pointIdxRadiusSearch_);
+
+        extract.setIndices(index_ptr);
+        extract.setNegative(true);
+        extract.filter(fullMap_);
+    }
+
+    pcl::toROSMsg(fullMap_, global_pcd_);
+    global_pcd_.header.frame_id = "odom";
+    global_pcd_.header.stamp = ros::Time::now();
+    global_map_publisher_.publish(global_pcd_);
+}
+void ClutteredEnvGenerator::publishLocalMap(){
+    if(!odom_received_){
+        
+        ROS_ERROR_THROTTLE(1.0,"no odom receive! Cannot publish local map");
+        return;
+    }
+    fullMap_.clear();
+    fullMap_ = cloudMap_;
+    fullMap_ += dynamicMap_;
+    kdtreeLocalMap_.setInputCloud(fullMap_.makeShared());
+    pcl::PointCloud<pcl::PointXYZ> localMap;
+    pcl::PointXYZ pt;
+    pcl::PointXYZ searchPoint(odom_data_[0], odom_data_[1], odom_data_[2]);
+    if (isnan(searchPoint.x) || isnan(searchPoint.y) || isnan(searchPoint.z))
+    return;
+
+    if (kdtreeLocalMap_.radiusSearch(searchPoint, local_range_,
+                                  pointIdxRadiusSearch_,
+                                  pointRadiusSquaredDistance_) > 0) {
+        for (size_t i = 0; i < pointIdxRadiusSearch_.size(); ++i) {
+        pt = fullMap_.points[pointIdxRadiusSearch_[i]];
+        localMap.points.push_back(pt);
+        }
+    }   
+
+    pcl::toROSMsg(localMap, local_pcd_);
+    local_pcd_.header.frame_id = "odom";
+    local_pcd_.header.stamp = ros::Time::now();
+    local_map_publisher_.publish(local_pcd_);
 
 }
 
@@ -219,10 +263,22 @@ void ClutteredEnvGenerator::getPlaneCirclePoint(double x,double y,double z,doubl
     for (int cc = -cNum; cc <= cNum ; cc++){
     int rNum = floor((sqrt(r*r-pow(cc*resolution_,2)))/resolution_);
     for (int rr = -rNum; rr <= rNum ; rr++){
-            pt_random.x = x + (rr+0.5) * resolution_;
-            pt_random.y = y + (cc+0.5) * resolution_;
+            pt_random.x = x + (rr+0.0) * resolution_;
+            pt_random.y = y + (cc+0.0) * resolution_;
             pt_random.z = z + (h+0.5) * resolution_;
             cloudMap.points.push_back(pt_random);
         }
 }
+}
+void ClutteredEnvGenerator::odomReceiveCb(const nav_msgs::Odometry odom){
+  odom_received_ = true;
+  odom_data_ = {odom.pose.pose.position.x,
+            odom.pose.pose.position.y,
+            odom.pose.pose.position.z,
+            odom.twist.twist.linear.x,
+            odom.twist.twist.linear.y,
+            odom.twist.twist.linear.z,
+            0.0,
+            0.0,
+            0.0};
 }

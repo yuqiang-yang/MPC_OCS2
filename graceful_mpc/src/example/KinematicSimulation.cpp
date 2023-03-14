@@ -114,6 +114,10 @@ void KinematicSimulation::initRosTopic(){
     ros::Rate(10).sleep();
     if(isFirstObservationReceived_) break;
   }
+  if(isPureSimulation_){
+    odomPublisher_ = nh_.advertise<nav_msgs::Odometry>("/graceful_mpc/odom", 1, false);
+  }
+
 }
 void KinematicSimulation::loadTransforms() {
   UR5Kinematics<double> kinematics(kinematicInterfaceConfig_);
@@ -632,6 +636,16 @@ void KinematicSimulation::publishBaseTransform(const Observation& observation,st
 
   base_transform.header.stamp = ros::Time::now();
   tfBroadcaster_.sendTransform(base_transform);
+
+  //publish odom for simulation
+  if(isPureSimulation_){
+    nav_msgs::Odometry odom;
+    odom.header.stamp = ros::Time::now();
+    odom.pose.pose.position.x = currentPosition(0);
+    odom.pose.pose.position.y = currentPosition(1);
+    odom.pose.pose.position.z = currentPosition(2);
+    odomPublisher_.publish(odom);
+  }
 
 }
 

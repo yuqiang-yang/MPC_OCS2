@@ -158,6 +158,8 @@ struct Parameters {
   int ray_cast_num_thread_;
   // local map
   bool global_vis_, global_update_, global_map_;
+
+  double local_range_;
   Eigen::Vector3d radius_;
   // transforms
   Eigen::Matrix4d T_B_C_, T_D_B_;

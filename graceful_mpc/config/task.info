@@ -108,7 +108,7 @@ mpc
 ;interface settings
 model_settings
 {
-  recompileLibraries	   1         ; put this flag to 1 to force recompiling the AD cost and dynamics libraries
+  recompileLibraries	   0         ; put this flag to 1 to force recompiling the AD cost and dynamics libraries
 }
 
 ; initial configuration

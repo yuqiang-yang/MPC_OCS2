@@ -13,6 +13,10 @@
     <!-- Enable the camera and ESDF -->
     <arg name="realsenseActivate" value="false"/>
 
+    <arg name="local_range" value="6.0"/>
+
+    <arg name="resolution" value ="0.03"/>
+
 
     <include file="$(find realsense2_camera)/launch/demo_pointcloud.launch" if="$(arg realsenseActivate)"/>
     <!-- <group ns="current_robot"> -->
@@ -64,19 +68,20 @@
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.05"/>
+        <param name="resolution" value="0.12"/>
         <param name="update_esdf_every_n_sec" value="0.05"/>
+        <param name="local_range" value="$(arg local_range)"/>
 
         <!--Hash Table only-->
         <param name="reserved_size" value="1000000"/>
 
         <!--Array only-->
-        <param name="lx" value="-2.5"/>
-        <param name="ly" value="-2.5"/>
+        <param name="lx" value="-5.5"/>
+        <param name="ly" value="-5.5"/>
         <param name="lz" value="-0.5"/>
-        <param name="rx" value="+3.5"/>
-        <param name="ry" value="+2.5"/>
-        <param name="rz" value="+2"/>
+        <param name="rx" value="+5.5"/>
+        <param name="ry" value="+5.5"/>
+        <param name="rz" value="+3"/>
         <!-- raycasting parameters -->
         <param name="min_ray_length" value="0.5"/>
         <param name="max_ray_length" value="3.0"/>
@@ -84,10 +89,15 @@
         <param name="ray_cast_num_thread" value="0"/>
 
         <!-- probabilistic grid map -->
-        <param name="p_hit" value="0.75"/>
+        <!-- <param name="p_hit" value="0.75"/>
         <param name="p_miss" value="0.2"/>
         <param name="p_min" value="0.12"/>
         <param name="p_max" value="0.92"/>
+        <param name="p_occ" value="0.72"/> -->
+        <param name="p_hit" value="0.99"/>
+        <param name="p_miss" value="0.01"/>
+        <param name="p_min" value="0.18"/>
+        <param name="p_max" value="0.75"/>
         <param name="p_occ" value="0.72"/>
 
         <!-- global / local -->
@@ -103,8 +113,8 @@
 
         <!-- visulization -->
         <!--0 for no visulize-->
-        <param name="visualize_every_n_updates" value="5"/>
-        <param name="slice_vis_max_dist" value="2.0"/>
+        <param name="visualize_every_n_updates" value="1"/>
+        <param name="slice_vis_max_dist" value="3.0"/>
         <!-- relative to the lz if array is used, relative to the origin if hash table is used -->
         <param name="slice_vis_level" value="1"/>
         <param name="vis_lower_bound" value="0"/>
@@ -146,6 +156,44 @@
 
     </group>
 
+    <node pkg="cluttered_env_generator" type="cluttered_env_generator" name="map_generator" output="screen">
+        <param name="x_min" value="-6.0"/>
+        <param name="x_max" value="6.0"/>
+        <param name="y_min" value="-6.0"/>
+        <param name="y_max" value="6.0"/>
+        <param name="z_min" value="-0.5"/>
+        <param name="z_max" value="2.0"/>
 
+        <param name="clearance_at_origin" value="0.5"/>
+        <param name="resolution" value="$(arg resolution)"/>
+        <param name="local_range" value="$(arg local_range)"/>
+
+
+
+        <param name="static_cylinder_num" value="20"/>
+        <param name="static_cylinder_min_r" value="0.1"/>
+        <param name="static_cylinder_max_r" value="0.5"/>
+        <param name="static_cylinder_min_h" value="0.3"/>
+        <param name="static_cylinder_max_h" value="1.5"/>
+
+        <param name="static_cuboid_num" value="20"/>
+        <param name="static_cuboid_min_edge_length" value="0.1"/>
+        <param name="static_cuboid_max_edge_length" value="0.5"/>
+        <param name="static_cuboid_min_h" value="0.3"/>
+        <param name="static_cuboid_max_h" value="1.5"/>
+
+        <param name="dynamic_sphere_num" value="15"/>
+        <param name="dynamic_sphere_min_r" value="0.1"/>
+        <param name="dynamic_sphere_max_r" value="0.4"/>
+        <param name="dynamic_sphere_min_z" value="0.9"/>
+        <param name="dynamic_sphere_max_z" value="2.0"/>
+        <param name="dynamic_sphere_min_motion" value="0.4"/>
+        <param name="dynamic_sphere_max_motion" value="2.0"/>
+        <param name="dynamic_sphere_peroid" value="16.0"/>
+
+        <param name="seed" value="4"/>
+        <remap from="~odometry" to="/graceful_mpc/odom" />
+
+    </node>
 
 </launch>

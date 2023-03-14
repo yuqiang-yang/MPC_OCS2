@@ -415,7 +415,7 @@ int fiesta::ESDFMap::SetOccupancy(Eigen::Vector3d pos, int occ) {
   }
 
   if (!PosInMap(pos)) {
-//        cout << "Not in map" << endl;
+      //  cout << "Not in map" << endl;
     return undefined_;
   }
 

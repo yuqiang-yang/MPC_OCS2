@@ -136,4 +136,10 @@
 + writing the code for the wholebody plan using control SST. The state are compounded by SE2 and R(6);
 ### 2023.3.9
 + test the reedshepp FrontEnd. But it's still hard for it too find a path in realtime. The reedshepp statespace can find a initial solution quckily for the 2 dof plaform in serveral ms.
-
+### 2023.3.12
++ The occupacy map update rate is ***not*** affected by the density of the pointcloud. Even though a denser cloud mean more raycasting hit, but the FIESTA only update once(change the probability) when calling updateOccupacy(). If we want to increase the update rate we should increase the rate of  updateOccupacy(). The density of the pointcloud may influence the removal of pointcloud in dynamic environment.
+### 2023.3.13
++ generate cluttered map. Some points should be paid attention to.
+    + The resolution of cluttered map and the resolution of FIESTA are not needed to be same. Now is 0.03 and 0.09.
+    + Make sure of the buffer of pointcloud to be 1. Or the fiesta will has a lag about 200ms when the map publication rate is relatively high.
+    + The local update code of FIESTA need to be changed.

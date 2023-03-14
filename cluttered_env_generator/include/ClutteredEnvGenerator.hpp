@@ -11,6 +11,8 @@
 #include <random>
 #include <vector>
 #include <sensor_msgs/PointCloud2.h>
+#include <nav_msgs/Odometry.h>
+#include <pcl/filters/extract_indices.h>
 
 namespace graceful_mpc{
     class ClutteredEnvGenerator{
@@ -20,7 +22,7 @@ namespace graceful_mpc{
             ~ClutteredEnvGenerator()=default;
             void generateStaticMap();
             void updateDynamicMap();
-
+            void publishLocalMap();
             void publishMap();
         private:
             ros::NodeHandle nh_;
@@ -35,6 +37,7 @@ namespace graceful_mpc{
 
             int seed_;
             double clearance_at_origin_;
+            double local_range_;
 
             int static_cylinder_num_;
             double static_cylinder_min_r_;
@@ -60,24 +63,32 @@ namespace graceful_mpc{
             double resolution_;
             ros::Publisher global_map_publisher_;
             ros::Publisher local_map_publisher_;
-            sensor_msgs::PointCloud2 global_pcd;
+            ros::Subscriber odom_sub_;
+            sensor_msgs::PointCloud2 global_pcd_;
+            sensor_msgs::PointCloud2 local_pcd_;
+        
 
             pcl::PointCloud<pcl::PointXYZ> cloudMap_;
             pcl::PointCloud<pcl::PointXYZ> dynamicMap_;
             pcl::PointCloud<pcl::PointXYZ> fullMap_;
 
-            
+            pcl::KdTreeFLANN<pcl::PointXYZ> kdtreeLocalMap_;
+            std::vector<int> pointIdxRadiusSearch_;
+            std::vector<float> pointRadiusSquaredDistance_;
             std::vector<std::vector<double>> dynamic_center_;
             std::vector<double> dynamic_theta_;
             std::vector<double> dynamic_radius_;
 
             std::vector<double> dynamic_motion_length_;
 
+            std::vector<double> odom_data_;
+            bool odom_received_;
             // This funcition take the center (x,y), radius(r), height(in index) of a plane circle and push back all point to the cloudMap
             // It will be used to generate the circle and the cylinder
             // The z is used to translate the plane vertically. 
             void getPlaneCirclePoint(double x, double y,double z,double r, int h,pcl::PointCloud<pcl::PointXYZ>& cloudMap);
-            
+            void odomReceiveCb(const nav_msgs::Odometry odom);
 
     }; //class ClutteredEnvGenerator
+    
 }; //namespace graceful_mpc

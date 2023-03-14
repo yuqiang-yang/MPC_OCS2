@@ -129,6 +129,7 @@ class KinematicSimulation {
   ros::Publisher cameraTransformPublisher_;
   ros::Publisher frontEndVisualizePublisher_;
   ros::Publisher wholebodyControlPublisher_;
+  ros::Publisher odomPublisher_;
 
   ros::Subscriber desiredEndEffectorPoseSubscriber_;
   ros::Subscriber wholebodyStateSubscriber_;
