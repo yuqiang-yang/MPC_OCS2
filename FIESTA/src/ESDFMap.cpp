@@ -695,7 +695,7 @@ void fiesta::ESDFMap::GetSliceMarker(visualization_msgs::Marker &m, int slice, i
       int z = slice;
       // int z = e*5;
       Eigen::Vector3i vox = Eigen::Vector3i(x, y, z);
-      if (distance_buffer_[Vox2Idx(vox)] < -100 /*|| distance_buffer_[Vox2Idx(vox)] >= infinity_*/)
+      if (distance_buffer_[Vox2Idx(vox)] < -100 || distance_buffer_[Vox2Idx(vox)] >= infinity_)
         continue;
       // if (distance_buffer_[Vox2Idx(vox)] < 0 || distance_buffer_[Vox2Idx(vox)] >= infinity_)
       //   {

@@ -5,8 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Status1
-        - /Grid1
-        - /occupyVoxel1
         - /local_map1
       Splitter Ratio: 0.5
     Tree Height: 728
@@ -329,8 +327,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 1.9600000381469727
-        Min Value: 0.03999999910593033
+        Max Value: 1.9299999475479126
+        Min Value: 0.009999999776482582
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -355,13 +353,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /graceful_mpc/front_end_trajectory
@@ -776,7 +774,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 12.41686725616455
+      Distance: 9.615622520446777
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -791,10 +789,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4847961962223053
+      Pitch: 1.0847960710525513
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.363604784011841
+      Yaw: 2.4836056232452393
     Saved: ~
 Window Geometry:
   Displays:

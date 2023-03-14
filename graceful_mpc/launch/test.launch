@@ -68,7 +68,7 @@
         <remap from="/kinematic_simulation/esdf_map_in" to="esdf_map" />
         <!-- fiesta parameter -->
 
-        <param name="resolution" value="0.12"/>
+        <param name="resolution" value="0.09"/>
         <param name="update_esdf_every_n_sec" value="0.05"/>
         <param name="local_range" value="$(arg local_range)"/>
 
@@ -102,11 +102,11 @@
 
         <!-- global / local -->
         <param name="global_map" value="true"/>
-        <param name="global_update" value="true"/>
+        <param name="global_update" value="false"/>
         <param name="global_vis" value="true"/>
-        <param name="radius_x" value="1.0"/>
-        <param name="radius_y" value="1.0"/>
-        <param name="radius_z" value="0.5"/>
+        <param name="radius_x" value="2.0"/>
+        <param name="radius_y" value="2.0"/>
+        <param name="radius_z" value="2.0"/>
 
         <!--depth_filter only depth image-->
         <param name="use_depth_filter" value="true"/>
