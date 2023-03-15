@@ -13,7 +13,7 @@
     <!-- Enable the camera and ESDF -->
     <arg name="realsenseActivate" value="false"/>
 
-    <arg name="local_range" value="6.0"/>
+    <arg name="local_range" value="3.0"/>
 
     <arg name="resolution" value ="0.03"/>
 
@@ -76,11 +76,11 @@
         <param name="reserved_size" value="1000000"/>
 
         <!--Array only-->
-        <param name="lx" value="-5.5"/>
-        <param name="ly" value="-5.5"/>
+        <param name="lx" value="-10.5"/>
+        <param name="ly" value="-10.5"/>
         <param name="lz" value="-0.5"/>
-        <param name="rx" value="+5.5"/>
-        <param name="ry" value="+5.5"/>
+        <param name="rx" value="+10.5"/>
+        <param name="ry" value="+10.5"/>
         <param name="rz" value="+3"/>
         <!-- raycasting parameters -->
         <param name="min_ray_length" value="0.5"/>
@@ -157,10 +157,10 @@
     </group>
 
     <node pkg="cluttered_env_generator" type="cluttered_env_generator" name="map_generator" output="screen">
-        <param name="x_min" value="-6.0"/>
-        <param name="x_max" value="6.0"/>
-        <param name="y_min" value="-6.0"/>
-        <param name="y_max" value="6.0"/>
+        <param name="x_min" value="-9.0"/>
+        <param name="x_max" value="9.0"/>
+        <param name="y_min" value="-9.0"/>
+        <param name="y_max" value="9.0"/>
         <param name="z_min" value="-0.5"/>
         <param name="z_max" value="2.0"/>
 
@@ -183,10 +183,10 @@
         <param name="static_cuboid_max_h" value="1.5"/>
 
         <param name="dynamic_sphere_num" value="15"/>
-        <param name="dynamic_sphere_min_r" value="0.1"/>
-        <param name="dynamic_sphere_max_r" value="0.4"/>
-        <param name="dynamic_sphere_min_z" value="0.9"/>
-        <param name="dynamic_sphere_max_z" value="2.0"/>
+        <param name="dynamic_sphere_min_r" value="0.05"/>
+        <param name="dynamic_sphere_max_r" value="0.2"/>
+        <param name="dynamic_sphere_min_z" value="0.6"/>
+        <param name="dynamic_sphere_max_z" value="1.5"/>
         <param name="dynamic_sphere_min_motion" value="0.4"/>
         <param name="dynamic_sphere_max_motion" value="2.0"/>
         <param name="dynamic_sphere_peroid" value="16.0"/>

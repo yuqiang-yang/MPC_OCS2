@@ -650,7 +650,7 @@ void Fiesta<DepthMsgType, PoseMsgType>::UpdateEsdfEvent(const ros::TimerEvent & 
           {
                //change by yq 
                Eigen::Vector3d current_odom;
-               current_odom << odom_.pose.pose.position.x , odom_.pose.pose.position.z,odom_.pose.pose.position.z;
+               current_odom << odom_.pose.pose.position.x , odom_.pose.pose.position.y,odom_.pose.pose.position.z;
                esdf_map_->SetUpdateRange(current_odom - parameters_.radius_, current_odom + parameters_.radius_);
           }
           // timing::Timer update_occ_timer("UpdateOcc");

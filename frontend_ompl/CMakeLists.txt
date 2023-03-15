@@ -25,7 +25,7 @@ include_directories("/home/vision/yq_ws/my_mpc/src/ocs2/ocs2_thirdparty/include/
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
    INCLUDE_DIRS include ${OMPL_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS}
-   LIBRARIES ${PROJECT_NAME}_joint
+   LIBRARIES ${PROJECT_NAME}
    CATKIN_DEPENDS
       roscpp
       roslib

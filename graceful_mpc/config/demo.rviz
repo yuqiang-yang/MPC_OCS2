@@ -26,7 +26,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: occupyVoxel
+    SyncSource: local_map
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -327,8 +327,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 1.9299999475479126
-        Min Value: 0.009999999776482582
+        Max Value: 1.524999976158142
+        Min Value: -0.004999999888241291
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -336,7 +336,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -351,15 +351,15 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /kinematic_simulation/ESDFMap/slice
       Name: ESDFMap
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /graceful_mpc/front_end_trajectory
@@ -721,7 +721,7 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 1.934999942779541
+        Max Value: 1.3049999475479126
         Min Value: 0.014999999664723873
         Value: true
       Axis: Z
@@ -730,7 +730,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -745,7 +745,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -774,25 +774,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.615622520446777
+      Distance: 8.131223678588867
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.3111166954040527
-        Y: -0.4692382514476776
-        Z: 0.2927089333534241
+        X: 3.0016963481903076
+        Y: 1.1957728862762451
+        Z: 0.932476282119751
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0847960710525513
+      Pitch: 0.35479503870010376
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.4836056232452393
+      Yaw: 2.3467938899993896
     Saved: ~
 Window Geometry:
   Displays:
